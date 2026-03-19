@@ -526,6 +526,45 @@ class Trongate_administrators extends Trongate {
     }
 
     /**
+     * Competition overview: all competitions across all organizations.
+     *
+     * @return void
+     */
+    public function competitions_overview(): void {
+        $token = $this->_make_sure_allowed();
+        $data['my_admin_id'] = $this->get_my_id($token);
+
+        // Summary counts by status (excluding archived/canceled)
+        $sql = "SELECT
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN status = 'running'   THEN 1 ELSE 0 END) AS running,
+                    SUM(CASE WHEN status = 'finished'  THEN 1 ELSE 0 END) AS finished,
+                    SUM(CASE WHEN status IN ('scheduled','generated') THEN 1 ELSE 0 END) AS upcoming,
+                    SUM(CASE WHEN status = 'created'   THEN 1 ELSE 0 END) AS draft,
+                    SUM(CASE WHEN status IN ('archived','canceled')   THEN 1 ELSE 0 END) AS archived
+                FROM comp_name";
+        $r = $this->model->query($sql, 'object');
+        $stats = (is_array($r) && isset($r[0])) ? $r[0] : (object)['total'=>0,'running'=>0,'finished'=>0,'upcoming'=>0,'draft'=>0,'archived'=>0];
+        $data['stats'] = $stats;
+
+        // All active competitions with org info and counts
+        $sql = "SELECT cn.id, cn.name, cn.year, cn.status, cn.location,
+                       co.organization AS org_name, co.id AS org_id,
+                       (SELECT COUNT(*) FROM comp_participants cp WHERE cp.comp_id = cn.id) AS participant_count,
+                       (SELECT COUNT(*) FROM comp_heats ch WHERE ch.comp_id = cn.id) AS heat_count
+                FROM comp_name cn
+                LEFT JOIN comp_organizations co ON co.id = cn.organizer_id
+                WHERE cn.status NOT IN ('archived','canceled')
+                ORDER BY cn.id DESC";
+        $r = $this->model->query($sql, 'object');
+        $data['competitions'] = is_array($r) ? $r : [];
+
+        $data['view_module'] = 'trongate_administrators';
+        $data['view_file'] = 'competitions_overview';
+        $this->load_template($data);
+    }
+
+    /**
      * Lists all organizations for the admin panel.
      *
      * @return void

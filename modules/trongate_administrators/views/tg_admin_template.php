@@ -28,6 +28,10 @@
 					<span class="hide-sm">Organizations</span>
 					<i class="fa fa-building"></i>
 				</a>
+				<a href="<?= BASE_URL ?>trongate_administrators/competitions_overview">
+					<span class="hide-sm">Competitions</span>
+					<i class="fa fa-trophy"></i>
+				</a>
 				<a href="<?= BASE_URL ?>trongate_administrators/billing_overview">
 					<span class="hide-sm">Billing</span>
 					<i class="fa fa-credit-card"></i>

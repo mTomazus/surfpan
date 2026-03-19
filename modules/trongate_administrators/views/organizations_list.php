@@ -51,11 +51,17 @@
         font-weight: 600;
     }
     .orgs-table td {
-        padding: 10px 14px;
+        background: hsl(200, 35%, 20%);
+        padding: 9px 12px;
         border-top: 1px solid rgba(255,255,255,0.06);
         font-size: 0.9em;
         color: #ddd;
-        vertical-align: middle;
+    }
+    .orgs-table tr:nth-child(odd) {
+        background: hsl(200, 35%, 30%);
+    }
+    .orgs-table tr:hover {
+        background: hsl(200, 35%, 10%);
     }
     .orgs-table tr:hover td { background: rgba(255,255,255,0.04); }
     .orgs-table .org-id { color: #666; font-size: 0.8em; }
@@ -150,19 +156,29 @@ function org_status_pill(string $status, string $prefix = 's'): string {
             <th>Country</th>
             <th>Status</th>
             <th>Subscription</th>
-            <th></th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
         <?php foreach ($data['orgs'] as $org): ?>
         <tr>
             <td class="org-id"><?= (int)$org->id ?></td>
-            <td><?= htmlspecialchars($org->organization) ?></td>
+            <td>
+                <a href="<?= BASE_URL ?>trongate_administrators/org_detail/<?= (int)$org->id ?>"
+                   style="color:#eee;text-decoration:none;">
+                    <?= htmlspecialchars($org->organization) ?>
+                </a>
+            </td>
             <td style="color:#aaa;"><?= htmlspecialchars($org->email) ?></td>
             <td style="color:#aaa;"><?= htmlspecialchars(strtoupper($org->country ?? '—')) ?></td>
             <td><?= org_status_pill($org->org_status ?? 'inactive') ?></td>
             <td><?= org_status_pill($org->sub_status ?? 'none') ?></td>
-            <td>
+            <td style="display:flex;gap:6px;align-items:center;">
+                <a class="btn-impersonate"
+                   href="<?= BASE_URL ?>trongate_administrators/org_detail/<?= (int)$org->id ?>"
+                   style="background:rgba(255,255,255,0.08);color:#ccc;border-color:rgba(255,255,255,0.15);">
+                    <i class="fa fa-eye"></i>
+                </a>
                 <a class="btn-impersonate"
                    href="<?= BASE_URL ?>trongate_administrators/impersonate/<?= (int)$org->id ?>">
                     <i class="fa fa-sign-in"></i> Login as

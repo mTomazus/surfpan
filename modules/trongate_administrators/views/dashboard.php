@@ -90,14 +90,17 @@
         font-weight: 600;
     }
     .dash-table td {
+        background: hsl(200, 35%, 20%);
         padding: 9px 12px;
         border-top: 1px solid rgba(255,255,255,0.06);
         font-size: 0.9em;
         color: #ddd;
-        background: transparent;
+    }
+    .dash-table tr:nth-child(odd) td {
+        background: hsl(200, 35%, 30%);
     }
     .dash-table tr:hover td {
-        background: rgba(255,255,255,0.04);
+        background: hsl(200, 35%, 10%);
     }
     .status-pill {
         display: inline-block;

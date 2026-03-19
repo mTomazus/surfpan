@@ -1,25 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-	<link rel="stylesheet" href="<?= BASE_URL ?>css/trongate.css">
-	<title>Trongate Administrators</title>
-</head>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<base href="<?= BASE_URL ?>">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<link rel="stylesheet" href="<?= BASE_URL ?>css/trongate.css">
+		<title>Trongate Administrators</title>
+	</head>
 
-<body>
+	<body>
 	<?php
 	if ((segment(2) !== '') && (segment(2) !== 'login') && (segment(2) !== 'submit_login')) { ?>
-		<div id="top-gutter">
+		<header id="top-gutter">
+			<a href="<?= BASE_URL ?>">
+				<img src="<?= BASE_URL ?>/images/surfpan-hero-2.svg" height="30px" width="30px" alt="logo surf panel" style="padding: 8px;">
+			</a>
 			<div>
 				<a href="<?= BASE_URL ?>trongate_administrators/dashboard">
-					<span class="hide-sm">Dashboard</span>
+					<span class="hide-sm">Admin Dashboard</span>
 					<i class="fa fa-tachometer"></i>
 				</a>
 			</div>
-			<div>
+			<nav>
 				<a href="<?= BASE_URL ?>trongate_administrators/organizations_list">
 					<span class="hide-sm">Organizations</span>
 					<i class="fa fa-building"></i>
@@ -36,14 +40,14 @@
 					<span class="hide-sm">Logout</span>
 					<i class="fa fa-sign-out"></i>
 				</a>
-			</div>
-		</div>
-	<?php
+			</nav>
+		</header>
+		<?php
 	}
 	?>
-	<div class="container">
+	<main class="container">
 		<?= Template::display($data) ?>
-	</div>
+	</main>
 	<style>
 		body {
 			background: rgb(0, 0, 0);
@@ -89,19 +93,30 @@
 		#top-gutter>div:nth-child(1) {
 			text-align: left !important;
 		}
-
 		#top-gutter a {
-			color: #eee;
 			text-decoration: none;
-			margin-left: 24px;
+			color: #eee;
+			padding: 0 8px;
 		}
 
 		#top-gutter a:hover {
 			color: cyan;
 		}
-
+		header {
+			position: fixed;
+			width: -webkit-fill-available;
+			background: transparent;
+			-webkit-backdrop-filter: blur(5px);
+			height: 45px;
+			text-align: center;
+			top:0;
+		}
+		main {
+			
+		}
 		.container {
 			background-color: transparent;
+			margin-top: 40px;
 		}
 
 		.hide-sm {

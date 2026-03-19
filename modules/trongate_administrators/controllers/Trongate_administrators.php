@@ -178,42 +178,31 @@ class Trongate_administrators extends Trongate {
         $token = $this->_make_sure_allowed();
         $data['my_admin_id'] = $this->get_my_id($token);
 
-        // Organizations
-        $r = $this->model->query('SELECT COUNT(*) AS c FROM comp_organizations', 'object');
-        $data['total_orgs'] = $r[0]->c ?? 0;
+        $count = fn($r) => (is_array($r) && isset($r[0]->c)) ? (int)$r[0]->c : 0;
 
-        $r = $this->model->query("SELECT COUNT(*) AS c FROM comp_organizations WHERE status = 'active'", 'object');
-        $data['active_orgs'] = $r[0]->c ?? 0;
+        // Organizations
+        $data['total_orgs']  = $count($this->model->query('SELECT COUNT(*) AS c FROM comp_organizations', 'object'));
+        $data['active_orgs'] = $count($this->model->query("SELECT COUNT(*) AS c FROM comp_organizations WHERE status = 'active'", 'object'));
 
         // Competitions
-        $r = $this->model->query("SELECT COUNT(*) AS c FROM comp_name WHERE status NOT IN ('archived','canceled')", 'object');
-        $data['total_comps'] = $r[0]->c ?? 0;
-
-        $r = $this->model->query("SELECT COUNT(*) AS c FROM comp_name WHERE status = 'running'", 'object');
-        $data['live_comps'] = $r[0]->c ?? 0;
+        $data['total_comps'] = $count($this->model->query("SELECT COUNT(*) AS c FROM comp_name WHERE status NOT IN ('archived','canceled')", 'object'));
+        $data['live_comps']  = $count($this->model->query("SELECT COUNT(*) AS c FROM comp_name WHERE status = 'running'", 'object'));
 
         // Users & Judges
-        $r = $this->model->query('SELECT COUNT(*) AS c FROM comp_users', 'object');
-        $data['total_users'] = $r[0]->c ?? 0;
-
-        $r = $this->model->query('SELECT COUNT(*) AS c FROM comp_judges', 'object');
-        $data['total_judges'] = $r[0]->c ?? 0;
+        $data['total_users']   = $count($this->model->query('SELECT COUNT(*) AS c FROM comp_users', 'object'));
+        $data['total_judges']  = $count($this->model->query('SELECT COUNT(*) AS c FROM comp_judges', 'object'));
 
         // Total revenue (all paid charges)
         $r = $this->model->query("SELECT COALESCE(SUM(amount), 0) AS rev FROM billing_charges WHERE status = 'paid'", 'object');
-        $data['total_revenue'] = $r[0]->rev ?? 0;
+        $data['total_revenue'] = (is_array($r) && isset($r[0]->rev)) ? (float)$r[0]->rev : 0;
 
         // Recent organizations (last 5 by id)
-        $data['recent_orgs'] = $this->model->query(
-            'SELECT id, organization, email, status FROM comp_organizations ORDER BY id DESC LIMIT 5',
-            'object'
-        );
+        $r = $this->model->query('SELECT id, organization, email, status FROM comp_organizations ORDER BY id DESC LIMIT 5', 'object');
+        $data['recent_orgs'] = is_array($r) ? $r : [];
 
         // Recent competitions (last 5)
-        $data['recent_comps'] = $this->model->query(
-            "SELECT id, name, year, status FROM comp_name WHERE status NOT IN ('archived','canceled') ORDER BY id DESC LIMIT 5",
-            'object'
-        );
+        $r = $this->model->query("SELECT id, name, year, status FROM comp_name WHERE status NOT IN ('archived','canceled') ORDER BY id DESC LIMIT 5", 'object');
+        $data['recent_comps'] = is_array($r) ? $r : [];
 
         $data['view_module'] = 'trongate_administrators';
         $data['view_file'] = 'dashboard';
@@ -288,6 +277,117 @@ class Trongate_administrators extends Trongate {
             $data['view_file'] = 'conf_delete';
             $this->load_template($data);
         }
+    }
+
+    /**
+     * Detail page for a single organization.
+     *
+     * @return void
+     */
+    public function org_detail(): void {
+        $token = $this->_make_sure_allowed();
+        $data['my_admin_id'] = $this->get_my_id($token);
+
+        $org_id = (int) segment(3);
+        if ($org_id <= 0) {
+            redirect('trongate_administrators/organizations_list');
+        }
+
+        $org = $this->model->get_one_where('id', $org_id, 'comp_organizations');
+        if (!$org) {
+            redirect('trongate_administrators/organizations_list');
+        }
+        $data['org'] = $org;
+
+        // Helper: safely extract count from query result
+        $count = fn($r) => (is_array($r) && isset($r[0]->c)) ? (int)$r[0]->c : 0;
+        
+        // Country name
+        $r = $this->model->query_bind(
+            'SELECT name FROM countries WHERE code = :code LIMIT 1',
+            ['code' => $org->country ?? ''],
+            'object'
+        );
+        $data['country_name'] = (is_array($r) && isset($r[0]->name))
+            ? $r[0]->name
+            : strtoupper($org->country ?? '—');
+
+        // Stats
+        $r = $this->model->query_bind(
+            'SELECT COUNT(*) AS c FROM comp_name WHERE organizer_id = :oid',
+            ['oid' => $org_id], 'object'
+        );
+        $data['total_comps'] = $count($r);
+
+        $r = $this->model->query_bind(
+            'SELECT COUNT(DISTINCT p.user_id) AS c FROM comp_participants p
+             JOIN comp_name cn ON cn.id = p.comp_id WHERE cn.organizer_id = :oid',
+            ['oid' => $org_id], 'object'
+        );
+        $data['total_participants'] = $count($r);
+
+        $r = $this->model->query_bind(
+            'SELECT COUNT(*) AS c FROM comp_org_judges WHERE organization_id = :oid',
+            ['oid' => $org_id], 'object'
+        );
+        $data['total_judges'] = $count($r);
+
+        // Competitions (most recent 10)
+        $r = $this->model->query_bind(
+            "SELECT id, name, year, status, location FROM comp_name
+             WHERE organizer_id = :oid ORDER BY id DESC LIMIT 10",
+            ['oid' => $org_id], 'object'
+        );
+        $data['competitions'] = is_array($r) ? $r : [];
+
+        // Active subscription (most recent)
+        $r = $this->model->query_bind(
+            "SELECT * FROM billing_subscriptions
+             WHERE organization_id = :oid
+             ORDER BY id DESC LIMIT 1",
+            ['oid' => $org_id], 'object'
+        );
+        $data['subscription'] = (is_array($r) && isset($r[0])) ? $r[0] : null;
+
+        // Recent billing charges (last 8) — organizer_id is the correct column
+        $r = $this->model->query_bind(
+            "SELECT bc.id, bp.name AS product, bc.amount, bc.currency, bc.status
+             FROM billing_charges bc 
+             JOIN billing_products bp ON bp.id = bc.product_id
+             WHERE bc.organizer_id = :oid
+             ORDER BY bc.id DESC LIMIT 8",
+            ['oid' => $org_id], 'object'
+        );
+        
+        $data['charges'] = is_array($r) ? $r : [];
+
+        $data['view_module'] = 'trongate_administrators';
+        $data['view_file'] = 'org_detail';
+        $this->load_template($data);
+    }
+
+    /**
+     * Toggle an organization's status between active and inactive.
+     *
+     * @return void
+     */
+    public function toggle_org_status(): void {
+        $this->_make_sure_allowed();
+
+        $org_id = (int) segment(3);
+        if ($org_id <= 0) {
+            redirect('trongate_administrators/organizations_list');
+        }
+
+        $org = $this->model->get_one_where('id', $org_id, 'comp_organizations');
+        if (!$org) {
+            redirect('trongate_administrators/organizations_list');
+        }
+
+        $new_status = ($org->status === 'active') ? 'inactive' : 'active';
+        $this->model->update($org_id, ['status' => $new_status], 'comp_organizations');
+
+        redirect('trongate_administrators/org_detail/' . $org_id);
     }
 
     /**

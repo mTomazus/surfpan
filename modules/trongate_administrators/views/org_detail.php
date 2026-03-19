@@ -58,7 +58,7 @@ $is_active = ($org->status === 'active');
     .btn-action:hover { opacity: 0.85; }
     .btn-activate   { background: rgba(0,200,100,0.2);  color: #0c6;  border: 1px solid rgba(0,200,100,0.35); }
     .btn-deactivate { background: rgba(255,80,80,0.15); color: #f66;  border: 1px solid rgba(255,80,80,0.3); }
-    .btn-impersonate{ background: rgba(0,180,255,0.15); color: #0cf;  border: 1px solid rgba(0,180,255,0.3); }
+    .btn-impersonate{ background: rgba(0,180,255,0.15); color: #0cf;  border: 1px solid rgba(0,180,255,0.3);margin: 1em 0.1em 0 0; }
 
     /* ── Status pill ── */
     .status-pill {
@@ -81,7 +81,7 @@ $is_active = ($org->status === 'active');
     /* ── Stat cards ── */
     .stat-row {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 14px;
         margin-bottom: 28px;
     }
@@ -93,7 +93,7 @@ $is_active = ($org->status === 'active');
         text-align: center;
     }
     .stat-card .val { font-size: 2.2em; font-weight: bold; line-height: 1; margin-bottom: 5px; }
-    .stat-card .lbl { font-size: 0.75em; color: #aaa; text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-card .lbl { font-size: 0.75em; color: #16dcae; text-transform: uppercase; letter-spacing: 0.06em; }
 
     /* ── Two-column layout ── */
     .detail-cols {
@@ -161,6 +161,9 @@ $is_active = ($org->status === 'active');
         font-weight: bold;
         margin-bottom: 10px;
     }
+    form {
+        width: auto;
+    }
 
     .comp-status { font-size: 0.78em; font-weight: bold; text-transform: capitalize; }
     .cs-running  { color: #0cf; }
@@ -194,6 +197,12 @@ function charge_cls(string $s): string {
     return ['paid'=>'charge-paid','pending'=>'charge-pending','failed'=>'charge-failed'][$s] ?? 'charge-default';
 }
 ?>
+
+<?php if (!empty($data['flash_msg'])): ?>
+<div style="background:rgba(0,200,100,0.15);border:1px solid rgba(0,200,100,0.3);color:#0c6;border-radius:7px;padding:10px 16px;margin:18px 0 0;font-size:0.9em;">
+    <i class="fa fa-check-circle"></i> <?= htmlspecialchars($data['flash_msg']) ?>
+</div>
+<?php endif; ?>
 
 <a class="back-link" href="<?= BASE_URL ?>trongate_administrators/organizations_list">
     <i class="fa fa-arrow-left"></i> All Organizations
@@ -231,6 +240,18 @@ function charge_cls(string $s): string {
                 </button>
             <?php endif; ?>
         </form>
+        <!-- Grant free event -->
+        <form method="post" action="<?= BASE_URL ?>trongate_administrators/grant_free_event/<?= (int)$org->id ?>" style="margin:0;">
+            <button type="submit" class="btn-action" style="background:rgba(180,100,255,0.15);color:#b7f;border:1px solid rgba(180,100,255,0.3);"
+                    onclick="return confirm('Grant 1 free event pass to <?= out(addslashes($org->organization)) ?>?')">
+                <i class="fa fa-gift"></i> Grant Free Event
+                <?php if ($data['event_pass_credits'] > 0): ?>
+                    <span style="background:rgba(180,100,255,0.3);border-radius:20px;padding:1px 7px;font-size:0.85em;margin-left:4px;">
+                        <?= (int)$data['event_pass_credits'] ?> credit<?= $data['event_pass_credits'] != 1 ? 's' : '' ?>
+                    </span>
+                <?php endif; ?>
+            </button>
+        </form>
         <!-- Impersonate -->
         <a class="btn-action btn-impersonate"
            href="<?= BASE_URL ?>trongate_administrators/impersonate/<?= (int)$org->id ?>">
@@ -256,6 +277,10 @@ function charge_cls(string $s): string {
     <div class="stat-card">
         <div class="val"><?= count($data['charges']) ?></div>
         <div class="lbl">Charges</div>
+    </div>
+    <div class="stat-card">
+        <div class="val"><?= (int)$data['event_pass_credits'] ?></div>
+        <div class="lbl">Event Pass Credits</div>
     </div>
 </div>
 

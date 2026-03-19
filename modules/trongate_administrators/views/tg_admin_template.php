@@ -28,6 +28,10 @@
 					<span class="hide-sm">Organizations</span>
 					<i class="fa fa-building"></i>
 				</a>
+				<a href="<?= BASE_URL ?>trongate_administrators/billing_overview">
+					<span class="hide-sm">Billing</span>
+					<i class="fa fa-credit-card"></i>
+				</a>
 				<a href="<?= BASE_URL ?>trongate_administrators/manage">
 					<span class="hide-sm">Administrators</span>
 					<i class="fa fa-gears"></i>

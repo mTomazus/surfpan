@@ -358,8 +358,15 @@ class Trongate_administrators extends Trongate {
              ORDER BY bc.id DESC LIMIT 8",
             ['oid' => $org_id], 'object'
         );
-        
         $data['charges'] = is_array($r) ? $r : [];
+
+        // Event pass credits (admin-granted free event_pass id = 6)
+        $r = $this->model->query_bind(
+            "SELECT COALESCE(SUM(quantity),0) AS c FROM billing_charges
+             WHERE organizer_id = :oid AND product_id = 6 AND status = 'paid'",
+            ['oid' => $org_id], 'object'
+        );
+        $data['event_pass_credits'] = (is_array($r) && isset($r[0]->c)) ? (int)$r[0]->c : 0;
 
         $data['view_module'] = 'trongate_administrators';
         $data['view_file'] = 'org_detail';
@@ -387,6 +394,82 @@ class Trongate_administrators extends Trongate {
         $new_status = ($org->status === 'active') ? 'inactive' : 'active';
         $this->model->update($org_id, ['status' => $new_status], 'comp_organizations');
 
+        redirect('trongate_administrators/org_detail/' . $org_id);
+    }
+
+    /**
+     * Billing overview: all competition charges across all organizations.
+     *
+     * @return void
+     */
+    public function billing_overview(): void {
+        $token = $this->_make_sure_allowed();
+        $data['my_admin_id'] = $this->get_my_id($token);
+
+        $count = fn($r) => (is_array($r) && isset($r[0]->c)) ? (int)$r[0]->c : 0;
+        $sum   = fn($r) => (is_array($r) && isset($r[0]->c)) ? (float)$r[0]->c : 0.0;
+
+        // Summary stats
+        $data['total_collected']   = $sum($this->model->query("SELECT COALESCE(SUM(amount),0) AS c FROM billing_charges WHERE status = 'paid' AND product_id != 'event_pass'", 'object'));
+        $data['total_pending']     = $sum($this->model->query("SELECT COALESCE(SUM(amount),0) AS c FROM billing_charges WHERE status = 'pending'", 'object'));
+        $data['paid_comps']        = $count($this->model->query("SELECT COUNT(*) AS c FROM billing_charges WHERE status = 'paid' AND product_id != 'event_pass'", 'object'));
+        $data['free_events_granted'] = $count($this->model->query("SELECT COALESCE(SUM(quantity),0) AS c FROM billing_charges WHERE product_id = 'event_pass' AND status = 'paid'", 'object'));
+
+        // All competition charges, most recent first
+        $sql = "SELECT bc.id, bc.amount, bc.currency, bc.status, bc.participants_count,
+                       cn.name AS comp_name, cn.year AS comp_year,
+                       co.organization AS org_name, co.id AS org_id
+                FROM billing_charges bc
+                LEFT JOIN comp_name cn ON cn.id = bc.comp_id
+                LEFT JOIN comp_organizations co ON co.id = bc.organizer_id
+                WHERE bc.product_id != 'event_pass'
+                ORDER BY bc.id DESC LIMIT 100";
+        $r = $this->model->query($sql, 'object');
+        $data['charges'] = is_array($r) ? $r : [];
+
+        // Admin-granted free event passes
+        $sql = "SELECT bc.id, bc.quantity, bc.status,
+                       co.organization AS org_name, co.id AS org_id
+                FROM billing_charges bc
+                LEFT JOIN comp_organizations co ON co.id = bc.organizer_id
+                WHERE bc.product_id = 'event_pass'
+                ORDER BY bc.id DESC LIMIT 50";
+        $r = $this->model->query($sql, 'object');
+        $data['event_passes'] = is_array($r) ? $r : [];
+
+        $data['view_module'] = 'trongate_administrators';
+        $data['view_file'] = 'billing_overview';
+        $this->load_template($data);
+    }
+
+    /**
+     * Grant a free event pass credit to an organization.
+     *
+     * @return void
+     */
+    public function grant_free_event(): void {
+        $this->_make_sure_allowed();
+
+        $org_id = (int) segment(3);
+        if ($org_id <= 0) {
+            redirect('trongate_administrators/organizations_list');
+        }
+
+        $org = $this->model->get_one_where('id', $org_id, 'comp_organizations');
+        if (!$org) {
+            redirect('trongate_administrators/organizations_list');
+        }
+
+        $this->model->insert([
+            'organizer_id' => $org_id,
+            'product_id'   => 'event_pass',
+            'amount'       => 0,
+            'currency'     => 'EUR',
+            'status'       => 'paid',
+            'quantity'     => 1,
+        ], 'billing_charges');
+
+        set_flashdata('Free event granted to ' . $org->organization);
         redirect('trongate_administrators/org_detail/' . $org_id);
     }
 

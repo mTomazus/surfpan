@@ -1,0 +1,66 @@
+/* ==========================================================================
+   CSS VARIABLES
+   ========================================================================== */
+
+:root {
+    /* From Users CSS */
+    --bg: #0b1020;
+    --bg-elev: #121935;
+    --card: #151c3b;
+    --text: #00f3ff;
+    --muted: #0c1222;
+    --primary: #00f3ff; /* skyblue */
+    --primary-dark: #05a7ff;
+    --slate: #2a0f7d;
+    --white: #e8edf7;
+    --primary-ink: #03221f;
+    --primary-white: #e8edf7;
+    --ring: #4ad9c7;
+    --ok: #1ad176;
+    --warn: #ffb020;
+    --danger: #ff5563;
+    --info: #4ea1ff;
+
+    --chip-open: #18c56e;
+    --chip-running: #ff9b27;
+    --chip-closed: #ffd84a;
+    --chip-finished: #ff5563;
+    --chip-scheduled: #4ea1ff;
+
+    --jersey-white: #ffffff;
+    --jersey-red: #e53935;
+    --jersey-green: #43a047;
+    --jersey-blue: #1e88e5;
+
+    --radius: 14px;
+    --shadow: 0 10px 24px rgba(0,0,0,.25);
+    --shadow-small: 0 0 5px;
+
+    /* Colors */
+    --primary-color: rgb(80, 134, 161);
+    --primary-hover: skyblue;
+    --secondary-color: rgb(255, 255, 255);
+    --black-color: rgb(0, 0, 0);
+    --bg-primary: rgb(29, 26, 73);
+    --bg-secondary: skyblue;
+    
+    /* Effects */
+    --box-shadow: 0 0 10px rgb(19, 150, 168);
+    --box-bg: rgba(255, 255, 255, 0.05);
+    
+    /* Legacy variable names (for backward compatibility) */
+    --primary-txt-clr: var(--primary-color);
+    --secondary-txt-clr: var(--secondary-color);
+    --black-txt-clr: var(--black-color);
+    --bg-color-1: var(--bg-primary);
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --bg: #f6f8fc; --bg-elev: #ffffff; --card: #ffffff; --text: #0c1222; --muted:#51607f;
+        --primary: #0c1222; --ring: #09c; --white: #0b1020;
+    }
+    body { background: var(--bg); color: var(--white); }
+    .topbar { background: var(--bg-elev); }
+    header img, footer .logo-details img { filter: invert(); }
+}

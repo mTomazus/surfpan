@@ -32,6 +32,10 @@
 					<span class="hide-sm">Billing</span>
 					<i class="fa fa-credit-card"></i>
 				</a>
+				<a href="<?= BASE_URL ?>trongate_administrators/user_search">
+					<span class="hide-sm">Users</span>
+					<i class="fa fa-search"></i>
+				</a>
 				<a href="<?= BASE_URL ?>trongate_administrators/manage">
 					<span class="hide-sm">Administrators</span>
 					<i class="fa fa-gears"></i>

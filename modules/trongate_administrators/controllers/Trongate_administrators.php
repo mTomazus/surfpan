@@ -473,6 +473,59 @@ class Trongate_administrators extends Trongate {
     }
 
     /**
+     * Global user search across participants and judges.
+     *
+     * @return void
+     */
+    public function user_search(): void {
+        $token = $this->_make_sure_allowed();
+        $data['my_admin_id'] = $this->get_my_id($token);
+
+        $q = trim($_GET['q'] ?? '');
+        $data['q'] = $q;
+        $data['participants'] = [];
+        $data['judges'] = [];
+
+        if (strlen($q) >= 2) {
+            $like = '%' . $q . '%';
+
+            // Search participants
+            $sql = "SELECT cu.id, cu.name, cu.email, cu.phone,
+                           COUNT(DISTINCT cp.comp_id) AS comp_count,
+                           GROUP_CONCAT(DISTINCT cn.name ORDER BY cn.id DESC SEPARATOR ', ') AS recent_comps,
+                           MAX(co.organization) AS org_name, MAX(co.id) AS org_id
+                    FROM comp_users cu
+                    LEFT JOIN comp_participants cp ON cp.user_id = cu.id
+                    LEFT JOIN comp_name cn ON cn.id = cp.comp_id
+                    LEFT JOIN comp_organizations co ON co.id = cn.organizer_id
+                    WHERE cu.name LIKE :like OR cu.email LIKE :like
+                    GROUP BY cu.id
+                    ORDER BY cu.id DESC
+                    LIMIT 30";
+            $r = $this->model->query_bind($sql, ['like' => $like], 'object');
+            $data['participants'] = is_array($r) ? $r : [];
+
+            // Search judges
+            $sql = "SELECT cj.id, cj.name, cj.email, cj.phone, cj.username,
+                           GROUP_CONCAT(DISTINCT co.organization ORDER BY co.id ASC SEPARATOR ', ') AS orgs,
+                           COUNT(DISTINCT coj.organization_id) AS org_count
+                    FROM comp_judges cj
+                    LEFT JOIN comp_org_judges coj ON coj.user_id = cj.id
+                    LEFT JOIN comp_organizations co ON co.id = coj.organization_id
+                    WHERE cj.name LIKE :like OR cj.email LIKE :like
+                    GROUP BY cj.id
+                    ORDER BY cj.id DESC
+                    LIMIT 30";
+            $r = $this->model->query_bind($sql, ['like' => $like], 'object');
+            $data['judges'] = is_array($r) ? $r : [];
+        }
+
+        $data['view_module'] = 'trongate_administrators';
+        $data['view_file'] = 'user_search';
+        $this->load_template($data);
+    }
+
+    /**
      * Lists all organizations for the admin panel.
      *
      * @return void

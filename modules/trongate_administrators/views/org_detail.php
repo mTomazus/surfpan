@@ -132,22 +132,27 @@ $is_active = ($org->status === 'active');
         font-size: 0.87em;
     }
     .detail-table th {
-        color: #777;
-        font-size: 0.78em;
+        background: hsla(200, 100%, 50%, 1);
+        color: #fff;
+        font-size: 0.76em;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
-        padding: 6px 10px;
+        letter-spacing: 0.07em;
+        padding: 10px 14px;
         text-align: left;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
+        font-weight: 600;
     }
     .detail-table td {
-        padding: 8px 10px;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-        color: #ccc;
-        vertical-align: middle;
+        background: hsl(200, 35%, 20%);
+        padding: 9px 12px;
+        border-top: 1px solid rgba(255,255,255,0.06);
+        font-size: 0.9em;
+    }
+    .detail-table tr:nth-child(odd) td {
+        background: hsl(200, 35%, 30%);
     }
     .detail-table tr:last-child td { border-bottom: none; }
-
+    .detail-table tr:hover td { background: hsl(200, 35%, 10%); }
+    
     /* Subscription card */
     .sub-card {
         background: rgba(255,255,255,0.04);

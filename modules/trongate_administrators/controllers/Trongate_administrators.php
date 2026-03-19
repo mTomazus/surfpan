@@ -3,9 +3,7 @@
 /**
  * Provides functionality for managing administrators within the Trongate framework.
  * This class handles login, user management, and authentication-related tasks.
- * 
- * NOTE: The default username and password for administrators is 'admin' and 'admin'.
- */
+*/
 class Trongate_administrators extends Trongate {
 
     // NOTE: Uncomment the line below to set a custom secret login segment.

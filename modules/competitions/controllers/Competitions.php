@@ -15,8 +15,8 @@
                     $this->template('judges_area', $data); 
                 } else {
                     // invited judges see available competitions
-                    $sql = "SELECT * FROM competition_judges WHERE judge_id = $judge->id AND status = 'accepted'";
-                    $comp_judge = $this->model->query($sql, 'array');
+                    $sql = "SELECT * FROM competition_judges WHERE judge_id = :judge_id AND status = 'accepted'";
+                    $comp_judge = $this->model->query_bind($sql, ['judge_id' => $judge->id], 'array');
 
                     if ($comp_judge) {
                         $competition = $this->model->get_one_where('id', $comp_judge[0]['competition_id'], 'comp_name');

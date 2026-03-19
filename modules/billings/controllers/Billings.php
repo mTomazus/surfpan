@@ -47,11 +47,10 @@
                     FROM comp_name AS cn
                     JOIN comp_participants AS cp ON cn.id = cp.comp_id
                     JOIN comp_users AS cu ON cp.user_id = cu.id
-                    WHERE cu.trongate_user_id = $trongate_user_id
-                    AND cn.id = $comp_id
+                    WHERE cu.trongate_user_id = :tuid
+                    AND cn.id = :comp_id
                     LIMIT 1";
-
-            $user_data = $this->model->query($sql, 'object');
+            $user_data = $this->model->query_bind($sql, ['tuid' => $trongate_user_id, 'comp_id' => $comp_id], 'object');
 
             $user_comp = $user_data[0] ?? null;
 

@@ -14,17 +14,21 @@
 	if ((segment(2) !== '') && (segment(2) !== 'login') && (segment(2) !== 'submit_login')) { ?>
 		<div id="top-gutter">
 			<div>
-				<a href="<?= BASE_URL ?>trongate_administrators/go_home">
-					<span class="hide-sm">Home</span>
-					<i class="fa fa-home"></i>
+				<a href="<?= BASE_URL ?>trongate_administrators/dashboard">
+					<span class="hide-sm">Dashboard</span>
+					<i class="fa fa-tachometer"></i>
 				</a>
 			</div>
 			<div>
+				<a href="<?= BASE_URL ?>trongate_administrators/organizations_list">
+					<span class="hide-sm">Organizations</span>
+					<i class="fa fa-building"></i>
+				</a>
 				<a href="<?= BASE_URL ?>trongate_administrators/manage">
-					<span class="hide-sm">Manage Administrators</span>
+					<span class="hide-sm">Administrators</span>
 					<i class="fa fa-gears"></i>
 				</a>
-				<a href="<?= BASE_URL ?>trongate_administrators/create/<?= $data['my_admin_id'] ?>">
+				<a href="<?= BASE_URL ?>trongate_administrators/create/<?= $data['my_admin_id'] ?? '' ?>">
 					<span class="hide-sm">Your Account</span>
 					<i class="fa fa-user"></i>
 				</a>

@@ -17,7 +17,7 @@ class Trongate_administrators extends Trongate {
      *
      * @var string
      */
-    private $dashboard_home = 'trongate_administrators/manage';
+    private $dashboard_home = 'trongate_administrators/dashboard';
 
     /**
      * Renders a login page for administrators.
@@ -170,6 +170,57 @@ class Trongate_administrators extends Trongate {
     }
 
     /**
+     * Platform overview dashboard for administrators.
+     *
+     * @return void
+     */
+    public function dashboard(): void {
+        $token = $this->_make_sure_allowed();
+        $data['my_admin_id'] = $this->get_my_id($token);
+
+        // Organizations
+        $r = $this->model->query('SELECT COUNT(*) AS c FROM comp_organizations', 'object');
+        $data['total_orgs'] = $r[0]->c ?? 0;
+
+        $r = $this->model->query("SELECT COUNT(*) AS c FROM comp_organizations WHERE status = 'active'", 'object');
+        $data['active_orgs'] = $r[0]->c ?? 0;
+
+        // Competitions
+        $r = $this->model->query("SELECT COUNT(*) AS c FROM comp_name WHERE status NOT IN ('archived','canceled')", 'object');
+        $data['total_comps'] = $r[0]->c ?? 0;
+
+        $r = $this->model->query("SELECT COUNT(*) AS c FROM comp_name WHERE status = 'running'", 'object');
+        $data['live_comps'] = $r[0]->c ?? 0;
+
+        // Users & Judges
+        $r = $this->model->query('SELECT COUNT(*) AS c FROM comp_users', 'object');
+        $data['total_users'] = $r[0]->c ?? 0;
+
+        $r = $this->model->query('SELECT COUNT(*) AS c FROM comp_judges', 'object');
+        $data['total_judges'] = $r[0]->c ?? 0;
+
+        // Total revenue (all paid charges)
+        $r = $this->model->query("SELECT COALESCE(SUM(amount), 0) AS rev FROM billing_charges WHERE status = 'paid'", 'object');
+        $data['total_revenue'] = $r[0]->rev ?? 0;
+
+        // Recent organizations (last 5 by id)
+        $data['recent_orgs'] = $this->model->query(
+            'SELECT id, organization, email, status FROM comp_organizations ORDER BY id DESC LIMIT 5',
+            'object'
+        );
+
+        // Recent competitions (last 5)
+        $data['recent_comps'] = $this->model->query(
+            "SELECT id, name, year, status FROM comp_name WHERE status NOT IN ('archived','canceled') ORDER BY id DESC LIMIT 5",
+            'object'
+        );
+
+        $data['view_module'] = 'trongate_administrators';
+        $data['view_file'] = 'dashboard';
+        $this->load_template($data);
+    }
+
+    /**
      * Redirects to the 'create' route for the Trongate administrators module based on the user's token.
      *
      * @return void
@@ -237,6 +288,97 @@ class Trongate_administrators extends Trongate {
             $data['view_file'] = 'conf_delete';
             $this->load_template($data);
         }
+    }
+
+    /**
+     * Lists all organizations for the admin panel.
+     *
+     * @return void
+     */
+    public function organizations_list(): void {
+        $token = $this->_make_sure_allowed();
+        $data['my_admin_id'] = $this->get_my_id($token);
+
+        $sql = "SELECT co.id, co.organization, co.email, co.country, co.status AS org_status,
+                       (SELECT bs.status
+                        FROM billing_subscriptions bs
+                        WHERE bs.organization_id = co.id
+                        ORDER BY bs.id DESC LIMIT 1) AS sub_status
+                FROM comp_organizations co
+                ORDER BY co.id DESC";
+
+        $data['orgs'] = $this->model->query($sql, 'object') ?: [];
+        $data['view_module'] = 'trongate_administrators';
+        $data['view_file'] = 'organizations_list';
+        $this->load_template($data);
+    }
+
+    /**
+     * Impersonate an organization's admin account.
+     * Saves the current admin token and issues a new token for the org's trongate_user.
+     *
+     * @return void
+     */
+    public function impersonate(): void {
+        $this->_make_sure_allowed();
+
+        $org_id = (int) segment(3);
+        if ($org_id <= 0) {
+            redirect('trongate_administrators/organizations_list');
+        }
+
+        $org = $this->model->get_one_where('id', $org_id, 'comp_organizations');
+        if (!$org) {
+            redirect('trongate_administrators/organizations_list');
+        }
+
+        // Save the current admin token so we can restore it later.
+        $admin_token = $_SESSION['trongatetoken'] ?? ($_COOKIE['trongatetoken'] ?? null);
+        if (!$admin_token) {
+            redirect('trongate_administrators/login');
+        }
+
+        $_SESSION['admin_token_backup']    = $admin_token;
+        $_SESSION['impersonating_org_id']  = $org_id;
+        $_SESSION['impersonating_org_name'] = $org->organization;
+
+        // Clear the admin token from session (keep it in DB so restore works).
+        unset($_SESSION['trongatetoken']);
+
+        // Issue a new session token for the org's trongate_user (user_level_id = 4).
+        $this->module('trongate_tokens');
+        $token_data = [
+            'user_id'     => $org->trongate_user_id,
+            'expiry_date' => time() + 3600, // 1-hour impersonation window
+        ];
+        $this->trongate_tokens->_generate_token($token_data);
+
+        redirect('competitions');
+    }
+
+    /**
+     * End impersonation and restore the original admin token.
+     *
+     * @return void
+     */
+    public function stop_impersonating(): void {
+        if (empty($_SESSION['admin_token_backup'])) {
+            redirect('trongate_administrators/dashboard');
+        }
+
+        // Delete the impersonation token from DB.
+        $impersonation_token = $_SESSION['trongatetoken'] ?? null;
+        if ($impersonation_token) {
+            $params = ['token' => $impersonation_token];
+            $sql = 'DELETE FROM trongate_tokens WHERE token = :token';
+            $this->model->query_bind($sql, $params);
+        }
+
+        // Restore admin token.
+        $_SESSION['trongatetoken'] = $_SESSION['admin_token_backup'];
+        unset($_SESSION['admin_token_backup'], $_SESSION['impersonating_org_id'], $_SESSION['impersonating_org_name']);
+
+        redirect('trongate_administrators/dashboard');
     }
 
     /**

@@ -200,7 +200,8 @@ function bill_pill(string $status): string {
             <tr>
                 <th>#</th>
                 <th>Organization</th>
-                <th>Quantity</th>
+                <th>Qty</th>
+                <th>Used In</th>
                 <th>Status</th>
             </tr>
         </thead>
@@ -218,6 +219,13 @@ function bill_pill(string $status): string {
                     <?php endif; ?>
                 </td>
                 <td><?= (int)($ep->quantity ?? 1) ?></td>
+                <td>
+                    <?php if (!empty($ep->used_in_comp_name)): ?>
+                        <span style="color:#aaa;font-size:0.88em;"><?= htmlspecialchars($ep->used_in_comp_name) ?></span>
+                    <?php else: ?>
+                        <span style="color:#0c6;font-size:0.85em;"><i class="fa fa-circle"></i> Available</span>
+                    <?php endif; ?>
+                </td>
                 <td><?= bill_pill($ep->status ?? '') ?></td>
             </tr>
             <?php endforeach; ?>

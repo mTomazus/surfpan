@@ -263,6 +263,7 @@
                 set_flashdata("Heats generated successfully.");
                 return redirect("heats/heat_generation_page/");
             }
+
             // If in Paid tiers: check if already paid
             if ($comp->billing_status === 'paid') {
                 $this->_generate_all_heats($comp_id);
@@ -270,8 +271,41 @@
                 return redirect("heats/heat_generation_page/");
             }
 
-            // Not paid yet → redirect to payment
-            // (create billing_charges row + redirect to EveryPay checkout)
+            // Check for admin-granted event pass credits before going to payment
+            $org_id = $comp->organizer_id;
+
+            $sql = "SELECT bc.id
+                    FROM billing_charges bc
+                    LEFT JOIN billing_pass_uses bpu ON bpu.charge_id = bc.id
+                    WHERE bc.organizer_id = :oid
+                      AND bc.product_id = 6
+                      AND bc.status = 'paid'
+                      AND bpu.id IS NULL
+                    ORDER BY bc.id ASC LIMIT 1";
+            $credit = $this->model->query_bind($sql, ['oid' => $org_id], 'object');
+
+            if (is_array($credit) && !empty($credit)) {
+                // Consume the credit
+                $this->model->insert([
+                    'organization_id' => $org_id,
+                    'charge_id'       => (int)$credit[0]->id,
+                    'competition_id'  => $comp_id,
+                ], 'billing_pass_uses');
+
+                // Mark comp as paid using the credit
+                $this->model->update($comp_id, [
+                    'billing_charge_id' => (int)$credit[0]->id,
+                    'billing_status'              => 'paid',
+                    'billing_tier'                => 'event_pass',
+                    'billing_participants_locked' => $confirmed,
+                ], 'comp_name');
+
+                $this->_generate_all_heats($comp_id);
+                set_flashdata("Heats generated successfully using an Event Pass credit.");
+                return redirect("heats/heat_generation_page/");
+            }
+
+            // No credits → redirect to payment (EveryPay)
             return redirect("billings/process_order/$comp_id");
         }
 

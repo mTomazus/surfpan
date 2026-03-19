@@ -409,11 +409,11 @@ class Trongate_administrators extends Trongate {
         $count = fn($r) => (is_array($r) && isset($r[0]->c)) ? (int)$r[0]->c : 0;
         $sum   = fn($r) => (is_array($r) && isset($r[0]->c)) ? (float)$r[0]->c : 0.0;
 
-        // Summary stats
-        $data['total_collected']   = $sum($this->model->query("SELECT COALESCE(SUM(amount),0) AS c FROM billing_charges WHERE status = 'paid' AND product_id != 'event_pass'", 'object'));
-        $data['total_pending']     = $sum($this->model->query("SELECT COALESCE(SUM(amount),0) AS c FROM billing_charges WHERE status = 'pending'", 'object'));
-        $data['paid_comps']        = $count($this->model->query("SELECT COUNT(*) AS c FROM billing_charges WHERE status = 'paid' AND product_id != 'event_pass'", 'object'));
-        $data['free_events_granted'] = $count($this->model->query("SELECT COALESCE(SUM(quantity),0) AS c FROM billing_charges WHERE product_id = 'event_pass' AND status = 'paid'", 'object'));
+        // Summary stats (product_id = 6 is the event pass product)
+        $data['total_collected']     = $sum($this->model->query("SELECT COALESCE(SUM(amount),0) AS c FROM billing_charges WHERE status = 'paid' AND product_id != 6", 'object'));
+        $data['total_pending']       = $sum($this->model->query("SELECT COALESCE(SUM(amount),0) AS c FROM billing_charges WHERE status = 'pending'", 'object'));
+        $data['paid_comps']          = $count($this->model->query("SELECT COUNT(*) AS c FROM billing_charges WHERE status = 'paid' AND product_id != 6", 'object'));
+        $data['free_events_granted'] = $count($this->model->query("SELECT COALESCE(SUM(quantity),0) AS c FROM billing_charges WHERE product_id = 6 AND status = 'paid'", 'object'));
 
         // All competition charges, most recent first
         $sql = "SELECT bc.id, bc.amount, bc.currency, bc.status, bc.participants_count,
@@ -422,17 +422,21 @@ class Trongate_administrators extends Trongate {
                 FROM billing_charges bc
                 LEFT JOIN comp_name cn ON cn.id = bc.comp_id
                 LEFT JOIN comp_organizations co ON co.id = bc.organizer_id
-                WHERE bc.product_id != 'event_pass'
+                WHERE bc.product_id != 6
                 ORDER BY bc.id DESC LIMIT 100";
         $r = $this->model->query($sql, 'object');
         $data['charges'] = is_array($r) ? $r : [];
 
-        // Admin-granted free event passes
+        // Admin-granted free event passes (product_id = 6, joined with usage to show if consumed)
         $sql = "SELECT bc.id, bc.quantity, bc.status,
-                       co.organization AS org_name, co.id AS org_id
+                       co.organization AS org_name, co.id AS org_id,
+                       bpu.competition_id AS used_in_comp,
+                       cn.name AS used_in_comp_name
                 FROM billing_charges bc
                 LEFT JOIN comp_organizations co ON co.id = bc.organizer_id
-                WHERE bc.product_id = 'event_pass'
+                LEFT JOIN billing_pass_uses bpu ON bpu.charge_id = bc.id
+                LEFT JOIN comp_name cn ON cn.id = bpu.competition_id
+                WHERE bc.product_id = 6
                 ORDER BY bc.id DESC LIMIT 50";
         $r = $this->model->query($sql, 'object');
         $data['event_passes'] = is_array($r) ? $r : [];
@@ -462,7 +466,7 @@ class Trongate_administrators extends Trongate {
 
         $this->model->insert([
             'organizer_id' => $org_id,
-            'product_id'   => 'event_pass',
+            'product_id'   => 6,
             'amount'       => 0,
             'currency'     => 'EUR',
             'status'       => 'paid',

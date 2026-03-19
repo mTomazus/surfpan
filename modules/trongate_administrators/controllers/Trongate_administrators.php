@@ -610,6 +610,8 @@ class Trongate_administrators extends Trongate {
             redirect('trongate_administrators/login');
         }
 
+        $admin_id = $this->get_my_id($admin_token);
+
         $_SESSION['admin_token_backup']    = $admin_token;
         $_SESSION['impersonating_org_id']  = $org_id;
         $_SESSION['impersonating_org_name'] = $org->organization;
@@ -624,6 +626,8 @@ class Trongate_administrators extends Trongate {
             'expiry_date' => time() + 3600, // 1-hour impersonation window
         ];
         $this->trongate_tokens->_generate_token($token_data);
+
+        $this->_log_action($admin_id, 'impersonate_start', $org_id, $org->organization);
 
         redirect('competitions');
     }
@@ -647,8 +651,13 @@ class Trongate_administrators extends Trongate {
         }
 
         // Restore admin token.
-        $_SESSION['trongatetoken'] = $_SESSION['admin_token_backup'];
+        $restored_token = $_SESSION['admin_token_backup'];
+        $org_id_was     = $_SESSION['impersonating_org_id'] ?? null;
+        $_SESSION['trongatetoken'] = $restored_token;
         unset($_SESSION['admin_token_backup'], $_SESSION['impersonating_org_id'], $_SESSION['impersonating_org_name']);
+
+        $admin_id = $this->get_my_id($restored_token);
+        $this->_log_action($admin_id, 'impersonate_stop', $org_id_was);
 
         redirect('trongate_administrators/dashboard');
     }
@@ -924,6 +933,26 @@ class Trongate_administrators extends Trongate {
     private function verify_hash(string $plain_text_str, string $hashed_string): bool {
         $result = password_verify($plain_text_str, $hashed_string);
         return $result; //TRUE or FALSE
+    }
+
+    /**
+     * Records a sensitive admin action to the audit log.
+     *
+     * @param int         $admin_id  The trongate_administrators.id of the acting admin.
+     * @param string      $action    Short action identifier (e.g. 'impersonate_start').
+     * @param int|null    $target_id Optional ID of the target entity (e.g. org id).
+     * @param string|null $note      Optional human-readable note.
+     * @return void
+     */
+    private function _log_action(int $admin_id, string $action, ?int $target_id = null, ?string $note = null): void {
+        $this->model->insert([
+            'admin_id'   => $admin_id,
+            'action'     => $action,
+            'target_id'  => $target_id,
+            'note'       => $note,
+            'ip'         => $_SERVER['REMOTE_ADDR'] ?? null,
+            'created_at' => time(),
+        ], 'admin_audit_log');
     }
 
 }

@@ -458,22 +458,17 @@ class Trongate_administrators extends Trongate {
         if ($org_id <= 0) {
             redirect('trongate_administrators/organizations_list');
         }
-
-        $org = $this->model->get_one_where('id', $org_id, 'comp_organizations');
-        if (!$org) {
-            redirect('trongate_administrators/organizations_list');
-        }
-
-        $this->model->insert([
+        $data = [
             'organizer_id' => $org_id,
             'product_id'   => 6,
             'amount'       => 0,
-            'currency'     => 'EUR',
-            'status'       => 'paid',
             'quantity'     => 1,
-        ], 'billing_charges');
+            'status'       => 'paid',
+            'provider'     => 'manual'
+        ];
+        $this->model->insert($data, 'billing_charges');
 
-        set_flashdata('Free event granted to ' . $org->organization);
+        set_flashdata('Free event granted to organization ID ' . $org_id);
         redirect('trongate_administrators/org_detail/' . $org_id);
     }
 

@@ -11,7 +11,7 @@
             <div class="comp-time text-center">
                 <h3>time left</h3>
                 <span><?php 
-                $not_finished = $heats[0]->heats_not_finished;
+                $not_finished = $heats[0]->heats_not_finished ?? 0;
                 $heat_length = $heats[0]->duration_min ?? 20 ; // Default to 20 minutes if heat_length is not set
                 $timeleft = $not_finished * ($heat_length + 5); // Adding 5 minutes buffer time for each heat
                 $hours = floor($timeleft / 60);
@@ -21,7 +21,7 @@
             </div>
             <div class="remaining-heats text-center">
                 <h3>remaining heats</h3>
-                <span> <?= $heats[0]->heats_not_finished ?> / <?= $heats[0]->total_heats ?> Total</span>
+                <span> <?= $not_finished ?> / <?= $heats[0]->total_heats ?? 0 ?> Total</span>
             </div>
             <div class="actions">
                 <button type="button" class="btn primary" mx-build-modal="auto-schedule" mx-get="heats-schedules/auto_schedule_modal/<?= $comp_id ?>"><i class="fa fa-bolt" aria-hidden="true"></i> Auto Schedule</button>
@@ -35,68 +35,69 @@
         <?= flashdata('<p style="padding: 0.2rem;margin: 0;color: var(--ok);border: 1px dashed;"><i class="mr-2 fa fa-exclamation-triangle" aria-hidden="true"></i>', '<i class="ml-2 fa fa-exclamation-triangle" aria-hidden="true"></i></p>'); ?>
         <?php
 
-            if (!empty($heats) || $heats[0]->heats_not_finished > 0) {
+            if (!empty($heats) || ($heats[0]->heats_not_finished ?? 0) > 0) {
                 echo '<h3 class="heat-list-pending">Pending and <span style="color: var(--chip-scheduled);">Scheduled</span> Heats</h3>';
-            };
-            foreach($heats as $heat) {
+            
+                foreach($heats as $heat) {
 
-                    $orgTz = new DateTimeZone($timezone);
-                    if ($heat->start_time === null){
-                        $dt_local = new DateTimeImmutable('now', $orgTz);
-                    } else {
-                        $dt_utc = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $heat->start_time, new DateTimeZone('UTC'));
-                        if (!$dt_utc) { throw new Exception('Bad datetime from DB'); }
-                        $dt_local = $dt_utc->setTimezone($orgTz);
+                        $orgTz = new DateTimeZone($timezone);
+                        if ($heat->start_time === null){
+                            $dt_local = new DateTimeImmutable('now', $orgTz);
+                        } else {
+                            $dt_utc = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $heat->start_time, new DateTimeZone('UTC'));
+                            if (!$dt_utc) { throw new Exception('Bad datetime from DB'); }
+                            $dt_local = $dt_utc->setTimezone($orgTz);
+                        }
+                        $date_time = $dt_local->format('Y-m-d H:i');
+                        $only_time = $dt_local->format('d M H:i');
+
+                        if (($heat->status === 'pending') || ($heat->status === 'scheduled')) {
+                        echo '<section class="heat-length heat-card" data-heat-id="' . $heat->id . '" data-division-id="' . $heat->division . '" data-status="' . $heat->status . '" style="border: 1px solid var(--chip-' . $heat->status . ');box-shadow: 0 0 3px var(--chip-' . $heat->status . '), 0 0 3px var(--chip-' . $heat->status . ') inset;">';
+                        echo '<div class="drag-handle" style="color: var(--primary-60);margin-inline: 1rem 2rem;font-size: 1.2rem;font-weight: 900;letter-spacing: -2px;">⋮⋮</div>';
+                        // echo '<h4>-' . $heat->name . '-</h4>';
+                        echo '<span class="status-chip ' . $heat->status . '">' . $heat->status . '</span>';
+                        echo '<div class="grid-1"><h4>Heat ' . $heat->heat_number . '</h4><span class="heat-time">' . $only_time . '</span></div>';
+                        echo '<div class="grid-1"><h3 style="text-transform:uppercase;">' . $heat->division . '</h3><h4>' . $heat->round . '</h4></div>';
+                        ?>
+                        <button type="button"  style="min-width: 110px;" mx-get="heats-schedules/set_time_modal/<?= $comp_id ?>/<?= $heat->id ?>" mx-build-modal="set_time_modal">Set Time</button>
+                        <?php
+                
+                        echo '</section>';
                     }
-                    $date_time = $dt_local->format('Y-m-d H:i');
-                    $only_time = $dt_local->format('d M H:i');
-
-                    if (($heat->status === 'pending') || ($heat->status === 'scheduled')) {
-                    echo '<section class="heat-length heat-card" data-heat-id="' . $heat->id . '" data-division-id="' . $heat->division . '" data-status="' . $heat->status . '" style="border: 1px solid var(--chip-' . $heat->status . ');box-shadow: 0 0 3px var(--chip-' . $heat->status . '), 0 0 3px var(--chip-' . $heat->status . ') inset;">';
-                    echo '<div class="drag-handle" style="color: var(--primary-60);margin-inline: 1rem 2rem;font-size: 1.2rem;font-weight: 900;letter-spacing: -2px;">⋮⋮</div>';
-                    // echo '<h4>-' . $heat->name . '-</h4>';
-                    echo '<span class="status-chip ' . $heat->status . '">' . $heat->status . '</span>';
-                    echo '<div class="grid-1"><h4>Heat ' . $heat->heat_number . '</h4><span class="heat-time">' . $only_time . '</span></div>';
-                    echo '<div class="grid-1"><h3 style="text-transform:uppercase;">' . $heat->division . '</h3><h4>' . $heat->round . '</h4></div>';
-                    ?>
-                    <button type="button"  style="min-width: 110px;" mx-get="heats-schedules/set_time_modal/<?= $comp_id ?>/<?= $heat->id ?>" mx-build-modal="set_time_modal">Set Time</button>
-                    <?php
-               
-                    echo '</section>';
                 }
-            }
+            };
 
-            if (!empty($heats) || $heats[0]->total_heats > $heats[0]->heats_not_finished) {
+            if (!empty($heats) || ($heats[0]->total_heats ?? 0) > $not_finished) {
                 echo '<h3 class="heat-list-finished">Finished and <span style="color: var(--chip-running);">Running</span> Heats</h3>';
-            };
+            
+                foreach($heats as $heat) {
 
-            foreach($heats as $heat) {
+                        $orgTz = new DateTimeZone($timezone);
+                        if ($heat->start_time === null){
+                            $dt_local = new DateTimeImmutable('now', $orgTz);
+                        } else {
+                            $dt_utc = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $heat->start_time, new DateTimeZone('UTC'));
+                            if (!$dt_utc) { throw new Exception('Bad datetime from DB'); }
+                            $dt_local = $dt_utc->setTimezone($orgTz);
+                        }
+                        $date_time = $dt_local->format('Y-m-d H:i');
+                        $only_time = $dt_local->format('d M H:i');
 
-                    $orgTz = new DateTimeZone($timezone);
-                    if ($heat->start_time === null){
-                        $dt_local = new DateTimeImmutable('now', $orgTz);
-                    } else {
-                        $dt_utc = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $heat->start_time, new DateTimeZone('UTC'));
-                        if (!$dt_utc) { throw new Exception('Bad datetime from DB'); }
-                        $dt_local = $dt_utc->setTimezone($orgTz);
+                        if (($heat->status === 'finished' || $heat->status === 'running')) {
+                        echo '<section class="heat-' . $heat->status . '" data-heat-id="' . $heat->id . '" data-division-id="' . $heat->division . '" data-status="' . $heat->status . '" style="border: 1px solid var(--chip-' . $heat->status . ');box-shadow: 0 0 3px var(--chip-' . $heat->status . '), 0 0 3px var(--chip-' . $heat->status . ') inset;">';
+                        echo '<div style=";margin-inline: 1rem 2rem;">#</div>';
+                        // echo '<h4>-' . $heat->name . '-</h4>';
+                        echo '<span class="status-chip ' . $heat->status . '">' . $heat->status . '</span>';
+                        echo '<div class="grid-1"><h4>Heat ' . $heat->heat_number . '</h4><span class="heat-time">' . $only_time . '</span></div>';
+                        echo '<div class="grid-1"><h3 style="text-transform:uppercase;">' . $heat->division . '</h3><h4>' . $heat->round . '</h4></div>';
+                        ?>
+                        <a class="btn" href="heats/show_heats_draw/<?= $comp_id ?>/" target="_blank" style="min-width: 110px;" type="button">result</a>
+                        <?php
+                
+                        echo '</section>';
                     }
-                    $date_time = $dt_local->format('Y-m-d H:i');
-                    $only_time = $dt_local->format('d M H:i');
-
-                    if (($heat->status === 'finished' || $heat->status === 'running')) {
-                    echo '<section class="heat-' . $heat->status . '" data-heat-id="' . $heat->id . '" data-division-id="' . $heat->division . '" data-status="' . $heat->status . '" style="border: 1px solid var(--chip-' . $heat->status . ');box-shadow: 0 0 3px var(--chip-' . $heat->status . '), 0 0 3px var(--chip-' . $heat->status . ') inset;">';
-                    echo '<div style=";margin-inline: 1rem 2rem;">#</div>';
-                    // echo '<h4>-' . $heat->name . '-</h4>';
-                    echo '<span class="status-chip ' . $heat->status . '">' . $heat->status . '</span>';
-                    echo '<div class="grid-1"><h4>Heat ' . $heat->heat_number . '</h4><span class="heat-time">' . $only_time . '</span></div>';
-                    echo '<div class="grid-1"><h3 style="text-transform:uppercase;">' . $heat->division . '</h3><h4>' . $heat->round . '</h4></div>';
-                    ?>
-                    <a class="btn" href="heats/show_heats_draw/<?= $comp_id ?>/" target="_blank" style="min-width: 110px;" type="button">result</a>
-                    <?php
-               
-                    echo '</section>';
                 }
-            }
+            };
         ?>
         <script>
             function setNow(inputName) {

@@ -8,25 +8,6 @@
     .page-header h1 { margin: 0 0 4px; font-size: 1.8em; }
     .page-header p  { margin: 0; color: #aaa; font-size: 0.9em; }
 
-    .stat-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 14px;
-        margin-bottom: 28px;
-    }
-    .stat-card {
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 10px;
-        padding: 18px 16px;
-        text-align: center;
-    }
-    .stat-card .val { font-size: 2.2em; font-weight: bold; line-height: 1; margin-bottom: 5px; }
-    .stat-card .lbl { font-size: 0.75em; color: #aaa; text-transform: uppercase; letter-spacing: 0.06em; }
-    .stat-card.money .val { color: #0f9; }
-    .stat-card.warn  .val { color: #fc0; }
-    .stat-card.info  .val { color: #0cf; }
-
     .section { margin-bottom: 36px; }
     .section h2 {
         font-size: 0.82em;
@@ -42,44 +23,8 @@
     }
     .section h2 span { font-size: 0.9em; color: #555; font-weight: normal; text-transform: none; letter-spacing: 0; }
 
-    .billing-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.88em;
-    }
-    .billing-table th {
-        background: rgba(255,255,255,0.07);
-        color: #888;
-        font-size: 0.76em;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        padding: 9px 12px;
-        text-align: left;
-        font-weight: 600;
-    }
-    .billing-table td {
-        padding: 9px 12px;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-        color: #ccc;
-        vertical-align: middle;
-    }
-    .billing-table tr:last-child td { border-bottom: none; }
-    .billing-table tr:hover td { background: rgba(255,255,255,0.03); }
-
     .org-link { color: #0cf; text-decoration: none; }
     .org-link:hover { text-decoration: underline; }
-
-    .pill {
-        display: inline-block;
-        padding: 2px 9px;
-        border-radius: 20px;
-        font-size: 0.76em;
-        font-weight: bold;
-    }
-    .pill-paid    { background: rgba(0,200,100,0.18); color: #0c6; }
-    .pill-pending { background: rgba(255,200,0,0.18); color: #fc0; }
-    .pill-failed  { background: rgba(255,80,80,0.18); color: #f55; }
-    .pill-default { background: rgba(255,255,255,0.08); color: #888; }
 
     .tier-badge {
         background: rgba(255,255,255,0.07);
@@ -95,12 +40,12 @@
 <?php
 function bill_pill(string $status): string {
     $cls = match($status) {
-        'paid'    => 'pill-paid',
-        'pending' => 'pill-pending',
-        'failed'  => 'pill-failed',
-        default   => 'pill-default',
+        'paid'    => 'status-paid',
+        'pending' => 'status-pending',
+        'failed'  => 'status-failed',
+        default   => 'status-default',
     };
-    return '<span class="pill '.$cls.'">'.htmlspecialchars($status).'</span>';
+    return '<span class="status-pill '.$cls.'">'.out($status).'</span>';
 }
 ?>
 

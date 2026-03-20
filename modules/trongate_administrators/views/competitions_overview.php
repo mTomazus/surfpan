@@ -8,26 +8,6 @@
     .page-header h1 { margin: 0 0 4px; font-size: 1.8em; }
     .page-header p  { margin: 0; color: #aaa; font-size: 0.9em; }
 
-    .stat-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 14px;
-        margin-bottom: 28px;
-    }
-    .stat-card {
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 10px;
-        padding: 18px 16px;
-        text-align: center;
-    }
-    .stat-card .val { font-size: 2.2em; font-weight: bold; line-height: 1; margin-bottom: 5px; }
-    .stat-card .lbl { font-size: 0.75em; color: #aaa; text-transform: uppercase; letter-spacing: 0.06em; }
-    .stat-card.live  .val { color: #0cf; }
-    .stat-card.done  .val { color: #aaa; }
-    .stat-card.next  .val { color: #fc0; }
-    .stat-card.draft .val { color: #888; }
-
     .filter-bar {
         display: flex;
         gap: 10px;
@@ -70,49 +50,8 @@
         vertical-align: middle;
     }
 
-    .comp-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.88em;
-    }
-    .comp-table th {
-        background: hsla(200, 100%, 50%, 1);
-        color: #fff;
-        font-size: 0.76em;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        padding: 10px 12px;
-        text-align: left;
-        font-weight: 600;
-    }
-    .comp-table td {
-        padding: 9px 12px;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-        color: #ccc;
-        vertical-align: middle;
-        background: hsl(200, 35%, 20%);
-    }
-    .comp-table tr:nth-child(odd) td { background: hsl(200, 35%, 27%); }
-    .comp-table tr:last-child td { border-bottom: none; }
-    .comp-table tr:hover td { background: hsl(200, 35%, 12%); }
-
     .org-link { color: #0cf; text-decoration: none; }
     .org-link:hover { text-decoration: underline; }
-
-    .pill {
-        display: inline-block;
-        padding: 2px 9px;
-        border-radius: 20px;
-        font-size: 0.76em;
-        font-weight: bold;
-        text-transform: capitalize;
-    }
-    .pill-running   { background: rgba(0,180,255,0.2);   color: #0cf; }
-    .pill-finished  { background: rgba(150,150,150,0.15); color: #999; }
-    .pill-scheduled { background: rgba(255,200,0,0.2);   color: #fc0; }
-    .pill-generated { background: rgba(180,100,255,0.2); color: #b7f; }
-    .pill-created   { background: rgba(255,255,255,0.1); color: #888; }
-    .pill-default   { background: rgba(255,255,255,0.08); color: #777; }
 
     .empty-state {
         text-align: center;
@@ -133,14 +72,14 @@
 <?php
 function comp_pill(string $status): string {
     $cls = match($status) {
-        'running'   => 'pill-running',
-        'finished'  => 'pill-finished',
-        'scheduled' => 'pill-scheduled',
-        'generated' => 'pill-generated',
-        'created'   => 'pill-created',
-        default     => 'pill-default',
+        'running'   => 'status-running',
+        'finished'  => 'status-finished',
+        'scheduled' => 'status-scheduled',
+        'generated' => 'status-generated',
+        'created'   => 'status-created',
+        default     => 'status-default',
     };
-    return '<span class="pill '.$cls.'">'.htmlspecialchars($status).'</span>';
+    return '<span class="status-pill '.$cls.'">'.out($status).'</span>';
 }
 $s = $data['stats'];
 ?>
@@ -210,24 +149,24 @@ $s = $data['stats'];
     </thead>
     <tbody>
         <?php foreach ($data['competitions'] as $c): ?>
-        <tr data-status="<?= htmlspecialchars($c->status ?? '') ?>">
+        <tr data-status="<?= out($c->status ?? '') ?>">
             <td style="color:#555;"><?= (int)$c->id ?></td>
             <td>
-                <div style="font-weight:600;color:#eee;"><?= htmlspecialchars($c->name) ?></div>
+                <div style="font-weight:600;color:#eee;"><?= out($c->name) ?></div>
                 <?php if (!empty($c->year)): ?>
-                    <div style="color:#777;font-size:0.83em;"><?= htmlspecialchars($c->year) ?></div>
+                    <div style="color:#777;font-size:0.83em;"><?= out($c->year) ?></div>
                 <?php endif; ?>
             </td>
             <td>
                 <?php if ($c->org_id): ?>
                     <a class="org-link" href="<?= BASE_URL ?>trongate_administrators/org_detail/<?= (int)$c->org_id ?>">
-                        <?= htmlspecialchars($c->org_name ?? '—') ?>
+                        <?= out($c->org_name ?? '—') ?>
                     </a>
                 <?php else: ?>
                     <span style="color:#555;">—</span>
                 <?php endif; ?>
             </td>
-            <td style="color:#999;"><?= htmlspecialchars($c->location ?? '—') ?></td>
+            <td style="color:#999;"><?= out($c->location ?? '—') ?></td>
             <td style="color:#bbb;text-align:center;"><?= (int)$c->participant_count ?: '—' ?></td>
             <td style="color:#bbb;text-align:center;"><?= (int)$c->heat_count ?: '—' ?></td>
             <td><?= comp_pill($c->status ?? '') ?></td>

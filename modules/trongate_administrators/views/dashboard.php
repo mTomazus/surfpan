@@ -17,48 +17,6 @@
         font-size: 0.95em;
     }
 
-    /* Stat cards grid */
-    .stat-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 14px;
-        margin-bottom: 28px;
-    }
-    .stat-card {
-        background: rgba(255,255,255,0.07);
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 10px;
-        padding: 18px 16px;
-        text-align: center;
-        position: relative;
-    }
-    .stat-card .stat-value {
-        font-size: 2.4em;
-        font-weight: bold;
-        line-height: 1;
-        margin-bottom: 6px;
-    }
-    .stat-card .stat-label {
-        font-size: 0.78em;
-        color: #bbb;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-    }
-    .stat-card .stat-badge {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: rgba(0,200,100,0.2);
-        color: #0c6;
-        border-radius: 20px;
-        font-size: 0.7em;
-        padding: 2px 7px;
-        font-weight: bold;
-    }
-    .stat-card.live .stat-value { color: #0cf; }
-    .stat-card.money .stat-value { color: #0f9; }
-    .stat-card.warn .stat-value { color: #fc0; }
-
     /* Section tables */
     .dash-section {
         margin-bottom: 32px;
@@ -71,36 +29,6 @@
         margin: 0 0 10px;
         border-bottom: 1px solid rgba(255,255,255,0.1);
         padding-bottom: 6px;
-    }
-    .dash-table {
-        width: 100%;
-        border-collapse: collapse;
-        background: rgba(255,255,255,0.05);
-        border-radius: 8px;
-        overflow: hidden;
-    }
-    .dash-table th {
-        background: hsla(200, 100%, 50%, 1);
-        color: #fff;
-        font-size: 0.78em;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        padding: 9px 12px;
-        text-align: left;
-        font-weight: 600;
-    }
-    .dash-table td {
-        background: hsl(200, 35%, 20%);
-        padding: 9px 12px;
-        border-top: 1px solid rgba(255,255,255,0.06);
-        font-size: 0.9em;
-        color: #ddd;
-    }
-    .dash-table tr:nth-child(odd) td {
-        background: hsl(200, 35%, 30%);
-    }
-    .dash-table tr:hover td {
-        background: hsl(200, 35%, 10%);
     }
     .status-pill {
         display: inline-block;
@@ -129,12 +57,7 @@
         .dash-two-col { grid-template-columns: 1fr; }
         .stat-grid { grid-template-columns: repeat(2, 1fr); }
     }
-    .empty-row td {
-        color: #666;
-        font-style: italic;
-        text-align: center;
-        padding: 18px;
-    }
+
 </style>
 
 <?php
@@ -142,7 +65,7 @@
 function dash_status_pill(string $status): string {
     $known = ['active','inactive','running','open','closed','finished','generated','scheduled'];
     $cls = in_array($status, $known) ? 'status-'.$status : 'status-default';
-    return '<span class="status-pill '.$cls.'">'.htmlspecialchars($status).'</span>';
+    return '<span class="status-pill '.$cls.'">'.out($status).'</span>';
 }
 ?>
 
@@ -152,36 +75,36 @@ function dash_status_pill(string $status): string {
 </div>
 
 <!-- Stat cards -->
-<div class="stat-grid">
+<div class="stat-row">
     <div class="stat-card">
-        <div class="stat-value"><?= (int)$data['total_orgs'] ?></div>
-        <div class="stat-label">Organizations</div>
+        <div class="stat val"><?= (int)$data['total_orgs'] ?></div>
+        <div class="stat lbl">Organizations</div>
         <?php if ($data['active_orgs'] > 0): ?>
-            <span class="stat-badge"><?= (int)$data['active_orgs'] ?> active</span>
+            <span class="stat badge"><?= (int)$data['active_orgs'] ?> active</span>
         <?php endif; ?>
     </div>
 
     <div class="stat-card<?= $data['live_comps'] > 0 ? ' live' : '' ?>">
-        <div class="stat-value"><?= (int)$data['total_comps'] ?></div>
-        <div class="stat-label">Competitions</div>
+        <div class="stat val"><?= (int)$data['total_comps'] ?></div>
+        <div class="stat lbl">Competitions</div>
         <?php if ($data['live_comps'] > 0): ?>
-            <span class="stat-badge"><?= (int)$data['live_comps'] ?> live</span>
+            <span class="stat badge"><?= (int)$data['live_comps'] ?> live</span>
         <?php endif; ?>
     </div>
 
     <div class="stat-card">
-        <div class="stat-value"><?= (int)$data['total_users'] ?></div>
-        <div class="stat-label">Participants</div>
+        <div class="stat val"><?= (int)$data['total_users'] ?></div>
+        <div class="stat lbl">Participants</div>
     </div>
 
     <div class="stat-card">
-        <div class="stat-value"><?= (int)$data['total_judges'] ?></div>
-        <div class="stat-label">Judges</div>
+        <div class="stat val"><?= (int)$data['total_judges'] ?></div>
+        <div class="stat lbl">Judges</div>
     </div>
 
     <div class="stat-card money">
-        <div class="stat-value">€<?= number_format((float)$data['total_revenue'], 0) ?></div>
-        <div class="stat-label">Total Revenue</div>
+        <div class="stat val">€<?= number_format((float)$data['total_revenue'], 0) ?></div>
+        <div class="stat lbl">Total Revenue</div>
     </div>
 </div>
 
@@ -202,8 +125,8 @@ function dash_status_pill(string $status): string {
                     <?php foreach ($data['recent_orgs'] as $org): ?>
                         <tr>
                             <td>
-                                <div><?= htmlspecialchars($org->organization) ?></div>
-                                <div style="color:#888;font-size:0.8em;"><?= htmlspecialchars($org->email) ?></div>
+                                <div><?= out($org->organization) ?></div>
+                                <div style="color:#888;font-size:0.8em;"><?= out($org->email) ?></div>
                             </td>
                             <td><?= dash_status_pill($org->status ?? 'inactive') ?></td>
                         </tr>
@@ -228,7 +151,7 @@ function dash_status_pill(string $status): string {
                 <?php if (!empty($data['recent_comps'])): ?>
                     <?php foreach ($data['recent_comps'] as $comp): ?>
                         <tr>
-                            <td><?= htmlspecialchars($comp->name . ' ' . $comp->year) ?></td>
+                            <td><?= out($comp->name . ' ' . $comp->year) ?></td>
                             <td><?= dash_status_pill($comp->status ?? '') ?></td>
                         </tr>
                     <?php endforeach; ?>

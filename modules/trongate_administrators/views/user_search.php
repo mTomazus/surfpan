@@ -77,33 +77,6 @@ $total        = count($participants) + count($judges);
         letter-spacing: 0;
     }
 
-    .user-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.88em;
-    }
-    .user-table th {
-        background: hsla(200, 100%, 50%, 1);
-        color: #fff;
-        font-size: 0.76em;
-        text-transform: uppercase;
-        letter-spacing: 0.07em;
-        padding: 10px 14px;
-        text-align: left;
-        font-weight: 600;
-    }
-    .user-table td {
-        background: hsl(200, 35%, 20%);
-        padding: 9px 12px;
-        border-top: 1px solid rgba(255,255,255,0.06);
-        font-size: 0.9em;
-    }
-    .user-table tr:nth-child(odd) td {
-        background: hsl(200, 35%, 30%);
-    }
-    .user-table tr:last-child td { border-bottom: none; }
-    .user-table tr:hover td { background: hsl(200, 35%, 10%); }
-
     .user-name { font-weight: 600; color: #eee; }
     .user-email { color: #eee; font-size: 0.85em; }
     .user-phone { color: #eee; font-size: 0.82em; }

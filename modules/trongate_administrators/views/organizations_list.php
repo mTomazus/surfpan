@@ -33,47 +33,6 @@
     .search-bar input::placeholder { color: #777; }
     .search-bar input:focus { border-color: rgba(0,200,255,0.5); }
 
-    .orgs-table {
-        width: 100%;
-        border-collapse: collapse;
-        background: rgba(255,255,255,0.05);
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    .orgs-table th {
-        background: hsla(200, 100%, 50%, 1);
-        color: #fff;
-        font-size: 0.76em;
-        text-transform: uppercase;
-        letter-spacing: 0.07em;
-        padding: 10px 14px;
-        text-align: left;
-        font-weight: 600;
-    }
-    .orgs-table td {
-        background: hsl(200, 35%, 20%);
-        padding: 9px 12px;
-        border-top: 1px solid rgba(255,255,255,0.06);
-        font-size: 0.9em;
-        color: #ddd;
-    }
-    .orgs-table tr:nth-child(odd) {
-        background: hsl(200, 35%, 30%);
-    }
-    .orgs-table tr:hover {
-        background: hsl(200, 35%, 10%);
-    }
-    .orgs-table tr:hover td { background: rgba(255,255,255,0.04); }
-    .orgs-table .org-id { color: #666; font-size: 0.8em; }
-
-    .status-pill {
-        display: inline-block;
-        padding: 2px 9px;
-        border-radius: 20px;
-        font-size: 0.76em;
-        font-weight: bold;
-        text-transform: capitalize;
-    }
     .s-active    { background: rgba(0,200,100,0.2);  color: #0c6; }
     .s-inactive  { background: rgba(200,100,0,0.2);  color: #f80; }
     .s-trialing  { background: rgba(0,180,255,0.2);  color: #0cf; }

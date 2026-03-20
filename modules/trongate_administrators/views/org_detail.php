@@ -124,34 +124,6 @@ $is_active = ($org->status === 'active');
     }
     .info-grid .lbl { color: #777; }
     .info-grid .val { color: #ddd; word-break: break-all; }
-
-    /* ── Tables ── */
-    .detail-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.87em;
-    }
-    .detail-table th {
-        background: hsla(200, 100%, 50%, 1);
-        color: #fff;
-        font-size: 0.76em;
-        text-transform: uppercase;
-        letter-spacing: 0.07em;
-        padding: 10px 14px;
-        text-align: left;
-        font-weight: 600;
-    }
-    .detail-table td {
-        background: hsl(200, 35%, 20%);
-        padding: 9px 12px;
-        border-top: 1px solid rgba(255,255,255,0.06);
-        font-size: 0.9em;
-    }
-    .detail-table tr:nth-child(odd) td {
-        background: hsl(200, 35%, 30%);
-    }
-    .detail-table tr:last-child td { border-bottom: none; }
-    .detail-table tr:hover td { background: hsl(200, 35%, 10%); }
     
     /* Subscription card */
     .sub-card {
@@ -191,7 +163,7 @@ $is_active = ($org->status === 'active');
 function adm_status_pill(string $status): string {
     $map = ['active','inactive','trialing','past_due','canceled'];
     $cls = in_array($status, $map) ? 's-'.$status : 's-none';
-    return '<span class="status-pill '.$cls.'">'.htmlspecialchars($status).'</span>';
+    return '<span class="status-pill '.$cls.'">'.out($status).'</span>';
 }
 function comp_status_cls(string $s): string {
     $m = ['running'=>'cs-running','open'=>'cs-open','closed'=>'cs-closed',
@@ -205,7 +177,7 @@ function charge_cls(string $s): string {
 
 <?php if (!empty($data['flash_msg'])): ?>
 <div style="background:rgba(0,200,100,0.15);border:1px solid rgba(0,200,100,0.3);color:#0c6;border-radius:7px;padding:10px 16px;margin:18px 0 0;font-size:0.9em;">
-    <i class="fa fa-check-circle"></i> <?= htmlspecialchars($data['flash_msg']) ?>
+    <i class="fa fa-check-circle"></i> <?= out($data['flash_msg']) ?>
 </div>
 <?php endif; ?>
 

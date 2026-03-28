@@ -16,16 +16,16 @@ $comps = Modules::run("competitions/_get_generated_competitions");
     <?php if (isset($comp_name)) { ?>
         <div>
             <?php if ($user_info->role === 'head_judge') { ?>
-                <h5 style="margin: 0;text-align: center;"><?= out(ucwords(str_replace('_', ' ', $user_info->role))) ?> Dashboard</h5>
+                <h5 style="margin: 0;text-align: center;"><?= out(ucwords(str_replace('_', ' ', $user_info->role))) ?> <?= t('dashboard_suffix') ?></h5>
                 <p style="margin: 0;color: orangered;">- <?= $comp_name ?> -</p>
             <?php } else { ?>
-                <h5 style="margin: 0;text-align: center;color:var(--primary-hover);"><?= out($user_info->role) ?> Dashboard</h5>
+                <h5 style="margin: 0;text-align: center;color:var(--primary-hover);"><?= out($user_info->role) ?> <?= t('dashboard_suffix') ?></h5>
                 <p style="margin: 0;color: orangered;">- <?= $comp_name ?> -</p>
             <?php } ?>
         </div>
     <?php } else { ?>
         <div style="text-align: center;">
-            <h5 style="margin: 0;text-transform:uppercase;"><?= out(ucwords(str_replace('_', ' ', $user_info->role))) ?> Dashboard</h5>
+            <h5 style="margin: 0;text-transform:uppercase;"><?= out(ucwords(str_replace('_', ' ', $user_info->role))) ?> <?= t('dashboard_suffix') ?></h5>
             <p style="margin: 0;color: orangered;">= <?= $user_info->organization ?> =</p>
         </div>
     <?php } ?>
@@ -39,10 +39,21 @@ $comps = Modules::run("competitions/_get_generated_competitions");
     <i class="fa fa-user" aria-hidden="true"></i>
 </a>
 <?php } ?>
-<a class="side-button d-sm-none" style="text-decoration:none;" href="competitions/logout">
-    <i class="fa fa-sign-out" aria-hidden="true"></i>
-</a>
-
+<div class="flex-row" style="align-items: center; gap: 12px;">
+    <select class="lang-switcher"  id="lang-selector" 
+    mx-get="lang/set_lang?lang=${this.value}"
+    mx-trigger="change"
+    mx-target="body">
+        <?php foreach (['en','ru','de','fr','sv','fi','es','pt'] as $lc): ?>
+            <option class="lang-btn" <?= (current_lang() === $lc) ? 'selected' : '' ?> value="<?= $lc ?>">
+                <?= strtoupper($lc) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+    <a class="side-button d-sm-none" style="text-decoration:none;" href="competitions/logout">
+        <i class="fa fa-sign-out" aria-hidden="true"></i>
+    </a>
+</div>
 <div id="hamburger" class="burger col-3" onclick="toggleSideMenu()">
     <div class="line1"></div>
     <div class="line2"></div>

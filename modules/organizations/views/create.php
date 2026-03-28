@@ -96,7 +96,7 @@
 </style>
 <div class="create-wrapper">
     <div class="panel">
-        <h2 class="text-center"><strong>Create</strong> organization</h2>
+        <h2 class="text-center"><strong><?= t('org_create_title') ?></strong></h2>
         <div id="response"></div>
         <?php
         validation_errors(); // show validation errors
@@ -108,26 +108,26 @@
         ];
         echo form_open('#', $form_attr);
         echo '<div class="fld" style="grid-column: 1/-1;">';
-        echo form_label('Organization name', ['class' => 'lbl']);
+        echo form_label(t('org_create_name'), ['class' => 'lbl']);
         echo form_input('organization', '', ['class'=>'txt','maxlength'=>'255', 'required' => 'required', 'placeholder'=>'e.g., Surf Club']);
         echo '</div><div class="fld">';
-        echo form_label('Email (owner)', ['class' => 'lbl']);
+        echo form_label(t('org_create_email'), ['class' => 'lbl']);
         echo form_email('email', '', ['class'=>'txt','maxlength'=>'255', 'required' => 'required', 'placeholder'=>'e.g., email@example.com']);
         echo '</div><div class="fld">';
-        echo form_label('Phone', ['class' => 'lbl']);
+        echo form_label(t('org_create_phone'), ['class' => 'lbl']);
         echo form_input('phone', '',['maxlength'=>'50', 'type'=>'tel', 'class'=>'txt', 'placeholder'=>'e.g., +1234567890']);
         echo '</div><div class="fld">';
-        echo form_label('Address', ['class' => 'lbl']);
+        echo form_label(t('org_create_address'), ['class' => 'lbl']);
         echo form_input('address', '', ['maxlength'=>'255', 'class'=>'txt', 'placeholder'=>'e.g., 123 Main St, City, State']);
         echo '</div><div class="fld">';
-        echo form_label('Country', ['class' => 'lbl']);
+        echo form_label(t('org_create_country'), ['class' => 'lbl']);
         $country_attr = [
             'class' => 'txt',
             'id'    => 'country',
             'style' => 'appearance:none;',
         ];
         // build country options array
-        $country_options = ['-- Select Country --'];
+        $country_options = [t('org_create_country_select')];
         if (!empty($countries) && is_array($countries)) {
             foreach ($countries as $country) {
                 $country_options[$country->code] = $country->name;
@@ -135,10 +135,10 @@
         }
         echo form_dropdown('country', $country_options, '-select country-', $country_attr);
         echo '</div><div class="fld">';
-        echo form_label('Password', ['class' => 'lbl']);
+        echo form_label(t('org_create_password'), ['class' => 'lbl']);
         echo form_password('password', '', ['required' => 'required', 'class'=>'txt']);
         echo '</div><div class="fld">';
-        echo form_label('Repeat Password', ['class' => 'lbl']);
+        echo form_label(t('org_create_repeat'), ['class' => 'lbl']);
         echo form_password('repeat_password', '', ['required' => 'required', 'class'=>'txt']);
         echo '</div>
         <label class="mb-1 ml-2 agree" style="grid-column: 1/-1;">
@@ -155,9 +155,9 @@
                 </symbol>
               </svg>
             </div>
-            <span>By creating an account I agree with <a class="link" href="welcome/terms">terms and conditions</a></span>
+            <span>' . t('org_create_agree') . ' <a class="link" href="welcome/terms">' . t('org_create_terms') . '</a></span>
         </label>';
-        echo form_submit('submit', 'Create', ['class' => 'create-btn']);
+        echo form_submit('submit', t('org_create_btn'), ['class' => 'create-btn']);
         echo form_close();
         ?>
     </div>

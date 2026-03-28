@@ -1,5 +1,6 @@
 <?php
 http_response_code(404);
+require_once APPPATH . 'modules/lang/controllers/Lang.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -35,10 +36,10 @@ http_response_code(404);
     <body>
         <div>
             <h1>404</h1>
-            <h2>Oops, wiped out!</h2>
-            <p>Looks like this wave doesn’t exist.</p>
-            <p>Paddle back to the homepage before the next set rolls in.</p>
-            <p>Take me home <a href="<?= BASE_URL ?>">https://www.surfpan.com</a></p>
+            <h2><?= t(‘error_404_title’) ?></h2>
+            <p><?= t(‘error_404_desc’) ?></p>
+            <p><?= t(‘error_404_back’) ?></p>
+            <p><?= t(‘error_404_home’) ?> <a href="<?= BASE_URL ?>">https://www.surfpan.com</a></p>
         </div>
     </body>
 </html>

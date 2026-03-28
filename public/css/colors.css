@@ -19,6 +19,48 @@ html {
   }
 }
 
+/* ===== Language Switcher ===== */
+.lang-switcher {
+  display: none; /* was flex */
+  padding: 3px;
+  border: 1px solid;
+  line-height: 1rem;
+  background: var(--primary-20);
+  color: var(--primary-60);
+  font-size: 0.75rem;
+  font-family: Krungthep;
+  appearance: none;
+  align-items: center;
+  text-align: -webkit-center;
+  justify-content: center;
+}
+
+.lang-btn {
+    display: none;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-decoration: none;
+    color: var(--text);
+    border: 1px solid var(--primary-60, rgba(255,255,255,0.2));
+    opacity: 0.55;
+    transition: opacity 0.2s, background 0.2s;
+}
+
+.lang-btn:hover {
+    opacity: 1;
+    background: rgba(255,255,255,0.1);
+}
+
+.lang-btn.active {
+    display: block;
+    opacity: 1;
+    border-color: var(--accent, #4ad9c7);
+    color: var(--accent, #4ad9c7);
+}
+
 :root {
   --bg-dark: light-dark(hsl(0, 0%, 90%), hsl(0, 0%, 10%));
   --bg: light-dark(hsl(0, 0%, 95%), hsl(0, 0%, 5%));

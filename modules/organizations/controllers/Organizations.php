@@ -297,39 +297,16 @@
 
             $data['upcoming_comps'] = $this->competitions->_get_upcoming_competitions($org_id);
 
-            // Get free competitions left
-            $sql = "SELECT COUNT(*) AS competitions_this_year
-                    FROM comp_name
-                    WHERE YEAR(created_at) = YEAR(CURDATE())
-                    AND organizer_id = $org_id";
-            $comps_obj = $this->model->query($sql, 'object');
-
-            $data['stats'] = $this->_get_org_stats($org_id);
-
-            $data['competitions_this_year'] = $comps_obj[0]->competitions_this_year ?? 0;
-
-            $data['active_subscription'] = $this->billings->_get_active_subscription($org_id) ?? 'Starter Plan';
-
-            if ($data['active_subscription']!== 'Starter Plan') {
-                $data['free_competitions_left'] = 'unlimited';
-            } else {
-                // Free plan: 1 per calendar year (example)
-                $limit = 1;
-                if ($limit > $data['competitions_this_year']) {
-                    $data['free_competitions_left'] = $limit;
-                } else {
-                    $data['free_competitions_left'] = 0;
-                }
-            }
-
-            $data['event_pass_credits'] = $this->billings->_get_event_pass_credits($org_id);
+            $data['event_pass_credits'] = $this->billings->_get_event_pass_credits($org_id); // need to check if this is working correctly and returning expected data
 
             $org = $this->model->get_one_where('id', $org_id, 'comp_organizations');
 
             $data['org'] = $org;
 
             $data['countries'] = $this->model->query("SELECT code, name FROM countries ORDER BY name ASC", 'object');
+            
             if (from_trongate_mx()) {
+                require_once APPPATH . 'modules/lang/controllers/Lang.php';
                 $this->view('settings', $data);
             } else {
                 $data['view_file'] = 'settings';
@@ -348,6 +325,7 @@
             $data['countries'] = $this->model->query("SELECT code, name FROM countries ORDER BY name ASC", 'object');
 
             if (from_trongate_mx()) {
+                require_once APPPATH . 'modules/lang/controllers/Lang.php';
                 $this->view('profile', $data);
             } else {
                 $data['view_file'] = 'profile';

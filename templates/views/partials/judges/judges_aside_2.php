@@ -41,56 +41,56 @@ function render_link(string $label, string $mx_get, string $mx_target, string $m
 
 <?php if (($user_info->role ?? '') === 'head_judge') { ?>
     <ul class="side-nav side-list">
-        <?php render_link('Judging', 'judges/score_heat', '#form-container', '#form-container'); ?>
-        <?php render_link('Scores',  'competitions/all_scores', '#form-container', '#form-container'); ?>
+        <?php render_link(t('nav_judging'), 'judges/score_heat', '#form-container', '#form-container'); ?>
+        <?php render_link(t('nav_scores'),  'competitions/all_scores', '#form-container', '#form-container'); ?>
 
         <?php if ($has_multiple) {
-            render_comp_submenu($comps, ['generated','running'], 'Heats', 'heats/show_heats/', '#form-container', '#just-heats');
+            render_comp_submenu($comps, ['generated','running'], t('nav_heats'), 'heats/show_heats/', '#form-container', '#just-heats');
         } elseif ($has_any) {
-            render_link('Heats', 'heats/show_heats/' . $first_comp_id, '#form-container', '#just-heats');
+            render_link(t('nav_heats'), 'heats/show_heats/' . $first_comp_id, '#form-container', '#just-heats');
         } ?>
 
         <?php if ($has_multiple) {
-            render_comp_submenu($comps, ['generated','open','closed','running'], 'Participants', 'competitions/show_participants/', '#form-container', '#participantsTable');
+            render_comp_submenu($comps, ['generated','open','closed','running'], t('nav_participants'), 'competitions/show_participants/', '#form-container', '#participantsTable');
         } elseif ($has_any) {
-            render_link('Participants', 'competitions/show_participants/' . $first_comp_id, '#form-container', '#participantsTable');
+            render_link(t('nav_participants'), 'competitions/show_participants/' . $first_comp_id, '#form-container', '#participantsTable');
         } ?>
 
     </ul>
 
 <?php } elseif (($user_info->role ?? '') === 'organizer') { ?>
     <ul class="side-list side-nav">
-        <?php render_link('Events', 'competitions/create_comp', '#form-container', '#form-table'); ?>
+        <?php render_link(t('nav_events'), 'competitions/create_comp', '#form-container', '#form-table'); ?>
 
-        <?php render_link('Heats', 'heats/heat_schedule_page', '#form-container', '#heat-schedule'); ?>
+        <?php render_link(t('nav_heats'), 'heats/heat_schedule_page', '#form-container', '#heat-schedule'); ?>
         <!-- If you NEED mx-after-swap only for this one link, keep it inline as custom markup instead of helper. -->
 
         <?php if ($has_multiple) {
-            render_comp_submenu($comps, ['generated','open','closed','running'], 'Show Heats', 'heats/show_heats/', '#form-container', '#just-heats');
+            render_comp_submenu($comps, ['generated','open','closed','running'], t('nav_show_heats'), 'heats/show_heats/', '#form-container', '#just-heats');
         } ?>
 
-        <?php render_link('Judges', 'competitions/create_judge', '#form-container', '#judge-table'); ?>
+        <?php render_link(t('nav_judges'), 'competitions/create_judge', '#form-container', '#judge-table'); ?>
 
         <?php if ($has_multiple) {
-            render_comp_submenu($comps, ['generated','open','closed','running'], 'Participants', 'competitions/show_participants/', '#form-container', '#participantsTable');
+            render_comp_submenu($comps, ['generated','open','closed','running'], t('nav_participants'), 'competitions/show_participants/', '#form-container', '#participantsTable');
         } elseif ($has_any) {
-            render_link('Participants', 'competitions/show_participants/' . $first_comp_id, '#form-container', '#participantsTable');
+            render_link(t('nav_participants'), 'competitions/show_participants/' . $first_comp_id, '#form-container', '#participantsTable');
         } ?>
     </ul>
 
 
 <?php } else { ?>
     <ul class="side-list side-nav">
-        <?php render_link('Judging', 'judges/score_heat', '#form-container', '#form-container'); ?>
+        <?php render_link(t('nav_judging'), 'judges/score_heat', '#form-container', '#form-container'); ?>
 
         <?php if ($has_multiple) {
-            render_comp_submenu($comps, ['generated','running'], 'Heats', 'heats/show_heats/', '#form-container', '#just-heats');
+            render_comp_submenu($comps, ['generated','running'], t('nav_heats'), 'heats/show_heats/', '#form-container', '#just-heats');
         } elseif ($has_any) {
-            render_link('Heats', 'heats/show_heats/' . $first_comp_id, '#form-container', '#just-heats');
+            render_link(t('nav_heats'), 'heats/show_heats/' . $first_comp_id, '#form-container', '#just-heats');
         } ?>
 
         <?php if ($has_any) {
-            render_link('Participants', 'competitions/show_participants/' . $first_comp_id, '#form-container', '#participantsTable');
+            render_link(t('nav_participants'), 'competitions/show_participants/' . $first_comp_id, '#form-container', '#participantsTable');
         } ?>
     </ul>
 <?php } ?>

@@ -1,7 +1,7 @@
 <div class="span-12">
-    <h2>Upcoming <span>Events</span></h2>
-    <p>Click buttons to edit, change status or delete competition.<br>
-        You have to set status to "closed" to be able to generate heats.</p>
+    <h2><?= t('settings_upcoming_events') ?></h2>
+    <p><?= t('settings_edit_hint') ?><br>
+        <?= t('settings_generate_hint') ?></p>
     <div>
         <?= flashdata('<h3 style="color: white; background: cornflowerblue; padding: 0.5rem; margin: auto; width: -webkit-fit-content;">', '</h3>'); // display system messages ?> 
     </div>
@@ -63,22 +63,22 @@
                 </div>
                 <?php endforeach; ?>
         <?php else: ?>
-            <p>No upcoming competitions found.</p>
-            <p>Create a new event 
-                <a style="color:light-dark(var(--accent), var(--opposite));cursor:pointer" mx-get="competitions/create_comp" mx-target="#form-container" mx-select="#form-table">here</a>.</p>
+            <p><?= t('settings_no_comps') ?></p>
+            <p><?= t('settings_create_here') ?>
+                <a style="color:light-dark(var(--accent), var(--opposite));cursor:pointer" mx-get="competitions/create_comp" mx-target="#form-container" mx-select="#form-table"><?= t('settings_here_link') ?></a>.</p>
         <?php endif; ?>
     </div>
 </div>
 <div class="span-12 mt-4 mb-2">
-    <h2 class="mb-2">Settings <span>Tips</span></h2>
+    <h2 class="mb-2"><?= t('settings_tips_title') ?></h2>
     <ul style="list-style: none; border: none; box-shadow: none;text-align: left;display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
-        <li style="list-style: circle;margin-left: 2rem;">Change status to "open" for participants to join.</li>
-        <li style="list-style: circle;margin-left: 2rem;">Update status to "closed" when registration is closed.</li>
-        <li style="list-style: circle;margin-left: 2rem;">Organization status private hides you from searches.</li>
-        <li style="list-style: circle;margin-left: 2rem;">Make sure you correctly choose time zone.</li>
-        <li style="list-style: circle;margin-left: 2rem;">Link team members to your organization.</li>
-        <li style="list-style: circle;margin-left: 2rem;">Contact support for any billing inquiries.</li>
+        <li style="list-style: circle;margin-left: 2rem;"><?= t('settings_tip_1') ?></li>
+        <li style="list-style: circle;margin-left: 2rem;"><?= t('settings_tip_2') ?></li>
+        <li style="list-style: circle;margin-left: 2rem;"><?= t('settings_tip_3') ?></li>
+        <li style="list-style: circle;margin-left: 2rem;"><?= t('settings_tip_4') ?></li>
+        <li style="list-style: circle;margin-left: 2rem;"><?= t('settings_tip_5') ?></li>
+        <li style="list-style: circle;margin-left: 2rem;"><?= t('settings_tip_6') ?></li>
     </ul>
 </div>
 

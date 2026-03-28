@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<?php require_once APPPATH . 'modules/lang/controllers/Lang.php'; ?>
+<html lang="<?= current_lang() ?>">
 
 	<head><?= Template::partial('partials/judges/judges_head') ?></head>
 
@@ -9,10 +10,10 @@
 		<?php if (!empty($_SESSION['admin_token_backup'])): ?>
 		<div style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#b00;color:#fff;text-align:center;padding:8px 16px;font-size:0.88em;display:flex;align-items:center;justify-content:center;gap:16px;">
 			<i class="fa fa-eye" style="opacity:0.8;"></i>
-			<span>Viewing as <strong><?= out($_SESSION['impersonating_org_name'] ?? 'organization') ?></strong> — admin impersonation active</span>
+			<span><?= t('admin_viewing_as') ?> <strong><?= out($_SESSION['impersonating_org_name'] ?? 'organization') ?></strong> — <?= t('admin_impersonation_active') ?></span>
 			<a href="<?= BASE_URL ?>trongate_administrators/stop_impersonating"
 			   style="background:#fff;color:#b00;border-radius:4px;padding:3px 10px;text-decoration:none;font-weight:bold;font-size:0.9em;">
-				&larr; Return to Admin
+				&larr; <?= t('admin_return') ?>
 			</a>
 		</div>
 		<div style="height:38px;"></div>

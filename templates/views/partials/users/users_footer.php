@@ -15,10 +15,10 @@
 </div>
 <div class="bottom-details">
     <div class="bottom_text">
-        <span class="copyright_text">Copyright © 2025 <a>Surf Pan.</a>All rights reserved</span>
+        <span class="copyright_text"><?= t('footer_copyright', ['year' => date('Y')]) ?></span>
         <span class="policy_terms">
-            <a href="#">Privacy policy</a>
-            <a href="#">Terms & condition</a>
+            <a href="#"><?= t('footer_privacy') ?></a>
+            <a href="#"><?= t('footer_terms') ?></a>
         </span>
     </div>
 </div>

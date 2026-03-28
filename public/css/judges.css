@@ -592,6 +592,7 @@ form .checkbox::after {
 
 #form-container, #modal-container {
     & form input, form select {
+        display: grid;
         font-size:1rem;
         font-family: "Lato", sans-serif;
         font-weight: 500;

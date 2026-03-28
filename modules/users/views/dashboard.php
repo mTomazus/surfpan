@@ -78,13 +78,13 @@
     <!-- ===== Search Competitions / Organisers ===== -->
     <section class="card pad span-12" aria-labelledby="search-title">
       <div class="section-head">
-        <h2 id="search-title">Search Competitions</h2>
+        <h2 id="search-title"><?= t('dash_search_comps') ?></h2>
       </div>
       <div class="controls">
         <label class="field">
-          <input type="search" id="searchCompetition" placeholder="Type competition or organiser name…" oninput="searchCompetitions()" />
+          <input type="search" id="searchCompetition" placeholder="<?= t('dash_search_placeholder') ?>" oninput="searchCompetitions()" />
         </label>
-        <button class="btn" onclick="searchCompetitions()">Search</button>
+        <button class="btn" onclick="searchCompetitions()"><?= t('dash_search_btn') ?></button>
       </div>
       <div id="searchResults" class="list" style="margin-top:10px; display:none"></div>
     </section>
@@ -92,12 +92,12 @@
     <!-- ===== Context / Controls ===== -->
     <section class="card pad span-12" aria-labelledby="ctx-title">
       <div class="section-head">
-      <h2 id="ctx-title">My Competitions</h2>
+      <h2 id="ctx-title"><?= t('dash_my_comps') ?></h2>
         <div id="statusChips" class="chips">
-          <span class="chip status-open"><span class="dot" style="background:var(--chip-open)"></span>Open</span>
-          <span class="chip status-running"><span class="dot" style="background:var(--chip-running)"></span>Running</span>
-          <span class="chip status-scheduled"><span class="dot" style="background:var(--chip-scheduled)"></span>Scheduled</span>
-          <span class="chip status-finished"><span class="dot" style="background:var(--chip-finished)"></span>Finished</span>
+          <span class="chip status-open"><span class="dot" style="background:var(--chip-open)"></span><?= t('dash_status_open') ?></span>
+          <span class="chip status-running"><span class="dot" style="background:var(--chip-running)"></span><?= t('dash_status_running') ?></span>
+          <span class="chip status-scheduled"><span class="dot" style="background:var(--chip-scheduled)"></span><?= t('dash_status_scheduled') ?></span>
+          <span class="chip status-finished"><span class="dot" style="background:var(--chip-finished)"></span><?= t('dash_status_finished') ?></span>
         </div>
       </div>
       <div class="controls">
@@ -125,12 +125,12 @@
     <!-- ===== Next Heat ===== -->
     <section class="card pad span-7" aria-labelledby="next-heat-title">
       <div class="section-head">
-        <h2 id="next-heat-title">Your Next Heat</h2>
+        <h2 id="next-heat-title"><?= t('dash_next_heat') ?></h2>
         <span class="chip status-<?= out($user_heats[0]['heat_status']) ?>"><span class="dot" style="background:var(--chip-<?= out($user_heats[0]['heat_status']) ?>)"></span><span id="heatStatus"><?= out($user_heats[0]['heat_status']) ?></span></span>
       </div>
       <div class="next-heat">
         <div class="countdown justify-around">
-          <span class="pill" id="countdownPill">Starts in</span>
+          <span class="pill" id="countdownPill"><?= t('dash_starts_in') ?></span>
           <span id="countdown">—:—:—</span>
         </div>
         <div class="meta" style="margin:1rem auto 0; text-align:center; padding-bottom:1rem;justify-content:center;">
@@ -144,12 +144,12 @@
         <div class="meta justify-around">
           <h4><i class="fa fa-ticket" aria-hidden="true"></i> <strong id="callTime"><?= out($call_time) ?></strong></h4>
           <h4><i class="fa fa-clock-o" aria-hidden="true"></i> <strong id="startTimeLabel"><?= out($start_time) ?></strong></h4>
-          <h4 class="text-center"><i class="fa fa-hourglass-start" aria-hidden="true"></i> <strong id="durationLabel"><?= out($minutes) ?> mins</strong></h4>
+          <h4 class="text-center"><i class="fa fa-hourglass-start" aria-hidden="true"></i> <strong id="durationLabel"><?= out($minutes) ?> <?= t('dash_mins') ?></strong></h4>
         </div>
         <div class="controls mt-2" style="margin:auto; text-align:center; gap:1rem;display: grid;grid-template-columns: 1fr 1fr 1fr;">
-          <button class="btn" onclick="checkIn()">Check-in</button>
-          <button class="btn" onclick="alert('Rules opened (wire to /docs/rulebook.pdf)')">Rules</button>
-          <button class="btn" onclick="goLive(<?= out($user_heats[0]['id']) ?>)">Heats</button>
+          <button class="btn" onclick="checkIn()"><?= t('dash_check_in') ?></button>
+          <button class="btn" onclick="alert('Rules opened (wire to /docs/rulebook.pdf)')"><?= t('dash_rules') ?></button>
+          <button class="btn" onclick="goLive(<?= out($user_heats[0]['id']) ?>)"><?= t('dash_heats') ?></button>
         </div>
       </div>
     </section>
@@ -157,8 +157,8 @@
     <!-- ===== Scores ===== -->
     <section class="card pad span-5 disabled d-none" aria-labelledby="scores-title">
       <div class="section-head">
-        <h3 id="scores-title">My Scores</h3>
-        <span class="subtle">Best two waves count</span>
+        <h3 id="scores-title"><?= t('dash_my_scores') ?></h3>
+        <span class="subtle"><?= t('dash_best_two_waves') ?></span>
       </div>
       <div class="table-wrap">
         <table class="table" aria-describedby="scores-title">
@@ -211,7 +211,7 @@
     <!-- ===== Schedule ===== -->
     <section class="card pad span-7 disabled d-none" aria-labelledby="schedule-title">
       <div class="section-head">
-        <h3 id="schedule-title">Upcoming Heats</h3>
+        <h3 id="schedule-title"><?= t('dash_upcoming_heats') ?></h3>
         <div class="controls">
           <label class="field"><input type="search" id="scheduleSearch" placeholder="Filter by heat/division…" oninput="filterSchedule()" /></label>
           <button class="btn" onclick="exportSchedule()">Export .ICS</button>
@@ -254,7 +254,7 @@
     <!-- ===== Documents ===== -->
     <section class="card pad span-5" aria-labelledby="docs-title">
       <div class="section-head">
-        <h2 id="docs-title">Documents</h2>
+        <h2 id="docs-title"><?= t('dash_documents') ?></h2>
         <span class="subtle">Rulebook, waivers & heat draw</span>
       </div>
       <div class="doc-grid">
@@ -291,18 +291,18 @@
     <!-- ===== Registrations ===== -->
     <section class="card pad span-12" aria-labelledby="regs-title">
       <div class="section-head">
-        <h2 id="regs-title">My Registrations</h2>
-        <span class="subtle">Manage entries & payments</span>
+        <h2 id="regs-title"><?= t('dash_my_registrations') ?></h2>
+        <span class="subtle"><?= t('dash_manage_entries') ?></span>
       </div>
       <div  id="registrations" mx-get="users" mx-select="#registrations" mx-target="#registrations" mx-trigger="activate" class="table-wrap">
         <table class="table">
           <thead>
             <tr>
-              <th>Competition</th>
-              <th>Division</th>
-              <th>Status</th>
-              <th>Payment</th>
-              <th class="right">Actions</th>
+              <th><?= t('dash_competition') ?></th>
+              <th><?= t('dash_division') ?></th>
+              <th><?= t('dash_status') ?></th>
+              <th><?= t('dash_payment') ?></th>
+              <th class="right"><?= t('dash_actions') ?></th>
             </tr>
           </thead>
           <tbody>
@@ -336,7 +336,7 @@
                     }
                     If ($comp['status'] === 'open') {
                   ?>
-                    <button class="btn danger" mx-get="users/withdraw/<?= out($comp['record_id']) ?>" mx-build-modal="modalWithdraw">Withdraw</button>
+                    <button class="btn danger" mx-get="users/withdraw/<?= out($comp['record_id']) ?>" mx-build-modal="modalWithdraw"><?= t('dash_withdraw') ?></button>
                   <?php } else { ?>
                     <button class="btn disabled" disabled>Withdraw</button>
                   <?php } ?>
@@ -344,7 +344,7 @@
               </tr>
             <?php } else { ?>
               <tr>
-                <td colspan="5"><em class="subtle">No registrations found. Try searching at top section.</em></td>
+                <td colspan="5"><em class="subtle"><?= t('dash_no_registrations') ?></em></td>
               </tr>
             <?php }
           } ?>

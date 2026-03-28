@@ -1,5 +1,5 @@
-<h2>Organizer <span>Profile</span></h2>
-<p>Keep your profile information up to date.</p>
+<h2><?= t('org_profile_title') ?></h2>
+<p><?= t('org_profile_desc') ?></p>
 <div id="response"></div>
 <?php
 validation_errors(); // show validation errors
@@ -12,10 +12,10 @@ $form_attr = [
 ];
 echo form_open('#', $form_attr);
 echo '<div class="field">';
-echo form_label('Name', ['class' => 'lbl']);
+echo form_label(t('org_profile_name'), ['class' => 'lbl']);
 echo form_input('organization', $org->organization, ['class'=>'txt','maxlength'=>'255', 'required' => 'required']);
 echo '</div><div class="field">';
-echo form_label('Time Zone', ['class' => 'lbl']);
+echo form_label(t('org_profile_timezone'), ['class' => 'lbl']);
 $zone_options = Modules::run("organizations/_tz_options_html", $org->timezone);
 ?>
 <select id="timezone" name="timezone" required class="txt" style="appearance:none;font-size: 1em;">
@@ -23,19 +23,19 @@ $zone_options = Modules::run("organizations/_tz_options_html", $org->timezone);
 </select>
 <?php
 echo '</div><div class="field">';
-echo form_label('Vat Code', ['class' => 'lbl']);
+echo form_label(t('org_profile_vat'), ['class' => 'lbl']);
 echo form_input('company_code', $org->company_code, ['class'=>'txt','maxlength'=>'255', 'required' => 'required']);
 echo '</div><div class="field">';
-echo form_label('Email', ['class' => 'lbl']);
+echo form_label(t('org_profile_email'), ['class' => 'lbl']);
 echo form_email('email', $org->email, ['class'=>'txt','maxlength'=>'255', 'required' => 'required']);
 echo '</div><div class="field">';
-echo form_label('Phone', ['class' => 'lbl']);
+echo form_label(t('org_profile_phone'), ['class' => 'lbl']);
 echo form_input('phone', $org->phone,['maxlength'=>'50', 'type'=>'tel', 'class'=>'txt']);
 echo '</div><div class="field">';
-echo form_label('Address', ['class' => 'lbl']);
+echo form_label(t('org_profile_address'), ['class' => 'lbl']);
 echo form_input('address', $org->address, ['maxlength'=>'255', 'class'=>'txt']);
 echo '</div><div class="field">';
-echo form_label('Status', ['class' => 'lbl']);
+echo form_label(t('org_profile_status'), ['class' => 'lbl']);
 $status_attr = [
     'class' => 'txt',
     'id'    => 'status',
@@ -43,20 +43,20 @@ $status_attr = [
 ];
 // build status options array
 $status_options = [
-    'active'   => 'Active',
-    'inactive' => 'Inactive',
-    'private'  => 'Private'
+    'active'   => t('org_status_active'),
+    'inactive' => t('org_status_inactive'),
+    'private'  => t('org_status_private'),
 ];
 echo form_dropdown('status', $status_options, $org->status, $status_attr);
 echo '</div><div class="field">';
-echo form_label('Country', ['class' => 'lbl']);
+echo form_label(t('org_profile_country'), ['class' => 'lbl']);
 $country_attr = [
     'class' => 'txt',
     'id'    => 'country',
     'style' => 'appearance:none;font-size: 1em;',
 ];
 // build country options array
-$country_options = ['-- Select Country --'];
+$country_options = [t('org_profile_country_select')];
 if (!empty($countries) && is_array($countries)) {
     foreach ($countries as $country) {
         $country_options[$country->code] = $country->name;
@@ -64,15 +64,15 @@ if (!empty($countries) && is_array($countries)) {
 }
 echo form_dropdown('country', $country_options, $org->country, $country_attr);
 echo '</div><div class="btn-group">';
-echo form_submit('submit', 'Update', ['class' => 'btn primary']);
+echo form_submit('submit', t('org_update_btn'), ['class' => 'btn primary']);
 $btn_attr = [
     'mx-get' => 'organizations/change_pass',
     'mx-build-modal' => 'pass-change-modal',
     'class' => 'btn'
 ];
-echo form_button('view_btn', 'Change Password', $btn_attr);
+echo form_button('view_btn', t('org_change_pass_btn'), $btn_attr);
 if (from_trongate_mx()) {
-    echo '<button type="button" class="btn" onclick="closeModal()">Close</button>';
+    echo '<button type="button" class="btn" onclick="closeModal()">' . t('btn_close') . '</button>';
 }
 echo '</div>';
 echo form_close();

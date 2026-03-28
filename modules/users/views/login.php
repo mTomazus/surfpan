@@ -261,7 +261,7 @@
         <div>
           <img src="images/surfpan-hero-2.svg" alt="Logo">
         </div>
-        <h2>Competition <b>management</b></h2>
+        <h2><?= t('auth_login_title') ?><br><b><?= t('auth_create_account') ?></b></h2>
         <div class="dot">➜</div>
       </div>
     </aside>
@@ -270,8 +270,8 @@
     <section class="panel">
       <!-- ===== SIGNUP ===== -->
       <div id="signup" class="form-wrap" style="display:none;">
-        <h2 class="mt-0 text-center"><strong>create</strong> your account</h2>
-        <div class="foot">We’ll <strong>never</strong> share your email with no one.</div>
+        <h2 class="mt-0 text-center"><strong><?= t('auth_signup_title') ?></strong></h2>
+        <div class="foot"><?= t('auth_never_share') ?></div>
         <?php
           // Example attributes – tweak as you like
           $form_attr = [
@@ -284,7 +284,7 @@
         ?>
           <div class="row2">
             <div class="fld">
-              <label class="lbl" for="name">Full Name</label>
+              <label class="lbl" for="name"><?= t('auth_fullname') ?></label>
               <div class="rel">
                 <?php
                 $name_attr = [
@@ -298,7 +298,7 @@
               </div>
             </div>
             <div class="fld">
-              <label class="lbl" for="email">Email</label>
+              <label class="lbl" for="email"><?= t('auth_email') ?></label>
               <?php $email_attr = [
                 'class' => 'txt',
                 'id'    => 'email',
@@ -313,7 +313,7 @@
           
           <div class="row2">
             <div class="fld">
-              <label class="lbl" for="phone">Phone number</label>
+              <label class="lbl" for="phone"><?= t('auth_phone') ?></label>
               <div class="rel">
                 <?php
                 $phone_attr = [
@@ -328,7 +328,7 @@
               </div>
             </div>
             <div class="fld">
-              <label class="lbl" for="birth">Birthday</label>
+              <label class="lbl" for="birth"><?= t('auth_birthday') ?></label>
               <?php $birth_attr = [
                 'class' => 'txt',
                 'id'    => 'birthday',
@@ -342,27 +342,27 @@
 
           <div class="row2">
             <div class="fld">
-              <label class="lbl" for="gender">Gender</label>
+              <label class="lbl" for="gender"><?= t('auth_gender') ?></label>
               <div class="rel">
                 <?php
                 $options = array(
-                  'male'  => 'Male',
-                  'female'    => 'Female',
+                  'male'   => t('auth_gender_male'),
+                  'female' => t('auth_gender_female'),
                 );
                 echo form_dropdown('gender', $options, 'male', array('id' => 'gender', 'class'=>'txt', 'style'=>'appearance:none;'));
                 ?>
               </div>
             </div>
             <div class="fld">
-              <label class="lbl" for="country">Country</label>
-              <?php 
+              <label class="lbl" for="country"><?= t('auth_country') ?></label>
+              <?php
                 $country_attr = [
                   'class' => 'txt',
                   'id'    => 'country',
                   'style' => 'appearance:none;',
                 ];
                 // build country options array
-                $country_options = ['-- Select your country --'];
+                $country_options = [t('auth_country_select')];
                 if (!empty($countries) && is_array($countries)) {
                   foreach ($countries as $c) {
                     $country_options[$c->code] = $c->name;
@@ -375,13 +375,13 @@
 
           <div class="row2">
             <div class="fld">
-              <label class="lbl" for="password">Password</label>
+              <label class="lbl" for="password"><?= t('auth_password') ?></label>
               <div class="rel">
                 <input class="txt" type="password" id="password" name="password" minlength="8" required>
               </div>
             </div>
             <div class="fld">
-              <label class="lbl" for="repeat_password">Repeat Password</label>
+              <label class="lbl" for="repeat_password"><?= t('auth_repeat_password') ?></label>
               <div class="rel">
                 <input class="txt" type="password" id="repeat_password" name="repeat_password" minlength="8" required>
               </div>
@@ -402,19 +402,19 @@
                 </symbol>
               </svg>
             </div>
-            <span>By signing up I agree with <a class="link" href="welcome/terms">terms and conditions</a></span>
+            <span><?= t('auth_agree') ?> <a class="link" href="welcome/terms"><?= t('auth_terms_link') ?></a></span>
         </label>
 
         <div style="display: grid;grid-template-columns: 1fr auto;gap: 1rem;margin-inline: 1rem;">
-          <button class="signup-btn" type="submit">CREATE</button>
-          <a class="change-btn" href="#" data-target="login">LOGIN</a>
+          <button class="signup-btn" type="submit"><?= t('auth_create_btn') ?></button>
+          <a class="change-btn" href="#" data-target="login"><?= t('auth_login_btn') ?></a>
         </div>
         <?= form_close(); ?>
       </div>
 
       <!-- ===== LOGIN ===== -->
       <div id="login" class="form-wrap">
-        <h2 class="mb-1 mt-0 text-center"><strong>login</strong> your account</h2>
+        <h2 class="mb-1 mt-0 text-center"><strong><?= t('auth_login_title') ?></strong></h2>
         <?php
           flashdata('<p style="color: firebrick;text-align: center;">', '</p>'); // from set_flashdata()
           $attr = ['id'=>'loginForm','autocomplete'=>'off'];
@@ -422,12 +422,12 @@
           echo validation_errors('<div class="text-center err"><strong>', '</strong></div>');
         ?>
             <div class="fld">
-                <label class="lbl" for="identity">Email</label>
+                <label class="lbl" for="identity"><?= t('auth_email') ?></label>
                 <input class="txt" type="email" id="identity" name="email" value="<?= out($email) ?>" required>
             </div>
 
             <div class="fld">
-                <label class="lbl" for="login_password">Password</label>
+                <label class="lbl" for="login_password"><?= t('auth_password') ?></label>
                 <input class="txt" type="password" id="login_password" name="password" required>
             </div>
             <label class="mb-1 ml-2 remember">
@@ -444,14 +444,14 @@
                     </symbol>
                   </svg>
                 </div>
-                <span>remember me</span>
+                <span><?= t('auth_remember') ?></span>
             </label>
-            <button class="login-btn mt-1 mb-1" type="submit">LOGIN</button>
+            <button class="login-btn mt-1 mb-1" type="submit"><?= t('auth_login_btn') ?></button>
             <div class="foot">
-                <a class="link" mx-get="users/request_modal" mx-build-modal="request-modal">Forgot password?</a>
+                <a class="link" mx-get="users/request_modal" mx-build-modal="request-modal"><?= t('auth_forgot') ?></a>
             </div>
             <hr>
-            <a class="change-btn" href="#" data-target="signup" style="float: right;">CREATE ACCOUNT</a>
+            <a class="change-btn" href="#" data-target="signup" style="float: right;"><?= t('auth_create_account') ?></a>
         <?= form_close(); ?>
       </div>
     </section>

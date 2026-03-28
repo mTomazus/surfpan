@@ -1,5 +1,6 @@
+<?php require_once APPPATH . 'modules/lang/controllers/Lang.php'; ?>
 <!DOCTYPE html>
-<html lang="en" data-scheme="dark">
+<html lang="<?= current_lang() ?>" data-scheme="dark">
 
 	<head>
 		<meta charset="utf-8">

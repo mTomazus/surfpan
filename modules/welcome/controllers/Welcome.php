@@ -52,6 +52,31 @@ class Welcome extends Trongate {
 		$this->template('public', $data);
 	}
 
+	function contact_form(){
+		if (from_trongate_mx()) {
+			$this->view('contacts_form');
+			return;
+		}
+		$data['view_file'] = 'contacts_form';
+		$this->template('public', $data);
+	}
+
+	function submit_form(){
+		$this->validation->set_rules('name', 'Name', 'required');
+		$this->validation->set_rules('email', 'Email', 'required|valid_email');
+		$this->validation->set_rules('message', 'Message', 'required');
+		if ($this->validation->run() == false) {
+			echo json_encode(['status' => 'error', 'message' => validation_errors()]);
+			return;
+		}
+		$name = post('name', true);
+		$email = post('email', true);
+		$message = post('message', true);
+		// Here you would typically send the email using a mail library or service
+		// For demonstration, we'll just return a success message
+		echo json_encode(['status' => 'success', 'message' => 'Thank you for your message, ' . $name . '! We will get back to you shortly.']);
+	}
+
 	function test(){
 		$data['view_file'] = 'test';
 		$this->template('public', $data);

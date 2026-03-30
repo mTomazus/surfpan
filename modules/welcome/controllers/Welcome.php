@@ -62,19 +62,31 @@ class Welcome extends Trongate {
 	}
 
 	function submit_form(){
-		$this->validation->set_rules('name', 'Name', 'required');
-		$this->validation->set_rules('email', 'Email', 'required|valid_email');
+		$this->module('trongate_security');
+		$this->module('competitions');
+		$this->trongate_security->_make_sure_allowed('judges area');
+
+		$judge = $this->competitions->_get_judge_info();
+
 		$this->validation->set_rules('message', 'Message', 'required');
-		if ($this->validation->run() == false) {
-			echo json_encode(['status' => 'error', 'message' => validation_errors()]);
-			return;
+		if ($this->validation->run() === true) {
+			$data['message'] = post('message', true);
+			$data['name'] = $judge->name ?? 'N/A';
+			$data['email'] = $judge->email;
+			$data['phone'] = $judge->phone;
+			$data['organization'] = $judge->organization ?? 'N/A';
+
+			$message = $this->view('contact_email_template', $data, true);
+			mail('info@surfpan.com', 'Contact Form Submission', $message);
+			http_response_code(200);
+			set_flashdata('Your message has been sent successfully!');
+			redirect('welcome/contacts');
+
+		} else {
+
+			validation_errors(400);
+
 		}
-		$name = post('name', true);
-		$email = post('email', true);
-		$message = post('message', true);
-		// Here you would typically send the email using a mail library or service
-		// For demonstration, we'll just return a success message
-		echo json_encode(['status' => 'success', 'message' => 'Thank you for your message, ' . $name . '! We will get back to you shortly.']);
 	}
 
 	function test(){

@@ -69,7 +69,8 @@
         <h2 class="mb-0"><span>Available</span> Judges</h2>
         <?php
         if (empty($rows)) {
-            echo '<p class="mb-0 text-right">No judges available<br>You have to create or invite judges</p>';
+            echo '<p class="mb-0 text-right">No judges available<br>CLICK THE button below to create or invite judges</p>';
+            echo '<div class="judge-buttons" style="margin: 1rem auto;justify-content: center;"><button class="btn" mx-get="competitions/create_judge" mx-target="#form-container" mx-select="#form-table" mx-build-modal="judge-create-modal"><i class="fa fa-plus" aria-hidden="true"></i> Add Judge</button></div>';
         } else {
             echo '<p class="mb-2 text-right">Click on the judge to edit or delete<br>If competition is created, you can assign judges to it.</p>';
             echo '<div class="judge-buttons"><button class="btn" mx-get="competitions/create_judge" mx-target="#form-container" mx-select="#form-table" mx-build-modal="judge-create-modal"><i class="fa fa-plus" aria-hidden="true"></i> Add Judge</button>';

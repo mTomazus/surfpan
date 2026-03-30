@@ -17,11 +17,11 @@
                     align-items: center;
                      padding-inline: 0.5rem 0;" class="field form-field">
             <label>Entry:</label>
-            <div style="display: flex;justify-content: center; align-items: center;"> 
+            <div style="display: flex;justify-content: center; align-items: center; max-height:27px"> 
                 <input id="entry-free" class="entry" type="radio" name="entry_type" value="free" checked style="display: none;">    
-                <label class="check-label" for="entry-free">Free</label>
+                <label class="check-label" for="entry-free" style="border-top-right-radius: 0;border-bottom-right-radius: 0;border: 0;height: -webkit-fill-available;margin-block:5px">Free</label>
                 <input id="entry-fee" class="entry" type="radio" name="entry_type" value="fee" style="display: none;">
-                <label class="check-label" for="entry-fee">Fee <input style ="min-width: 25px;width: 55px;height: 35px;margin-inline: 0;appearance: none;text-align: center;font-size: 1rem;" type="number" name="entry_fee" value="20" max="200" min="10"><i class="fa fa-eur" aria-hidden="true"></i></label>
+                <label class="check-label" for="entry-fee" style="border-top-left-radius: 0;border-bottom-left-radius: 0;border: 0;height: -webkit-fill-available;margin-block:5px">Fee <input style ="min-width: 25px;width: 55px;height: 35px;margin-inline: 0;appearance: none;text-align: center;font-size: 1rem;" type="number" name="entry_fee" value="20" max="200" min="10"><i class="fa fa-eur" aria-hidden="true"></i></label>
             </div>
         </div>
         <div class="form-field">

@@ -142,9 +142,9 @@
                                     border-top-right-radius: 15px;
                                     border-bottom-right-radius: 15px;
                                     background: rgba(196, 196, 196, 0.07);">';
-                    echo '<div class="grid-1" style="flex:1"><h3 style="text-transform: uppercase;text-align: center;background: ' . $bgColor . ';color: black;padding: 5px;">' . $comp_judges[$i]->assignment_role . '</h3>';
-                    echo '<h4 style="text-align: center;margin: 0;background:' . $statusColor . ';color:' . $statusText . ';">' . $comp_judges[$i]->assignment_status . '</h4></div>';
-                    echo '<div class="grid-1" style="flex: 4;padding-right: 1rem;"><p class="mb-0 mt-0 text-right">' . $comp_judges[$i]->name . '</p><p class="mt-0 mb-0 text-right" style="text-transform:lowercase;font-size: 0.5rem;">' . $comp_judges[$i]->email . '</p></div>';
+                    echo '<div class="grid-1" style="flex: 1.2;display: flex;justify-content: center;gap: 0.5rem;"><h3 style="text-transform: uppercase;text-align: center;background: ' . $bgColor . ';color: black;padding: 5px;">' . $comp_judges[$i]->assignment_role . '</h3>';
+                    echo '<h4 style="text-align: center;margin: 0;background:' . $statusColor . ';color:' . $statusText . ';padding: 7px 5px;">' . $comp_judges[$i]->assignment_status . '</h4></div>';
+                    echo '<div class="grid-1" style="flex: 1;padding-right: 1rem;"><p class="mb-0 mt-0 text-right">' . $comp_judges[$i]->name . '</p><p class="mt-0 mb-0 text-right" style="text-transform:lowercase;font-size: 0.5rem;">' . $comp_judges[$i]->email . '</p></div>';
                         
                     $btn_attr = [
                         'mx-get' => 'judges/remove_modal/' . $comp_id . '/' . $comp_judges[$i]->id,

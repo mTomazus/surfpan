@@ -24,8 +24,8 @@ function chip_status($label, $status){ // running/open/scheduled/past/etc.
 }
 ?>
 
-<div id="form-container">
-
+<div id="form-container" mx-get="judges" mx-trigger="activate" mx-select="#form-container">
+  <div id="response"></div>
   <!-- ===== Your Competitions ===== -->
   <h2 class="mb-0 mt-0"><span>Your</span> Assignments</h2>
   <?php if (empty($active_assigned)): ?>
@@ -46,10 +46,12 @@ function chip_status($label, $status){ // running/open/scheduled/past/etc.
           <tr><td colspan="4" 
           style="border-bottom: 1px solid var(--primary-20);
                           align-content: end;
+                          font-size: 1.2rem;
+                          background: hsl(0, 0%, 100%, 0.1);
                           color: var(--chip-running);
                           text-transform: uppercase;">Your active assignments</td></tr>
-          </thead>
-          <tbody>
+        </thead>
+        <tbody>
           <?php if (!empty($active_assigned)): ?>
             <?php foreach ($active_assigned as $c): ?>
               <tr>
@@ -79,14 +81,16 @@ function chip_status($label, $status){ // running/open/scheduled/past/etc.
           <?php endif; ?>
 
           <thead>
+            <tr class="d-sm-none"></tr>
             <tr>
-              <td colspan="4" rowspan="2"
+              <td colspan="4" rowspan="1"
                           style="border-bottom: 1px solid var(--primary-20);
                                 align-content: end;
+                                font-size: 1.2rem;
+                                background: hsl(0, 0%, 100%, 0.1);
                                 color: var(--chip-closed);
                                 text-transform: uppercase;">Your pending invitations</td>
             </tr>
-            <tr class="d-sm-none"></tr>
           </thead>
 
             <!-- If there are no pending invitations -->
@@ -106,10 +110,10 @@ function chip_status($label, $status){ // running/open/scheduled/past/etc.
                   <td><?= chip_status('Pending Invite','warn') ?></td>
                   <td><?= out(ucwords(str_replace('_',' ', $c['judge_role'] ?? 'judge'))) ?></td>
                   <td class="actions" style="max-width: -webkit-fit-content;margin: auto;">
-                    <form method="post" action="<?= BASE_URL ?>judges/accept_invite/<?= (int)$c['link_id'] ?>" style="display:inline">
+                    <form mx-post="<?= BASE_URL ?>judges/accept_invite/<?= (int)$c['link_id'] ?>" mx-on-success="#form-container" mx-select="#form-container" mx-target="#response" style="display:inline">
                       <button class="btn accept" type="submit"><i class="fa fa-check" aria-hidden="true"></i> Accept</button>
                     </form>
-                    <form method="post" action="<?= BASE_URL ?>judges/decline_invite/<?= (int)$c['link_id'] ?>" style="display:inline">
+                    <form mx-post="<?= BASE_URL ?>judges/decline_invite/<?= (int)$c['link_id'] ?>" mx-on-success="#form-container" mx-select="#form-container" mx-target="#response" style="display:inline">
                       <button class="btn danger modal-delete" type="submit"><i class="fa fa-times" aria-hidden="true"></i> Decline</button>
                     </form>
                   </td>
@@ -118,14 +122,16 @@ function chip_status($label, $status){ // running/open/scheduled/past/etc.
             <?php endif; ?>
 
           <thead>
+            <tr class="d-sm-none"></tr>
             <tr>
-              <td colspan="4" rowspan="2"
+              <td colspan="4" rowspan="1"
               style="border-bottom: 1px solid var(--primary-20);
                                 align-content: end;
                                 color: var(--chip-info);
+                                font-size: 1.2rem;
+                                background: hsl(0, 0%, 100%, 0.1);
                                 text-transform: uppercase;">You've been linked to these organizations</td>
             </tr>
-            <tr class="d-sm-none"></tr>
           </thead>
 
             <!-- If there are no linked organizations -->
@@ -146,7 +152,7 @@ function chip_status($label, $status){ // running/open/scheduled/past/etc.
                       </td>
                       <td><?= out(ucwords(str_replace('_',' ', $o['org_role'] ?? 'judge'))) ?></td>
                       <td>
-                        <a href="" class="btn danger" mx-post="judges/leave_organization/<?= (int)$o['org_id'] ?>"><i class="fa fa-chain-broken" aria-hidden="true"> </i>Unlink</a>
+                        <a href="" class="btn danger" mx-post="judges/leave_organization/<?= (int)$o['org_id'] ?>" mx-on-success="#form-container" mx-target="#response" mx-select="#form-container"><i class="fa fa-chain-broken" aria-hidden="true"> </i>Unlink</a>
                       </td>
                     </tr>
                   <?php endforeach; ?>

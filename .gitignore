@@ -5,3 +5,4 @@ tutorial_videos/
 .playwright-cli/
 *.png
 *.yaml
+.DS_Store

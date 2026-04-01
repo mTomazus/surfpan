@@ -323,23 +323,119 @@
         // ---------------------------------------------------------------
 
         public function athletes() {
-            $sql = "SELECT cu.id, cu.name, cup.country, cup.club_name, cup.gender, cup.dob, cup.avatar,
-                           COUNT(DISTINCT cp.comp_id) AS comp_count
-                    FROM comp_users cu
-                    LEFT JOIN comp_users_profiles cup ON cu.id = cup.user_id
-                    LEFT JOIN comp_participants cp ON cu.id = cp.user_id AND cp.status = 'confirmed'
-                    GROUP BY cu.id, cu.name, cup.country, cup.club_name, cup.gender, cup.dob, cup.avatar
-                    ORDER BY cu.name ASC";
-            $athletes = $this->model->query($sql, 'object');
+            $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 
-            foreach ($athletes as &$a) {
+            // Build the full athlete dataset as a final CTE so we can filter with WHERE on aliases
+            $cte = "WITH top2 AS (
+                        SELECT js.heat_id, js.participant_id, js.avg_score,
+                               ROW_NUMBER() OVER (PARTITION BY js.heat_id, js.participant_id ORDER BY js.avg_score DESC) AS rn
+                        FROM comp_wave_averages js
+                    ),
+                    heat_totals AS (
+                        SELECT heat_id, participant_id,
+                               COALESCE(SUM(avg_score), 0) AS total_score,
+                               MAX(avg_score)              AS best_wave
+                        FROM top2 WHERE rn <= 2
+                        GROUP BY heat_id, participant_id
+                    ),
+                    all_best AS (
+                        SELECT cn.id AS comp_id, cd.name AS division, cp.user_id,
+                               CASE
+                                   WHEN LOWER(h.round) = 'final'                                THEN 100
+                                   WHEN LOWER(h.round) IN ('semifinal','semi')                  THEN 80
+                                   WHEN LOWER(h.round) IN ('quarterfinal','qf')                 THEN 75
+                                   WHEN LOWER(h.round) IN ('round 2','round2','r2')             THEN 70
+                                   WHEN LOWER(h.round) IN ('repechage 2','repechage2','rep2')   THEN 60
+                                   WHEN LOWER(h.round) IN ('repechage 1','repechage1','rep1')   THEN 50
+                                   WHEN LOWER(h.round) IN ('round 1','round1','r1')             THEN 30
+                                   ELSE 0
+                               END AS round_weight,
+                               COALESCE(ht.total_score, 0) AS total_score,
+                               COALESCE(ht.best_wave, 0)   AS best_wave
+                        FROM comp_participants cp
+                        JOIN comp_heat_participants hp ON hp.participant_id = cp.id
+                        JOIN comp_heats h              ON h.id = hp.heat_id
+                        JOIN comp_name cn              ON cn.id = h.comp_id
+                        JOIN comp_divisions cd         ON cd.id = cp.division_id
+                        LEFT JOIN heat_totals ht       ON ht.heat_id = h.id AND ht.participant_id = hp.participant_id
+                    ),
+                    best_per_athlete AS (
+                        SELECT *,
+                               ROW_NUMBER() OVER (PARTITION BY comp_id, division, user_id ORDER BY round_weight DESC, total_score DESC, best_wave DESC) AS rn
+                        FROM all_best
+                    ),
+                    div_ranked AS (
+                        SELECT *,
+                               RANK() OVER (PARTITION BY comp_id, division ORDER BY round_weight DESC, total_score DESC, best_wave DESC) AS place
+                        FROM best_per_athlete WHERE rn = 1
+                    ),
+                    athlete_points AS (
+                        SELECT user_id,
+                               SUM(CASE place
+                                   WHEN 1 THEN 1000 WHEN 2 THEN 700 WHEN 3 THEN 500
+                                   WHEN 4 THEN 400  WHEN 5 THEN 320 WHEN 6 THEN 260
+                                   WHEN 7 THEN 220  WHEN 8 THEN 180
+                                   ELSE IF(place <= 16, 130, 80)
+                               END) AS total_points
+                        FROM div_ranked
+                        GROUP BY user_id
+                    ),
+                    global_rank AS (
+                        SELECT user_id, total_points,
+                               RANK() OVER (ORDER BY total_points DESC) AS ranking
+                        FROM athlete_points
+                    ),
+                    athlete_base AS (
+                        SELECT cu.id, cu.name, cup.country, co.name AS country_name,
+                               cup.club_name, cup.avatar,
+                               COUNT(DISTINCT cp.comp_id) AS comp_count,
+                               COALESCE(gr.total_points, 0) AS total_points,
+                               COALESCE(gr.ranking, 0)      AS ranking
+                        FROM comp_users cu
+                        LEFT JOIN comp_users_profiles cup ON cu.id = cup.user_id
+                        LEFT JOIN countries co            ON co.code = cup.country
+                        LEFT JOIN comp_participants cp    ON cu.id = cp.user_id AND cp.status = 'confirmed'
+                        LEFT JOIN global_rank gr          ON gr.user_id = cu.id
+                        GROUP BY cu.id, cu.name, cup.country, co.name, cup.club_name, cup.avatar, gr.total_points, gr.ranking
+                    )";
+
+            if ($q !== '') {
+                $like     = '%' . $q . '%';
+                $bindings = [$like, $like, $like, $like];
+                $sql      = $cte . " SELECT * FROM athlete_base
+                            WHERE (name LIKE ? OR COALESCE(club_name,'') LIKE ? OR COALESCE(country_name,'') LIKE ? OR COALESCE(country,'') LIKE ?)
+                            ORDER BY ranking ASC, name ASC";
+                $athletes = $this->model->query_bind($sql, $bindings, 'object');
+
+                $data['search_query']    = $q;
+                $data['athletes']        = $athletes;
+                $data['pagination_data'] = null;
+            } else {
+                $limit        = 8;
+                $last_seg     = get_last_segment();
+                $current_page = is_numeric($last_seg) ? max((int)$last_seg, 1) : 1;
+                $offset       = ($current_page - 1) * $limit;
+                $total_rows   = (int) $this->model->query("SELECT COUNT(*) AS n FROM comp_users", 'array')[0]['n'];
+
+                $sql      = $cte . " SELECT * FROM athlete_base ORDER BY ranking ASC, name ASC LIMIT $limit OFFSET $offset";
+                $athletes = $this->model->query($sql, 'object');
+
+                $data['search_query']    = '';
+                $data['athletes']        = $athletes;
+                $data['pagination_data'] = [
+                    'total_rows'                => $total_rows,
+                    'limit'                     => $limit,
+                    'record_name_plural'        => 'athletes',
+                    'include_showing_statement' => true,
+                ];
+            }
+
+            foreach ($data['athletes'] as &$a) {
                 $a->slug = $this->_make_slug($a->name, $a->id);
-                $a->age  = $this->find_age_end($a->dob ?? null);
             }
             unset($a);
 
-            $data['athletes']   = $athletes;
-            $data['view_file']  = 'athletes';
+            $data['view_file'] = 'athletes';
             $this->template('public', $data);
         }
 

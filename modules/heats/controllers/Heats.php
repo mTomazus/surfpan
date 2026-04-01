@@ -11,11 +11,8 @@
             $this->module('trongate_tokens');
             $user = $this->trongate_tokens->_get_user_obj();
 
-            if ($user) {
-                $this->template('users_area', $data);
-            } else {
-                $this->template('public', $data);
-            }
+            $this->template('public', $data);
+
         }
 
         function generate_modal() {

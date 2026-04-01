@@ -14,7 +14,7 @@
                 $show_only = $data['divisions'][0];
             }
             $data['results'] = $this->get_final_standings($comp_id, $show_only_value);
-            $data['active_division'] = $this->model->get_one_where('name', $show_only_value, 'comp_divisions')->name;
+            $data['active_division'] = $this->model->get_one_where('name', $show_only_value, 'comp_divisions')->name ?? '';
             $data['view_file'] = 'show_all';
             $data['participant_count'] = $this->model->count_rows('comp_id', $comp_id, 'comp_participants');;
             $data['comp_data'] = $this->heats->_get_comp_data($comp_id);

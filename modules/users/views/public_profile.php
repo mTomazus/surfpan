@@ -93,7 +93,8 @@ function round_badge(string $round): string {
   .stat-box .stat-lbl { font-size: 0.5rem; letter-spacing: 20%; color: var(--ok); margin-top: 0.25rem; text-transform: uppercase;}
 
   /* ── history table ── */
-  .section-title { font-size: 1.1rem; font-weight: 600; margin: 0 0 0.75rem; border-bottom: 1px dashed; text-transform: uppercase; }
+  .section-title { color: var(--text-light); font-size: 1.1rem; font-weight: 600; letter-spacing: 20%; margin: 0 0 0.75rem; border-bottom: 1px dashed var(--primary); text-transform: uppercase; }
+  .section-title span { color: var(--primary); }
   .history-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
   .history-table th {
     background: var(--primary-20);
@@ -190,7 +191,7 @@ function round_badge(string $round): string {
   </div>
 
   <!-- competition history -->
-  <div class="section-title">Competition History</div>
+  <div class="section-title">Competition <span>History</span></div>
 
   <?php if (empty($history)): ?>
     <div class="empty-state">No competition results yet.</div>

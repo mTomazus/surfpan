@@ -284,7 +284,7 @@
 
             $data['view_module'] = 'organizations';
             $data['view_file'] = 'public_show';
-            $this->template('users_area', $data);
+            $this->template('public', $data);
         }
 
         function dashboard() {

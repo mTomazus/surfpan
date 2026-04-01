@@ -3,6 +3,7 @@
     <div class="slide-header">
     </div>
     <?= anchor('welcome', 'HOME', ['class' => 'side-button']) ?>
+    <?= anchor('users/athletes', 'ATHLETES', ['class' => 'side-button']) ?>
     <?= anchor('organizations', 'ORGANIZERS', ['class' => 'side-button']) ?>
     <?= anchor('heats', 'EVENTS', ['class' => 'side-button']) ?>
     <?= anchor('users', 'LOGIN', ['class' => 'login-link']) ?>

@@ -26,7 +26,6 @@
 			$user_info = Modules::run("users/_get_user_info");
 			$data['user'] = $user_info[0];
 		}
-
 		?>
 
 		<header><?= Template::partial('partials/users/users_header', $data) ?></header>

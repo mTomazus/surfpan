@@ -922,15 +922,16 @@ aside.isShown {
         position: static;
         bottom: 0;
     }
-    footer .content{
+    footer .content {
         max-width: 1250px;
         margin: auto;
         padding: 0 1rem;
     }
-    footer .content .top{
+    footer .content .top {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        font-size: 0.75rem;
     }
     .content .top .logo-details{
         color: var(--text);
@@ -958,18 +959,9 @@ aside.isShown {
         transition: all 0.4s ease;
 }
 .top .media-icons a:nth-child(1):hover{
-  color: #4267B2;
-}
-.top .media-icons a:nth-child(2):hover{
-  color: #1DA1F2;
-}
-.top .media-icons a:nth-child(3):hover{
   color: #E1306C;
 }
-.top .media-icons a:nth-child(4):hover{
-  color: #0077B5;
-}
-.top .media-icons a:nth-child(5):hover{
+.top .media-icons a:nth-child(2):hover{
   color: #FF0000;
 }
 footer .content .link-boxes{

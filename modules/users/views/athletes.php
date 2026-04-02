@@ -136,7 +136,7 @@
             <div class="athlete-cell">
               <div class="a-avatar">
                 <?php if (!empty($a->avatar)): ?>
-                  <img src="<?= out($a->avatar) ?>" alt="<?= out($a->name) ?>">
+                  <img src="users_module/images/avatars/<?= out($a->avatar) ?>" alt="<?= out($a->name) ?>">
                 <?php else: ?>
                   <?= $initial ?>
                 <?php endif; ?>

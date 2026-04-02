@@ -153,7 +153,7 @@ function round_badge(string $round): string {
   <div class="hero-card">
     <div class="hero-avatar">
       <?php if (!empty($athlete['avatar'])): ?>
-        <img src="<?= out($athlete['avatar']) ?>" alt="<?= out($athlete['name']) ?>">
+        <img src="users_module/images/avatars/<?= out($athlete['avatar']) ?>" alt="<?= out($athlete['name']) ?>">
       <?php else: ?>
         <?= mb_strtoupper(mb_substr($athlete['name'] ?? '?', 0, 1)) ?>
       <?php endif; ?>

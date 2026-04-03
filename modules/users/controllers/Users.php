@@ -193,8 +193,7 @@
             $this->validation->set_rules('dob', 'dob', 'required|min_length[8]|max_length[15]');
             $this->validation->set_rules('gender', 'gender', 'required');
             $this->validation->set_rules('club_name', 'club_name', 'min_length[4]|max_length[25]');
-            $this->validation->set_rules('userfile','Image','max_size[1000]|max_width[400]|max_height[400]'
-        );
+            $this->validation->set_rules('avatar','avatar','max_size[1000]|max_width[400]|max_height[400]');
             
             $result = $this->validation->run(); //returns true or false
         
@@ -202,13 +201,6 @@
                 // Update participant account.
                 $user_info = $this->_get_user_info();
                 $user_id = $user_info[0]['id'];
-                $old_avatar = $user_info[0]['avatar'] ?? '';
-
-                $image_file = post('userfile', true);
-
-                if (isset($image_file) && !empty($_FILES['userfile']['name'])) {
-                    $this->upload_avatar( $user_id, $old_avatar );
-                }
 
                 $data['gender'] = post('gender', true);
                 $data['club_name'] = post('club_name', true);
@@ -331,64 +323,50 @@
             }
         }
 
-        public function upload_avatar() {
-            header('Content-Type: application/json');
-            $this->_make_sure_allowed();
+        // ----------- UPLOAD AVATAR
+        // ---------------------------------------------------
+        function upload_avatar() {
 
-            // Get user_id directly from token — avoids _get_user_info INNER JOIN issues
-            $this->module('trongate_tokens');
-            $trongate_user_id = $this->trongate_tokens->_get_user_id();
-            $user_row = $this->model->get_one_where('trongate_user_id', $trongate_user_id, 'comp_users');
-
-            if (!$user_row) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'error' => 'User not found']);
-                return;
-            }
-
-            $user_id    = (int) $user_row->id;
-            $profile    = $this->model->get_one_where('user_id', $user_id, 'comp_users_profiles');
-            $old_avatar = $profile->avatar ?? '';
+            $user_info = $this->_get_user_info();
+            $user_id = $user_info[0]['id'];
+            $old_avatar = $user_info[0]['avatar'] ?? '';
 
             try {
                 // Use absolute path — avoids CWD ambiguity with upload_to_module relative paths
                 $upload_dir = APPPATH . 'modules/users/assets/images/avatars';
-
-                $image     = new Image();
-                $file_info = $image->upload([
-                    'destination'      => $upload_dir,
-                    'max_width'        => 400,
-                    'max_height'       => 400,
+            
+                $config = [
+                    'destination' => $upload_dir,
                     'upload_to_module' => false,
-                    'make_rand_name'   => true,
-                ]);
-                $image->destroy();
+                    'max_width' => 400,
+                    'max_height' => 400,
+                    'make_rand_name' => true
+                ];
+            
+                $file_info = $this->image->upload($config);
 
-                $avatar_url = $file_info['file_name'];
+                $data['avatar'] = $file_info['file_name'];
 
-                // Delete previous local avatar
-                if (!empty($old_avatar) && strpos($old_avatar, 'modules/users/assets/images/avatars/') !== false) {
+                // Delete old avatar file if one existed
+                if (!empty($old_avatar)) {
                     $old_path = APPPATH . 'modules/users/assets/images/avatars/' . basename($old_avatar);
                     if (file_exists($old_path)) {
-                        @unlink($old_path);
+                        $this->file->delete($old_path);
                     }
                 }
 
-                $profile_data = ['avatar' => $avatar_url];
-                if (!$profile) {
-                    $profile_data['user_id'] = $user_id;
-                    $this->model->insert($profile_data, 'comp_users_profiles');
-                } else {
-                    $this->model->update_where('user_id', $user_id, $profile_data, 'comp_users_profiles');
-                }
+                $this->model->update_where('user_id', $user_id, $data, 'comp_users_profiles');
 
-                echo json_encode(['success' => true, 'avatar' => $avatar_url]);
+                echo '<img id="avatar-img" src="users_module/images/avatars/' . $data['avatar'] . '" alt="Avatar">';
+
+                return $data['avatar'];
 
             } catch (Exception $e) {
                 http_response_code(400);
                 echo json_encode(['success' => false, 'error' => $e->getMessage()]);
             }
         }
+
 
         // ---------------------------------------------------------------
         // PUBLIC PAGES (no auth required)

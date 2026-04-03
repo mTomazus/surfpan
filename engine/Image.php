@@ -269,8 +269,8 @@ class Image {
         $opening_bytes = fread($file, 256);
         fclose($file);
 
-        // Enhanced pattern including PHP tags
-        if (preg_match('/<(script|iframe|object|embed|applet)[\s>]|<\?php|<\?/i', $opening_bytes)) {
+        // Check for PHP code or dangerous HTML tags (exclude legitimate XML/XMP metadata like <?xml, <?xpacket)
+        if (preg_match('/<(script|iframe|object|embed|applet)[\s>]|<\?php|<\?=/i', $opening_bytes)) {
             throw new InvalidArgumentException('Potential security threat detected in image');
         }
 

@@ -6,3 +6,7 @@ tutorial_videos/
 *.png
 *.yaml
 .DS_Store
+CLAUDE.md
+*/.DS_Store
+modules/users/.DS_Store
+

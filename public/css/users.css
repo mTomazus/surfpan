@@ -428,7 +428,7 @@ aside {
   .card.pad { padding: 16px; }
   .card h3 { margin: 0 0 10px; font-size: 1rem; letter-spacing: .2px; }
   .card h4 { margin: 0; font-size: .8rem; letter-spacing: .2px; }
-  .subtle { color: var(--text); font-size: .92rem; filter:contrast(0.6); }
+  .subtle { color: var(--primary);font-size: .75rem;filter: contrast(0.6); }
   .card-comp {
     text-decoration: none;
     color: var(--text);
@@ -867,13 +867,14 @@ aside {
     padding: 0px 10px; 
     align-items:center; 
     gap:8px; 
-    background: var(--bg); 
-    border: 1px solid var(--bg-dark); 
-    border-radius: 12px; 
+    background: var(--bg-dark); 
+    border: 1px solid var(--bg-light); 
+    border-radius: 12px;
+    transition: all 0.25s ease;
   }
-  .field input, .field select { background: transparent; border: none; color: var(--text); outline: none; width: 100%;appearance: none;font-size: 16px;margin: auto;text-align: center;font-weight: 900;font-family: Charter;}
+  .field input, .field select, .field textarea { background: transparent; border: none; color: var(--text); outline: none; width: 100%;appearance: none;font-size: 16px;margin: auto;text-align: center;font-weight: 900;font-family: Charter;}
   label { margin:0; }
-  label:focus-within  { border: 1px solid light-dark(var(--accent-dark), var(--opposite-dark));box-shadow: 0px 0px 10px light-dark(var(--accent-dark), var(--opposite-dark));}
+  label:focus-within, label:hover  { border: 1px solid light-dark(var(--accent-dark), var(--opposite-dark));box-shadow: 0px 0px 10px light-dark(var(--accent-dark), var(--opposite-dark));}
   input[type="text"]:focus, input[type="search"]:focus, input[type="number"]:focus, input[type="tel"]:focus, textarea:focus, input[type="email"]:focus, input[type="datetime-local"]:focus, input[type="password"]:focus, select:focus { border:none; }
   select {
     text-align-last: center;

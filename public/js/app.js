@@ -14,6 +14,12 @@ function toggleScheme() {
   html.setAttribute('data-scheme', newScheme);
 }
 
+function previewAvatar(el) {
+  const file = el.files[0];
+  if (file) document.getElementById('avatar-preview').innerHTML =
+    '<img src="' + URL.createObjectURL(file) + '" alt="preview">';
+}
+
 function getElement(elRef) {
   const firstChar = elRef.substring(0, 1);
   if (firstChar === ".") {

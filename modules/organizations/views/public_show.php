@@ -105,7 +105,7 @@
   <section class="head mt-2 mb-2 grid-3-auto">
       <div class="logo">
       <?php if(!empty($org->logo)): ?>
-          <img src="<?= out($org->logo) ?>" alt="<?= out($org->organization) ?> logo" style="background: var(--primary-color);border-radius: 14px;max-width:100px;object-fit:contain;">
+          <img src="<?= BASE_URL ?>organizations_module/images/org_avatars/<?= out($org->logo) ?>" alt="<?= out($org->organization) ?> logo" style="border: 1px solid var(--border); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 14px; max-width:100px; object-fit:contain;">
       <?php else: ?>
           <span class="badge">No Logo</span>
       <?php endif; ?>

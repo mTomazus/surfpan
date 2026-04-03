@@ -1,6 +1,7 @@
 <h2>Organizer <span>Profile</span></h2>
 <p>Keep your profile information up to date.</p>
 <div id="response"></div>
+
 <?php
 validation_errors(); // show validation errors
 $form_attr = [
@@ -10,7 +11,34 @@ $form_attr = [
     'class' => 'p-1',
     'style' => 'max-width: 868px; margin:auto;'
 ];
-echo form_open('#', $form_attr);
+echo form_open_upload('#', $form_attr); ?>
+
+<!-- Logo upload -->
+<div class="avatar-wrap" style="margin-bottom: 1.5rem;grid-column: -1 / 1;margin-inline: auto; display: flex; align-items: center; gap: 1rem;">
+  <div class="avatar-preview" id="logo-preview">
+    <?php if (!empty($org->logo)): ?>
+      <img id="logo-img" src="<?= BASE_URL ?>organizations_module/images/org_avatars/<?= out($org->logo) ?>" alt="Logo">
+    <?php else: ?>
+      <span id="logo-initials"><?= mb_strtoupper(mb_substr($org->organization ?? '?', 0, 1)) ?></span>
+    <?php endif; ?>
+  </div>
+  <div>
+    <label class="avatar-upload-btn" for="logo-file-input"><i class="fa fa-camera"></i> Change logo</label>
+    <?php
+      $logo_attr = [
+        'id'         => 'logo-file-input',
+        'accept'     => 'image/jpeg,image/png,image/gif,image/webp',
+        'style'      => 'display:none',
+        'mx-trigger' => 'change',
+        'mx-target'  => '#logo-preview',
+        'mx-post'    => 'organizations/upload_logo',
+      ];
+      echo form_file_select('logo', $logo_attr);
+    ?>
+    <div style="font-size:0.75rem;color:var(--text-light);margin-top:4px;">JPEG, PNG or WEBP · max 400×400px</div>
+  </div>
+</div>
+<?php
 echo '<div class="field">';
 echo form_label('Name', ['class' => 'lbl']);
 echo form_input('organization', $org->organization, ['class'=>'txt','maxlength'=>'255', 'required' => 'required']);

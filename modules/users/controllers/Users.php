@@ -1129,6 +1129,7 @@
             //   comp_organizers: id, name, city (optional), status (optional)
             $sql2 = "SELECT
                         o.id,
+                        o.logo,
                         o.organization AS title,
                         'active' AS status,
                         'organiser' AS type,

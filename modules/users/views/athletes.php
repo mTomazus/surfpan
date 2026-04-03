@@ -34,7 +34,7 @@
     pointer-events: none;
   }
 
-  .athletes-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; backdrop-filter: blur(10px); }
+  .athletes-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);}
   .athletes-table th {
     text-align: left;
     padding: 0.5rem 0.75rem;

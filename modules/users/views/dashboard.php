@@ -388,8 +388,13 @@
           box.style.display = 'grid';
           box.style.gap = '8px';
           box.innerHTML = data.map(x => `
-            <div class="card pad" style="padding:12px">
-              <div class="list-item" style="align-items: center; justify-content: space-between;">
+              ${x.type !== 'competition' ? `<div class="card pad" style="padding:12px; display:flex; align-items:center; gap:12px">
+              <div class="avatar-org">
+                ${x.logo
+                  ? `<img src="organizations_module/images/org_avatars/${escapeHtml(x.logo)}" alt="Logo" onerror="this.onerror=null;this.style.display='none';this.parentNode.innerHTML='<span class=\\'avatar-letter\\'>' + escapeHtml((x.title||'?')[0].toUpperCase()) + '</span>';" />`
+                  : `<span class="avatar-letter">${escapeHtml((x.title||'?')[0].toUpperCase())}</span>`}
+              </div>` : '<div class="card pad" style="padding:12px">'}
+              <div class="list-item" style="align-items: center; justify-content: space-between; flex:1;">
                 <div>
                   <strong>${escapeHtml(String((x.title).toUpperCase()))} ${escapeHtml(x.year || '')}</strong>
                   <h4 class="text-center subtle">• ${x.type === 'competition' ? 'Competition' : 'Organiser'} •</h4>

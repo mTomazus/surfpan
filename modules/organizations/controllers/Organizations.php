@@ -355,6 +355,43 @@
             }
         }
 
+        function upload_logo() {
+            $this->module('trongate_security');
+            $this->trongate_security->_make_sure_allowed('organizers area');
+            $this->module('competitions');
+            $org_id = $this->competitions->_get_organizer_id();
+
+            $org = $this->model->get_one_where('id', $org_id, 'comp_organizations');
+            $old_logo = $org->logo ?? '';
+
+            try {
+                $upload_dir = APPPATH . 'modules/organizations/assets/images/org_avatars';
+                $config = [
+                    'destination'      => $upload_dir,
+                    'upload_to_module' => false, // using absolute path
+                    'max_width'        => 400,
+                    'max_height'       => 400,
+                    'make_rand_name'   => true,
+                ];
+
+                $file_info = $this->image->upload($config);
+                $data['logo'] = $file_info['file_name'];
+
+                if (!empty($old_logo)) {
+                    $old_path = $upload_dir . '/' . basename($old_logo);
+                    if (file_exists($old_path)) {
+                        $this->file->delete($old_path);
+                    }
+                }
+
+                $this->model->update($org_id, $data, 'comp_organizations');
+                echo '<img id="logo-img" src="' . BASE_URL . 'organizations_module/images/org_avatars/' . $data['logo'] . '" alt="Logo">';
+            } catch (Exception $e) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            }
+        }
+
         function change_pass() {
             $this->module('trongate_security');
             $this->trongate_security->_make_sure_allowed('organizers area');

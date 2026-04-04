@@ -103,6 +103,8 @@
         }
 
         function delete_modal() {
+            $this->module('trongate_security');
+            $this->trongate_security->_make_sure_allowed('judges area');
             $comp_id = (int)segment(3);
 
             // Prevent deletion if competition is not in a generated state
@@ -118,6 +120,8 @@
         }
 
         function regenerate_modal() {
+            $this->module('trongate_security');
+            $this->trongate_security->_make_sure_allowed('judges area');
             $comp_id = (int)segment(3);
 
             // Prevent regeneration if competition is not in a generated state

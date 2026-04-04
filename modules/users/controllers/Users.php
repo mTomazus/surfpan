@@ -187,6 +187,7 @@
         }
 
         function submit_update_profile() {
+            $this->_make_sure_allowed();
             $this->validation->set_rules('name', 'name', 'min_length[6]|max_length[55]');
             $this->validation->set_rules('email', 'email', 'min_length[6]|valid_email');
             $this->validation->set_rules('phone', 'phone', 'min_length[8]|max_length[15]');
@@ -1018,6 +1019,7 @@
         // --- Actions ---------------------------------------
 
         function confirm_withdraw() {
+            $this->_make_sure_allowed();
             $record_id = (int)segment(3);
             $user = $this->_get_user_info();
             $user_id = $user[0]['id'];
@@ -1038,7 +1040,7 @@
         }
 
         function join() {
-            
+            $this->_make_sure_allowed();
             $data['comp_id'] = segment(3, 'int');
             $user = $this->_get_user_info();
             $data['user_id'] = $user[0]['id'];

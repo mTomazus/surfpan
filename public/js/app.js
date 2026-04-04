@@ -174,6 +174,21 @@ function handleModalClick(event) {
   }
 }
 
+// Global MX loading bar — intercepts all XHR requests
+(function () {
+  const loader = document.getElementById('mx-loader');
+  if (!loader) return;
+  let active = 0;
+  const show = () => loader.classList.remove('mx-indicator-hidden');
+  const hide = () => { if (--active <= 0) { active = 0; loader.classList.add('mx-indicator-hidden'); } };
+  const origOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function () {
+    this.addEventListener('loadstart', () => { active++; show(); });
+    this.addEventListener('loadend', hide);
+    origOpen.apply(this, arguments);
+  };
+})();
+
 // Initialize
 autoPopulateSlideNav();
 

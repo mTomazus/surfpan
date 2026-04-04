@@ -30,12 +30,14 @@
             $attr['placeholder'] = 'Competion name here...';
             $attr['autocomplete'] = 'off';
             $attr['style'] = 'text-align-last: center;';
+            $attr['required'] = 'required';
             echo form_input('name', '', $attr);
             echo '</label>';
 
             echo '<label class="field">Location';
             $attr['placeholder'] = 'Enter location here...';
             $attr['autocomplete'] = 'off';
+            $attr['required'] = 'required';
             echo form_input('location', '', $attr);
             echo '</label>';
             ?>

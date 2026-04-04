@@ -4,6 +4,7 @@
 	<head><?= Template::partial('partials/users/users_head') ?></head>
 
 	<body>
+		<div id="mx-loader" class="mx-indicator-hidden"></div>
 		<!-- Admin impersonation banner -->
 		<?php if (!empty($_SESSION['admin_token_backup'])): ?>
 		<div style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#b00;color:#fff;text-align:center;padding:8px 16px;font-size:0.88em;display:flex;align-items:center;justify-content:center;gap:16px;">

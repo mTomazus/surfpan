@@ -115,7 +115,7 @@
         echo form_email('email', '', ['class'=>'txt','maxlength'=>'255', 'required' => 'required', 'placeholder'=>'e.g., email@example.com']);
         echo '</div><div class="fld">';
         echo form_label('Phone', ['class' => 'lbl']);
-        echo form_input('phone', '',['maxlength'=>'50', 'type'=>'tel', 'class'=>'txt', 'placeholder'=>'e.g., +1234567890']);
+        echo form_input('phone', '',['maxlength'=>'50', 'type'=>'tel', 'class'=>'txt', 'placeholder'=>'e.g., +1234567890', 'required'=>'required']);
         echo '</div><div class="fld">';
         echo form_label('Address', ['class' => 'lbl']);
         echo form_input('address', '', ['maxlength'=>'255', 'class'=>'txt', 'placeholder'=>'e.g., 123 Main St, City, State']);
@@ -136,10 +136,10 @@
         echo form_dropdown('country', $country_options, '-select country-', $country_attr);
         echo '</div><div class="fld">';
         echo form_label('Password', ['class' => 'lbl']);
-        echo form_password('password', '', ['required' => 'required', 'class'=>'txt']);
+        echo form_password('password', '', ['required' => 'required', 'minlength' => '8', 'class'=>'txt']);
         echo '</div><div class="fld">';
         echo form_label('Repeat Password', ['class' => 'lbl']);
-        echo form_password('repeat_password', '', ['required' => 'required', 'class'=>'txt']);
+        echo form_password('repeat_password', '', ['required' => 'required', 'minlength' => '8', 'class'=>'txt']);
         echo '</div>
         <label class="mb-1 ml-2 agree" style="grid-column: 1/-1;">
             <div class="checkbox-wrapper-30">

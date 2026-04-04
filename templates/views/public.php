@@ -23,7 +23,7 @@
 	</head>
 
 	<body>
-		
+		<div id="mx-loader" class="mx-indicator-hidden"></div>
 		<header><?= Template::partial('partials/public/public_header') ?></header>
 		
 		<main class="public_area"><?= Template::display($data) ?></main>

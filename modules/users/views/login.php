@@ -302,6 +302,7 @@
               <?php $email_attr = [
                 'class' => 'txt',
                 'id'    => 'email',
+                'type'  => 'email',
                 'maxlength' => '120',
                 'placeholder' => 'anyone@gmail.com',
                 'required' => 'required'

@@ -410,3 +410,24 @@ footer .bottom-details .bottom_text{
     width: 100%;
   }
 }
+
+/* ===== Global MX loading bar ===== */
+#mx-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--primary, #4ad9c7);
+  z-index: 99999;
+  transform-origin: left center;
+  animation: mx-loader-pulse 1.2s ease-in-out infinite;
+}
+#mx-loader.mx-indicator-hidden {
+  display: none;
+}
+@keyframes mx-loader-pulse {
+  0%   { opacity: 1; transform: scaleX(0.05); }
+  50%  { opacity: 1; transform: scaleX(0.7); }
+  100% { opacity: 0.6; transform: scaleX(1); }
+}

@@ -50,7 +50,7 @@
     padding: 0.65rem 0.75rem;
     vertical-align: middle;
   }
-  .athletes-table tr { border-bottom: 1px solid var(--border); align-items: center; display: flex; }
+  .athletes-table tr { border-bottom: 1px solid var(--border); align-items: center; }
   .athletes-table tr td:nth-child(3) { color: var(--ok); }
   .athletes-table tr td:nth-child(5) { color: var(--primary); font-family: 'Lato', sans-serif; }
   .athletes-table tr:last-child td { border-bottom: none; }

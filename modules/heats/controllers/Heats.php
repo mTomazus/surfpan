@@ -408,11 +408,11 @@
             //Fetch unique divisions
             $unique_divisions = $this->_get_unique_divisions($comp_id);
 
-            // Loop through heats and fetch participants
-            foreach ($heats as &$heat) { // Use reference to modify array
-
-                $heat['participants'] = $this->_get_heat_participants($heat['id']);
-            
+            // Batch-fetch all participants for all heats in one query
+            $heat_ids = array_column($heats, 'id');
+            $participants_by_heat = $this->_get_participants_for_heats($heat_ids);
+            foreach ($heats as &$heat) {
+                $heat['participants'] = $participants_by_heat[$heat['id']] ?? [];
             }
             
             // Pass data to view
@@ -626,18 +626,14 @@
                 $formatted_results[$heat_id][$participant_id] = $result;
             }
 
-            // Loop through heats and fetch participants + results
-            foreach ($heats as &$heat) { // Use reference to modify array
-
-                $heat['participants'] = $this->_get_heat_participants($heat['id']) ?? [];
-
+            // Batch-fetch all participants for all heats in one query, then assign results
+            $heat_ids = array_column($heats, 'id');
+            $participants_by_heat = $this->_get_participants_for_heats($heat_ids);
+            foreach ($heats as &$heat) {
+                $heat['participants'] = $participants_by_heat[$heat['id']] ?? [];
                 foreach ($heat['participants'] as &$participant) {
                     $participant_id = (int)$participant['participant_id'];
-
-                    // Assign result safely, avoiding undefined index error
-                    $participant['result'] = isset($formatted_results[$heat['id']][$participant_id]) 
-                        ? $formatted_results[$heat['id']][$participant_id] 
-                        : null;
+                    $participant['result'] = $formatted_results[$heat['id']][$participant_id] ?? null;
                 }
             }
   
@@ -693,9 +689,6 @@
         }
 
         public function _get_heat_participants($heat_id){
-            // FIXED: to fetch name from comp_users table not first_name and last_name from comp_participants table    
-            
-            // Build the SQL query (using placeholders).
             $sql = "SELECT
                     p.id      AS participant_id,
                     p.user_id AS user_id,
@@ -706,14 +699,36 @@
                     hp.jersey_color
                     FROM comp_heat_participants hp
                     JOIN comp_participants p ON hp.participant_id = p.id
-                    LEFT JOIN comp_users u     ON p.user_id = u.id
-                    WHERE hp.heat_id = $heat_id
+                    LEFT JOIN comp_users u   ON p.user_id = u.id
+                    WHERE hp.heat_id = ?
                     ORDER BY FIELD(hp.jersey_color, 'white', 'red', 'green', 'blue')";
 
-            // Execute the query using the unnamed parameters.
-            $heat_participants = $this->model->query($sql, 'array');
+            return $this->model->query_bind($sql, [$heat_id], 'array');
+        }
 
-            return $heat_participants;
+        private function _get_participants_for_heats(array $heat_ids): array {
+            if (empty($heat_ids)) { return []; }
+            $placeholders = implode(',', array_fill(0, count($heat_ids), '?'));
+            $sql = "SELECT
+                    hp.heat_id,
+                    p.id      AS participant_id,
+                    p.user_id AS user_id,
+                    COALESCE(
+                        NULLIF(TRIM(u.name), ''),
+                        NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(p.first_name), ''), NULLIF(TRIM(p.last_name), ''))), '')
+                    ) AS name,
+                    hp.jersey_color
+                    FROM comp_heat_participants hp
+                    JOIN comp_participants p ON hp.participant_id = p.id
+                    LEFT JOIN comp_users u   ON p.user_id = u.id
+                    WHERE hp.heat_id IN ($placeholders)
+                    ORDER BY hp.heat_id, FIELD(hp.jersey_color, 'white', 'red', 'green', 'blue')";
+            $rows = $this->model->query_bind($sql, $heat_ids, 'array');
+            $by_heat = [];
+            foreach ($rows as $row) {
+                $by_heat[$row['heat_id']][] = $row;
+            }
+            return $by_heat;
         }
 
         public function _get_unique_divisions($comp_id) {

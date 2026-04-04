@@ -4,7 +4,7 @@
 </div>
 <div class="d-md-none" style="flex: 1.5;text-align: center;">
 
-    <?= Template::partial("partials/users/users_slide") ?>
+    <?= Template::partial('partials/slide_nav', ['slide_type' => 'users']) ?>
 
 </div>
 <?php 

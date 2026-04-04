@@ -30,7 +30,7 @@
 		?>
 
 		<header><?= Template::partial('partials/users/users_header', $data) ?></header>
-		<?= Template::partial('partials/users/users_slide', $data) ?>
+		<?= Template::partial('partials/slide_nav', ['slide_type' => 'users']) ?>
 		<aside id="side-nav"><?= Template::partial('partials/users/users_aside', $data) ?></aside>
 
 		<main class="users_area"><?= Template::display($data) ?></main>

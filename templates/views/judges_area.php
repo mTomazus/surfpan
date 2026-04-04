@@ -21,7 +21,7 @@
 
 		<header><?= Template::partial('partials/judges/judges_header', $data) ?></header>
 		
-		<?= Template::partial('partials/judges/judges_slide', $data) ?>
+		<?= Template::partial('partials/slide_nav', ['slide_type' => 'judges']) ?>
 		
 		<aside id="side-nav"><?= Template::partial('partials/judges/judges_aside', $data) ?></aside>
 		

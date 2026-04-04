@@ -5,7 +5,7 @@
     </div>
 </div>
 <div>
-    <?= Template::partial('partials/public/public_slide', $data) ?>
+    <?= Template::partial('partials/slide_nav', ['slide_type' => 'public']) ?>
 </div>
 <?= anchor('users', '<i class="fa fa-sign-in"></i>', ['class' => 'login-btn', 'style' => 'margin-inline:1rem']) ?>
 <div id="hamburger" class="burger col-3" onclick="toggleSlideNav()">

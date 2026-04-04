@@ -256,6 +256,7 @@
             $this->module('trongate_security');
             $this->module('competitions');
             $this->trongate_security->_make_sure_allowed('judges area');
+            $this->validation->run();
 
             $organizer_id = $this->competitions->_get_organizer_user_id();
             $competition_id = (int)segment(3);
@@ -510,9 +511,10 @@
         }
 
         function submit_score() {
- 
+
             $this->module('trongate_security');
             $this->trongate_security->_make_sure_allowed('judges area');
+            $this->validation->run();
             $this->module("competitions");
  
             $judge_info = $this->competitions->_get_judge_info();

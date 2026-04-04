@@ -520,6 +520,7 @@
         function submit_delete_participant() {
             $this->module('trongate_security');
             $this->trongate_security->_make_sure_allowed('judges area');
+            $this->validation->run();
 
             $record_id = (int)segment(3);
 
@@ -776,6 +777,7 @@
         public function submit_delete_comp() {
             $this->module('trongate_security');
             $this->trongate_security->_make_sure_allowed('organizers area');
+            $this->validation->run();
             $record_id = (int)segment(3);
             $object = $this->model->get_where($record_id, 'comp_name');
             $organizer_id = $this->_get_organizer_user_id();
@@ -1021,6 +1023,7 @@
         function submit_delete_judge() {
             $this->module('trongate_security');
             $this->trongate_security->_make_sure_allowed('judges area');
+            $this->validation->run();
 
             $update_id = (int) segment(3);
             $organizer_id = $this->_get_organizer_id();

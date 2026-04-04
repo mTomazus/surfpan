@@ -88,13 +88,13 @@
                 'country'      => post('country', true),
                 'status'       => 'inactive',
                 'trongate_user_id' => $trongate_user_id,
-                'password' => $this->hash_string($password)
+                'password' => password_hash($password, PASSWORD_BCRYPT, ['cost' => 11])
             ];
             $orgId = $this->model->insert($data, 'comp_organizations');
 
             $data = [
                 'organization_id' => $orgId,
-                'password' => $this->hash_string($password),
+                'password' => password_hash($password, PASSWORD_BCRYPT, ['cost' => 11]),
                 'trongate_user_id' => $trongate_user_id,
                 'email'        => $email,
                 'phone'        => post('phone', true)
@@ -420,7 +420,7 @@
 
             // Update password
             $new_password = post('new_password', true);
-            $hashed_password = $this->hash_string($new_password);
+            $hashed_password = password_hash($new_password, PASSWORD_BCRYPT, ['cost' => 11]);
 
             $data['password'] = $hashed_password;
 
@@ -497,17 +497,6 @@
             return $s !== '' ? $s : 'org';
         }
 
-        private function hash_string(string $str): string {
-            $hashed_string = password_hash($str, PASSWORD_BCRYPT, array(
-                'cost' => 11
-            ));
-            return $hashed_string;
-        }
-
-        private function verify_hash(string $plain_text_str, string $hashed_string): bool {
-            $result = password_verify($plain_text_str, $hashed_string);
-            return $result; //TRUE or FALSE
-        }
 
         function email_unique($email) {
             $member_obj = $this->model->get_one_where('email', $email, 'comp_organizations');

@@ -1079,7 +1079,7 @@
                 $data['email'] = post('email', true);
                 $data['phone'] = post('phone', true);
                 $password = post('password');
-                $data['password'] = $this->hash_string($password);
+                $data['password'] = password_hash($password, PASSWORD_BCRYPT, ['cost' => 11]);
                 $data['trongate_user_id'] = $trongate_user_id;
                 $user_id = $this->model->insert($data, 'comp_judges');
 
@@ -1179,18 +1179,6 @@
 
         }
 
-        private function hash_string(string $str): string {
-            $hashed_string = password_hash($str, PASSWORD_BCRYPT, array(
-                'cost' => 11
-            ));
-            return $hashed_string;
-        }
-
-        private function verify_hash(string $plain_text_str, string $hashed_string): bool {
-            $result = password_verify($plain_text_str, $hashed_string);
-            return $result; //TRUE or FALSE
-        }
-
         function username_unique($username) {
             $member_obj = $this->model->get_one_where('username', $username, 'comp_judges');
             if($member_obj === false) {
@@ -1225,7 +1213,7 @@
             $password = post('password');
 
             $stored_password = $member_obj->password;
-            $is_password_valid = $this->verify_hash($password, $stored_password); // Return true or false
+            $is_password_valid = password_verify($password, $stored_password);
 
             if($is_password_valid === true) {
                 return true;

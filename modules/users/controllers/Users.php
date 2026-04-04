@@ -160,7 +160,7 @@
                 $data['email'] = post('email', true);
                 $data['phone'] = post('phone', true);
                 $password = post('password');
-                $data['password'] = $this->hash_string($password);
+                $data['password'] = password_hash($password, PASSWORD_BCRYPT, ['cost' => 11]);
                 $data['trongate_user_id'] = $trongate_user_id;
                 $data['date_joined'] = date("Y-m-d H:i:s");
                 
@@ -765,7 +765,7 @@
                 return $this->template('public', $data);
             }
 
-            $new_hash = $this->hash_string(post('password', true));
+            $new_hash = password_hash(post('password', true), PASSWORD_BCRYPT, ['cost' => 11]);
 
             // Update password
             $this->model->update($user->id, ['password' => $new_hash], $table);
@@ -914,14 +914,6 @@
             return '$2y$11$abcdefghijklmnopqrstuvABCDE1234567890wxyzABCDE12';
         }
 
-        private function hash_string(string $str): string {
-            return password_hash($str, PASSWORD_BCRYPT, ['cost' => 11]);
-        }
-
-        private function verify_hash(string $plain_text_str, string $hashed_string): bool {
-            return password_verify($plain_text_str, $hashed_string);
-        }
-
         // --- Validation callback --------------------------------------------------
 
         function login_check($email) {
@@ -943,7 +935,7 @@
             // Use real hash if found, otherwise dummy to match timing
             $stored_hash = $user ? $user->password : $this->dummy_hash();
 
-            $is_valid = $this->verify_hash($password, $stored_hash);
+            $is_valid = password_verify($password, $stored_hash);
 
             if (!$user || !$is_valid) {
                 // soft rate limit here

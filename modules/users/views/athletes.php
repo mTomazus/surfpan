@@ -48,9 +48,9 @@
   }
   .athletes-table td {
     padding: 0.65rem 0.75rem;
-    border-bottom: 1px solid var(--border);
     vertical-align: middle;
   }
+  .athletes-table tr { border-bottom: 1px solid var(--border); align-items: center; display: flex; }
   .athletes-table tr td:nth-child(3) { color: var(--ok); }
   .athletes-table tr td:nth-child(5) { color: var(--primary); font-family: 'Lato', sans-serif; }
   .athletes-table tr:last-child td { border-bottom: none; }
@@ -153,7 +153,7 @@
           <td style="text-align:center"><?= (int)$a->comp_count ?></td>
           <td style="text-align:center" class="<?= $pts > 0 ? 'points-cell' : 'points-zero' ?>"><?= $pts > 0 ? number_format($pts) : '—' ?></td>
           <td style="text-align:center">
-            <a class="btn-profile" href="<?= BASE_URL ?>users/profile/<?= out($a->slug) ?>">View Profile</a>
+            <a class="btn-profile" href="<?= BASE_URL ?>users/profile/<?= out($a->slug) ?>">View</a>
           </td>
         </tr>
         <?php endforeach; ?>

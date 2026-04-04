@@ -62,11 +62,13 @@ function round_badge(string $round): string {
     background: var(--ok);
   }
   .hero-name  {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
     font-size: 4rem;
     text-wrap: wrap;
     font-weight: 700;
     margin: 0 0 0.3rem;
-    width: 50%;
     line-height: 4.5rem;
     text-transform: uppercase;
   }
@@ -158,7 +160,7 @@ function round_badge(string $round): string {
         <?= mb_strtoupper(mb_substr($athlete['name'] ?? '?', 0, 1)) ?>
       <?php endif; ?>
     </div>
-    <div>
+    <div style="overflow: hidden;">
         <div class="flex">
         <?php if (!empty($athlete['country'])): ?>
           <span class="hero-country"><?= out($athlete['country_name'] ?? strtoupper($athlete['country'])) ?></span>

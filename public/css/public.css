@@ -570,19 +570,27 @@ main h2 + p, .modal-body h2 + p {
       & td:nth-child(2) {
         flex: 1;
       }
-      
     }
 
     table {
       & thead {
         display: none;
       }
+    }
+    .athletes-table {
+      & thead {
+        display: none;
+      }
       & tbody {
-        display: flex;
+        display: grid;
         justify-content: space-evenly;
         width: 100%;
-        & tr {
-          display: grid;
+        & td:not(:nth-child(1), :nth-child(2), :last-child) {
+          display: none;
+        }
+        & td:nth-child(2) {
+          flex:1;
+          text-align: left;
         }
       }
     }
@@ -600,22 +608,6 @@ main h2 + p, .modal-body h2 + p {
     }
     .sm-none {
       display: none;
-    }
-  }
-
-  @media (min-width: 856px) {
-    #heat-scores tbody {
-      & tr {
-        display: flex;
-        align-items: center;
-      }
-      & td:last-child {
-        justify-content: flex-end;
-        & div {
-          width: auto;
-        }
-      }
-
     }
   }
 
@@ -1121,6 +1113,18 @@ footer .bottom-details .bottom_text{
 
 /* Desktop Styles upto 855px */
 @media only screen and (min-width: 855px) {
+  #heat-scores tbody {
+    & tr {
+      display: flex;
+      align-items: center;
+    }
+    & td:last-child {
+      justify-content: flex-end;
+      & div {
+        width: auto;
+      }
+    }
+  }
   .login-link {
     display: none;
   }
@@ -1162,6 +1166,7 @@ footer .bottom-details .bottom_text{
     }
   }
 }
+
 /* Mobile Styles upto 854px */
 @media only screen and (max-width: 854px) {
   header {

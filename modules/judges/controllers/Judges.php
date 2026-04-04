@@ -550,8 +550,10 @@
             ];
  
             // Insert the score into comp_judge_scores table
+            $this->module('logger');
             $update_id = $this->model->insert($data, 'comp_judge_scores');
- 
+            if (!$update_id) { $this->logger->log_message('error', 'Judges::submit_score: failed to insert comp_judge_scores'); }
+
             $flash_msg = $is_missed
                 ? 'Wave no ' . $next_wave . ' marked as Missed (M) – excluded from average'
                 : 'The score ' . $score . ' was added for wave no ' . $next_wave;

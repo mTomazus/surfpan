@@ -214,8 +214,10 @@
             ];
  
             // Insert the score into comp_judge_scores table
+            $this->module('logger');
             $update_id = $this->model->insert($data, 'comp_judge_scores');
- 
+            if (!$update_id) { $this->logger->log_message('error', 'Competitions::submit_score: failed to insert comp_judge_scores'); }
+
             $flash_msg = $is_missed
                 ? 'Wave no ' . $next_wave . ' marked as Missed (L) – excluded from average'
                 : 'The score ' . $score . ' was added for wave no ' . $next_wave;
@@ -734,7 +736,9 @@
                     $data['status'] = 'created';
                     $data['organizer_id'] = $user_id; // Set
                     //insert the new record
+                    $this->module('logger');
                     $update_id = $this->model->insert($data, 'comp_name');
+                    if (!$update_id) { $this->logger->log_message('error', 'Competitions::submit_create_competition: failed to insert comp_name'); }
                     
                     // Insert into comp_competition_divisions
                     if (is_array($divisions)) {
@@ -1073,9 +1077,11 @@
             if($result === true) {
                 // Create new judge account.
                 // Start by creating a new record on Trongate users.
+                $this->module('logger');
                 $trongate_user_data['code'] = make_rand_str(32);
                 $trongate_user_data['user_level_id'] = 3; // judge and head judge id.
                 $trongate_user_id = $this->model->insert($trongate_user_data, 'trongate_users');
+                if (!$trongate_user_id) { $this->logger->log_message('error', 'Competitions::submit_create_judge: failed to insert trongate_users'); }
 
                 // Now build up array of $data for the judges record.
                 $data['name'] = post('name', true);
@@ -1085,15 +1091,17 @@
                 $data['password'] = password_hash($password, PASSWORD_BCRYPT, ['cost' => 11]);
                 $data['trongate_user_id'] = $trongate_user_id;
                 $user_id = $this->model->insert($data, 'comp_judges');
+                if (!$user_id) { $this->logger->log_message('error', 'Competitions::submit_create_judge: failed to insert comp_judges'); }
 
                 $data_comp['role'] = post('role', true); // judge role
                 $data_comp['user_id'] = $user_id;
                 $organizer_id = $this->_get_organizer_id();
                 $data_comp['organization_id']= $organizer_id;
                 $data_comp['invited_by']= $organizer_id;
-                
+
                 // Insert judge role into comp_user_roles
-                $this->model->insert($data_comp, 'comp_org_judges');
+                $r = $this->model->insert($data_comp, 'comp_org_judges');
+                if (!$r) { $this->logger->log_message('error', 'Competitions::submit_create_judge: failed to insert comp_org_judges'); }
 
                 echo '<p style="color: black;background: rgb(92, 142, 141);text-align: center;padding: 0.5rem;font-size: initial;flex: 1;"> Congrats... Judge created succesfully!</p>';
                 return; // Stop further execution

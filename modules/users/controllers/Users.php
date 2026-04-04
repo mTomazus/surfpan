@@ -153,7 +153,9 @@
                 // Start by creating a new record on Trongate users.
                 $trongate_user_data['code'] = make_rand_str(32);
                 $trongate_user_data['user_level_id'] = 5; // comp member id.
+                $this->module('logger');
                 $trongate_user_id = $this->model->insert($trongate_user_data, 'trongate_users');
+                if (!$trongate_user_id) { $this->logger->log_message('error', 'Users::submit_signup: failed to insert trongate_users'); }
 
                 // Now build up array of $data for the comp_users record.
                 $data['name'] = post('name', true);
@@ -166,13 +168,15 @@
                 
                 // Create new user record in database.
                 $user_id = $this->model->insert($data, 'comp_users');
+                if (!$user_id) { $this->logger->log_message('error', 'Users::submit_signup: failed to insert comp_users'); }
 
                 // Now create a new record in comp_users_profiles.
                 $profile_data['user_id'] = $user_id;
                 $profile_data['dob'] = post('birthday', true);
                 $profile_data['country'] = post('country', true);
                 $profile_data['gender'] = post('gender', true);
-                $this->model->insert($profile_data, 'comp_users_profiles');
+                $r = $this->model->insert($profile_data, 'comp_users_profiles');
+                if (!$r) { $this->logger->log_message('error', 'Users::submit_signup: failed to insert comp_users_profiles'); }
 
                 // Create a new token to auto login the user.
                 $this->module('trongate_tokens');
@@ -707,7 +711,9 @@
                 'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null
             ];
 
-            $this->model->insert($data, 'comp_password_resets');
+            $this->module('logger');
+            $r = $this->model->insert($data, 'comp_password_resets');
+            if (!$r) { $this->logger->log_message('error', 'Users::_send_password_reset: failed to insert comp_password_resets'); }
 
             // Build reset link
             $reset_link = rtrim(BASE_URL, '/').'/users/password_reset?token='.$token;
@@ -769,7 +775,9 @@
             $new_hash = password_hash(post('password', true), PASSWORD_BCRYPT, ['cost' => 11]);
 
             // Update password
-            $this->model->update($user->id, ['password' => $new_hash], $table);
+            $this->module('logger');
+            $r = $this->model->update($user->id, ['password' => $new_hash], $table);
+            if (!$r) { $this->logger->log_message('error', 'Users::submit_reset: failed to update password for user ' . $user->id); }
 
             // Invalidate all existing login tokens for this user (recommended)
             if (isset($user->trongate_user_id)) {
@@ -1074,7 +1082,9 @@
                 }
 
                 //insert the new record
-                $this->model->insert($data, 'comp_participants');
+                $this->module('logger');
+                $r = $this->model->insert($data, 'comp_participants');
+                if (!$r) { $this->logger->log_message('error', 'Users::join: failed to insert comp_participants'); }
                 $flash_msg = 'The record was successfully created';
                 set_flashdata($flash_msg);
             }

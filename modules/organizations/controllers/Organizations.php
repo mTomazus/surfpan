@@ -67,9 +67,11 @@
             }
 
             // Start by creating a new record on Trongate users.
+            $this->module('logger');
             $trongate_user_data['code'] = make_rand_str(32);
             $trongate_user_data['user_level_id'] = 4; // organizer id.
             $trongate_user_id = $this->model->insert($trongate_user_data, 'trongate_users');
+            if (!$trongate_user_id) { $this->logger->log_message('error', 'Organizations::submit: failed to insert trongate_users'); }
 
             // Collect input data
             $organization = post('organization', true);
@@ -91,6 +93,7 @@
                 'password' => password_hash($password, PASSWORD_BCRYPT, ['cost' => 11])
             ];
             $orgId = $this->model->insert($data, 'comp_organizations');
+            if (!$orgId) { $this->logger->log_message('error', 'Organizations::submit: failed to insert comp_organizations'); }
 
             $data = [
                 'organization_id' => $orgId,
@@ -101,6 +104,7 @@
             ];
 
             $orgAcctId = $this->model->insert($data, 'comp_org_accounts');
+            if (!$orgAcctId) { $this->logger->log_message('error', 'Organizations::submit: failed to insert comp_org_accounts'); }
 
             $confirm_link = $this->_create_confirm_link($trongate_user_id);
             $this->_send_confirm_email($email, $confirm_link);
@@ -531,7 +535,9 @@
                 'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null
             ];
 
-            $this->model->insert($data, 'comp_password_resets');
+            $this->module('logger');
+            $r = $this->model->insert($data, 'comp_password_resets');
+            if (!$r) { $this->logger->log_message('error', 'Organizations::_create_confirm_link: failed to insert comp_password_resets'); }
 
             // Build confirm link
             $confirm_link = rtrim(BASE_URL, '/').'/organizations/email_confirm?token='.$token;

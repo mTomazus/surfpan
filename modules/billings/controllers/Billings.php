@@ -66,7 +66,9 @@
                 ];
 
                 // Insert order
+                $this->module('logger');
                 $order_id = $this->model->insert($data, 'billing_charges');
+                if (!$order_id) { $this->logger->log_message('error', 'Billings::checkout: failed to insert billing_charges'); }
                 $data2 = [
                     'billing_charge_id' => $order_id
                 ];
@@ -448,7 +450,9 @@
                 ];
 
                 // Insert order
+                $this->module('logger');
                 $order_id = $this->model->insert($data, 'billing_charges');
+                if (!$order_id) { $this->logger->log_message('error', 'Billings::submit_comp_payment: failed to insert billing_charges'); }
                 $data2 = [
                     'billing_tier'      => $product->code,
                     'billing_charge_id' => $order_id,

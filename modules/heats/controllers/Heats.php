@@ -919,6 +919,7 @@
     //-------------------------------------------------------------   
         private function _generate_double_elimination_bracket($comp_id, $participants, $total_participants, $division) {
 
+            $this->module('logger');
             $jersey_colors = ['white', 'red', 'green', 'blue'];
 
             // -------------------------------------------------------
@@ -1043,7 +1044,7 @@
                 }
             }
             if ($config === null) {
-                log_message('error', "No double chance config for {$total_participants} participants in {$division}");
+                $this->logger->log_message('error', "No double chance config for {$total_participants} participants in {$division}");
                 return false;
             }
 
@@ -1189,6 +1190,7 @@
     //-------------------------------------------------------------
         private function _generate_single_elimination_bracket($comp_id, $participants, $total_participants, $division) {
 
+            $this->module('logger');
             $jersey_colors = ['white', 'red', 'green', 'blue'];
 
             // -------------------------------------------------------
@@ -1292,7 +1294,7 @@
             }
 
             if ($config === null) {
-                log_message('error', "No single elimination config for {$total_participants} participants in {$division}");
+                $this->logger->log_message('error', "No single elimination config for {$total_participants} participants in {$division}");
                 return false;
             }
 
@@ -1426,6 +1428,7 @@
     //  - R1 losers get a second chance in a Repechage round
         private function _generate_second_chance_bracket($comp_id, $participants, $total_participants, $division) {
 
+            $this->module('logger');
             $jersey_colors = ['white', 'red', 'green', 'blue'];
 
             // -------------------------------------------------------
@@ -1519,7 +1522,7 @@
                 }
             }
             if ($config === null) {
-                log_message('error', "No second chance config for {$total_participants} participants in {$division}");
+                $this->logger->log_message('error', "No second chance config for {$total_participants} participants in {$division}");
                 return false;
             }
 
@@ -1649,6 +1652,7 @@
         //-------------------------------------------------------------
         public function _generate_all_heats($comp_id) {
 
+            $this->module('logger');
             $this->module('trongate_security');
             $this->trongate_security->_make_sure_allowed('organizers area');
 
@@ -1658,7 +1662,7 @@
             $competition = $this->model->get_one_where('id', $comp_id, 'comp_name');
 
             if (!$competition) {
-                log_message('error', "Heat generation failed: competition {$comp_id} not found.");
+                $this->logger->log_message('error', "Heat generation failed: competition {$comp_id} not found.");
                 return redirect('heats/show_heats_draw/' . $comp_id);
             }
 
@@ -1681,7 +1685,7 @@
             $divisions = $this->model->query_bind($sql, ['comp_id' => $comp_id], 'array');
 
             if (empty($divisions)) {
-                log_message('error', "Heat generation failed: no divisions found for competition {$comp_id}.");
+                $this->logger->log_message('error', "Heat generation failed: no divisions found for competition {$comp_id}.");
                 return redirect('heats/show_heats_draw/' . $comp_id);
             }
 
@@ -1753,7 +1757,7 @@
             // Log any errors that occurred during generation, but still mark the competition as generated
             if (!empty($errors)) {
                 foreach ($errors as $err) {
-                    log_message('error', "Heat generation [{$comp_id}]: {$err}");
+                    $this->logger->log_message('error', "Heat generation [{$comp_id}]: {$err}");
                 }
                 // Store errors in session so show_heats_draw can display them
                 $_SESSION['heat_generation_errors'] = $errors;
@@ -1773,15 +1777,16 @@
 
         public function _process_heat_results($heat_id) {
 
+            $this->module('logger');
             if (!$heat_id) {
-                log_message('error', '_process_heat_results: no heat_id provided.');
+                $this->logger->log_message('error', '_process_heat_results: no heat_id provided.');
                 return false;
             }
 
             $heat = $this->model->get_where($heat_id, 'comp_heats');
 
             if (!$heat) {
-                log_message('error', "_process_heat_results: heat {$heat_id} not found.");
+                $this->logger->log_message('error', "_process_heat_results: heat {$heat_id} not found.");
                 return false;
             }
 
@@ -1795,7 +1800,7 @@
             $final_scores = $this->_get_final_scores($heat_id);
 
             if (empty($final_scores)) {
-                log_message('error', "_process_heat_results: no scores found for heat {$heat_id}.");
+                $this->logger->log_message('error', "_process_heat_results: no scores found for heat {$heat_id}.");
                 return false;
             }
 
@@ -1809,7 +1814,7 @@
             $routes = $this->model->query_bind($sql, ['heat_id' => $heat_id], 'array');
 
             if (empty($routes)) {
-                log_message('error', "_process_heat_results: no advancement routes for heat {$heat_id}. Was the bracket generated correctly?");
+                $this->logger->log_message('error', "_process_heat_results: no advancement routes for heat {$heat_id}. Was the bracket generated correctly?");
                 return false;
             }
 
@@ -1825,7 +1830,7 @@
 
                 if (!array_key_exists($position, $route_map)) {
                     // More participants than advancement rows — treat as eliminated
-                    log_message('error', "_process_heat_results: no route for position {$position} in heat {$heat_id}.");
+                    $this->logger->log_message('error', "_process_heat_results: no route for position {$position} in heat {$heat_id}.");
                     continue;
                 }
 
@@ -1879,6 +1884,7 @@
 
         public function _seed_into_heat($participant_id, $to_heat_id, $from_heat_id) {
 
+            $this->module('logger');
             // Guard: check participant isn't already in this heat
             $sql = "SELECT COUNT(*) AS cnt
                     FROM comp_heat_participants
@@ -1907,7 +1913,7 @@
             $available = array_values(array_diff($colors, $used_colors));
 
             if (empty($available)) {
-                log_message('error', "_seed_into_heat: no jersey colors left in heat {$to_heat_id} for participant {$participant_id}. Heat may be overfull.");
+                $this->logger->log_message('error', "_seed_into_heat: no jersey colors left in heat {$to_heat_id} for participant {$participant_id}. Heat may be overfull.");
                 return;
             }
 
@@ -1926,6 +1932,7 @@
 
         private function _save_heat_results($heat_id, $final_scores) {
 
+            $this->module('logger');
             // Clear any previous results for this heat before re-saving
             $sql = "DELETE FROM comp_heat_results WHERE heat_id = :heat_id";
             $this->model->query_bind($sql, ['heat_id' => $heat_id]);
@@ -1939,7 +1946,7 @@
                 ], 'comp_heat_results');
 
                 if (!$inserted) {
-                    log_message('error', "_save_heat_results: failed to insert result for participant {$data['participant_id']} in heat {$heat_id}.");
+                    $this->logger->log_message('error', "_save_heat_results: failed to insert result for participant {$data['participant_id']} in heat {$heat_id}.");
                 }
             }
         }
@@ -1991,6 +1998,7 @@
 
         public function calculate_final_standings($comp_id, $division) {
 
+            $this->module('logger');
             // Get all heat results for this division, ordered by round then rank
             $sql = "SELECT hr.participant_id, hr.rank, hr.total_score, ch.round
                     FROM comp_heat_results hr
@@ -2005,7 +2013,7 @@
             ], 'array');
 
             if (empty($results)) {
-                log_message('error', "calculate_final_standings: no results found for division {$division} in comp {$comp_id}.");
+                $this->logger->log_message('error', "calculate_final_standings: no results found for division {$division} in comp {$comp_id}.");
                 return [];
             }
 

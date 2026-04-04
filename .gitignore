@@ -10,3 +10,4 @@ CLAUDE.md
 */.DS_Store
 modules/users/.DS_Store
 ISSUES.md
+modules/logger/assets/*.log

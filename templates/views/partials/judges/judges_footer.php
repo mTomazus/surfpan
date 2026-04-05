@@ -1,8 +1,8 @@
 <div class="footer-details d-sm-none d-flex" style="justify-content: space-between;align-items: center;padding-block: 4px;flex-wrap: wrap;">
         <span class="copyright_text">Copyright © <?= date('Y') ?> <a>Surf Pan.</a> All rights reserved</span>
         <div class="media-icons">
-            <a href="#"><i class="fa fa-instagram"></i></a>
-            <a href="#"><i class="fa fa-youtube"></i></a>
+            <a href="https://www.instagram.com/surf_panel/"><i class="fa fa-instagram"></i></a>
+            <a href="https://www.youtube.com/@SurfPanel"><i class="fa fa-youtube"></i></a>
         </div>
         <span class="policy_terms">
             <a href="" mx-build-modal="contacts-modal" mx-get="welcome/contacts">Contacts</a><span> • </span>

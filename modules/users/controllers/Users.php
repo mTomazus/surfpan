@@ -368,7 +368,7 @@
 
             } catch (Exception $e) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                echo '<p class="error-msg">' . out($e->getMessage()) . '</p>';
             }
         }
 
@@ -673,6 +673,7 @@
             $this->validation->set_rules('email', 'email', 'required|valid_email');
             $result = $this->validation->run();
             if ($result === false) {
+                http_response_code(422);
                 echo '<p style="color:red;font-size: 0.8rem;">Not valid Email!</p>';
                 echo '<button class="alt" style="color: var(--white);border: 1px solid;margin: 1.5rem auto;display: block;" onclick="closeModal()">Close</button>';
                 return;

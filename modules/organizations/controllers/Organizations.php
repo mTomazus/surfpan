@@ -61,6 +61,7 @@
             $result = $this->validation->run();
 
             if ($result == false) {
+                http_response_code(422);
                 echo '<p style="color: black;background: orange;text-align: center;padding: 0.5rem;">Form fields have to be filled!</p>';
                 echo validation_errors();
                 return;
@@ -149,6 +150,7 @@
                 $result = $this->validation->run();
 
                 if ($result == false) {
+                    http_response_code(422);
                     echo '<p style="color: black;background: orange;text-align: center;padding: 0.5rem;">Form fields have to be filled!</p>';
                     echo validation_errors();
                     return;
@@ -392,7 +394,7 @@
                 echo '<img id="logo-img" src="' . BASE_URL . 'organizations_module/images/org_avatars/' . $data['logo'] . '" alt="Logo">';
             } catch (Exception $e) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                echo '<p class="error-msg">' . out($e->getMessage()) . '</p>';
             }
         }
 
@@ -418,6 +420,7 @@
             $result = $this->validation->run();
 
             if ($result == false) {
+                http_response_code(422);
                 echo validation_errors(406);
                 return;
             }

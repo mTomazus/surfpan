@@ -135,7 +135,6 @@
         }
 
         function submit_create_account() {
-
             $this->validation->set_rules('name', 'name', 'min_length[6]|max_length[55]');
             $this->validation->set_rules('email', 'email', 'required|min_length[6]|valid_email|callback_email_unique');
             $this->validation->set_rules('password', 'password', 'required|min_length[6]|max_length[55]');
@@ -427,12 +426,16 @@
                     athlete_points AS (
                         SELECT user_id,
                                SUM(CASE place
-                                   WHEN 1 THEN 1000 WHEN 2 THEN 700 WHEN 3 THEN 500
-                                   WHEN 4 THEN 400  WHEN 5 THEN 320 WHEN 6 THEN 260
-                                   WHEN 7 THEN 220  WHEN 8 THEN 180
-                                   ELSE IF(place <= 16, 130, 80)
+                                   WHEN 1 THEN 1000 WHEN 2 THEN 860 WHEN 3 THEN 730
+                                   WHEN 4 THEN 670  WHEN 5 THEN 610 WHEN 6 THEN 583
+                                   WHEN 7 THEN 555  WHEN 8 THEN 528 WHEN 9 THEN 500
+                                   WHEN 10 THEN 488 WHEN 11 THEN 475 WHEN 12 THEN 462
+                                   WHEN 13 THEN 450 WHEN 14 THEN 438 WHEN 15 THEN 425
+                                   WHEN 16 THEN 413 WHEN 17 THEN 400
+                                   ELSE IF(place <= 65, 160 + (65 - place) * 5, 80)
                                END) AS total_points
                         FROM div_ranked
+                        WHERE user_id IN (SELECT id FROM comp_users)
                         GROUP BY user_id
                     ),
                     global_rank AS (
@@ -445,7 +448,7 @@
                                cup.club_name, cup.avatar,
                                COUNT(DISTINCT cp.comp_id) AS comp_count,
                                COALESCE(gr.total_points, 0) AS total_points,
-                               COALESCE(gr.ranking, 0)      AS ranking
+                               COALESCE(gr.ranking, 999999) AS ranking
                         FROM comp_users cu
                         LEFT JOIN comp_users_profiles cup ON cu.id = cup.user_id
                         LEFT JOIN countries co            ON co.code = cup.country
@@ -570,14 +573,17 @@
             $history = $this->model->query_bind($sql, [$user_id], 'array');
 
             // Points by place
-            $points_table = [1=>1000, 2=>700, 3=>500, 4=>400, 5=>320, 6=>260, 7=>220, 8=>180];
+            $points_table = [
+                1=>1000, 2=>860, 3=>730, 4=>670,  5=>610, 6=>583, 7=>555, 8=>528,
+                9=>500, 10=>488, 11=>475, 12=>462, 13=>450, 14=>438, 15=>425, 16=>413, 17=>400,
+            ];
 
             // Aggregate stats
             $comp_count   = count(array_unique(array_column($history, 'comp_id')));
             $total_points = 0;
             foreach ($history as $row) {
                 $p = (int)($row['place'] ?? 0);
-                $total_points += $points_table[$p] ?? ($p <= 16 ? 130 : 80);
+                $total_points += $points_table[$p] ?? ($p <= 65 ? 160 + (65 - $p) * 5 : 80);
             }
 
             // Global rank — calculate points for every athlete and rank this one
@@ -627,12 +633,16 @@
                          athlete_points AS (
                             SELECT user_id,
                                    SUM(CASE place
-                                       WHEN 1 THEN 1000 WHEN 2 THEN 700 WHEN 3 THEN 500
-                                       WHEN 4 THEN 400  WHEN 5 THEN 320 WHEN 6 THEN 260
-                                       WHEN 7 THEN 220  WHEN 8 THEN 180
-                                       ELSE IF(place <= 16, 130, 80)
+                                        WHEN 1 THEN 1000 WHEN 2 THEN 860 WHEN 3 THEN 730
+                                        WHEN 4 THEN 670  WHEN 5 THEN 610 WHEN 6 THEN 583
+                                        WHEN 7 THEN 555  WHEN 8 THEN 528 WHEN 9 THEN 500
+                                        WHEN 10 THEN 488 WHEN 11 THEN 475 WHEN 12 THEN 462
+                                        WHEN 13 THEN 450 WHEN 14 THEN 438 WHEN 15 THEN 425
+                                        WHEN 16 THEN 413 WHEN 17 THEN 400
+                                        ELSE IF(place <= 65, 160 + (65 - place) * 5, 80)
                                    END) AS pts
                             FROM ranked
+                            WHERE user_id IN (SELECT id FROM comp_users)
                             GROUP BY user_id
                          ),
                          global_rank AS (

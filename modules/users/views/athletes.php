@@ -131,7 +131,7 @@
           $pts = (int)$a->total_points;
         ?>
         <tr data-search="<?= strtolower(out($a->name) . ' ' . ($a->club_name ?? '') . ' ' . ($a->country_name ?? '') . ' ' . ($a->country ?? '')) ?>">
-          <td class="rank-cell <?= $rankClass ?>"><?= $rank > 0 ? '#' . $rank : '—' ?></td>
+          <td class="rank-cell <?= $rankClass ?>"><?= ($rank > 0 && $rank < 999999) ? '#' . $rank : '—' ?></td>
           <td>
             <div class="athlete-cell">
               <div class="a-avatar">

@@ -214,8 +214,8 @@ function round_badge(string $round): string {
             $place = (int)($row['place'] ?? 0);
             $place_label = $place === 1 ? '1st' : ($place === 2 ? '2nd' : ($place === 3 ? '3rd' : $place . 'th'));
             $place_style = $place <= 3 ? 'font-size:1.1rem' : 'font-size:0.9rem;color:var(--text-light)';
-            $pts_map = [1=>1000,2=>700,3=>500,4=>400,5=>320,6=>260,7=>220,8=>180];
-            $row_pts = $place > 0 ? ($pts_map[$place] ?? ($place <= 16 ? 130 : 80)) : 0;
+            $pts_map = [1=>1000,2=>860,3=>730,4=>670,5=>610,6=>583,7=>555,8=>528,9=>500,10=>488,11=>475,12=>462,13=>450,14=>438,15=>425,16=>413,17=>400];
+            $row_pts = $place > 0 ? ($pts_map[$place] ?? ($place <= 65 ? 160 + (65 - $place) * 5 : 80)) : 0;
           ?>
           <tr>
             <td style="text-align:center;<?= $place_style ?>">

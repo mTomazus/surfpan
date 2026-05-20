@@ -1152,7 +1152,6 @@
                 }
 
                 //insert the new record
-                $data['status'] = 'confirmed';
                 $this->module('logger');
                 $r = $this->model->insert($data, 'comp_participants');
                 if (!$r) { $this->logger->log_message('error', 'Users::join: failed to insert comp_participants'); }

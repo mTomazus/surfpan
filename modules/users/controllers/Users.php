@@ -165,6 +165,8 @@
                 $data['trongate_user_id'] = $trongate_user_id;
                 $data['date_joined'] = date("Y-m-d H:i:s");
                 
+                $data['confirmed'] = 0;
+
                 // Create new user record in database.
                 $user_id = $this->model->insert($data, 'comp_users');
                 if (!$user_id) { $this->logger->log_message('error', 'Users::submit_signup: failed to insert comp_users'); }
@@ -177,12 +179,12 @@
                 $r = $this->model->insert($profile_data, 'comp_users_profiles');
                 if (!$r) { $this->logger->log_message('error', 'Users::submit_signup: failed to insert comp_users_profiles'); }
 
-                // Create a new token to auto login the user.
-                $this->module('trongate_tokens');
-                $token_data['user_id'] = $trongate_user_id;
-                $this->trongate_tokens->_generate_token($token_data);
+                // Send email confirmation instead of auto-login.
+                $confirm_link = $this->_create_user_confirm_link($trongate_user_id);
+                $this->module('organizations');
+                $this->organizations->_send_confirm_email(post('email', true), $confirm_link);
 
-                echo 'users'; // signal success and redirect to users area.
+                echo BASE_URL . 'organizations/confirmation_sent';
 
             } else {
                 $this->login();
@@ -981,7 +983,60 @@
                 return 'Please confirm your email before logging in.';
             }
 
+            if ($table === 'comp_users' && empty($user->confirmed)) {
+                return 'Please confirm your email before logging in.';
+            }
+
             return true; // validation passes
+        }
+
+        function email_confirm() {
+            $token = $_GET['token'] ?? null;
+            if (!$token) { show_404(); }
+
+            $sql = "SELECT user_id, expires_at FROM comp_password_resets WHERE token = ? LIMIT 1";
+            $rows = $this->model->query_bind($sql, [$token], 'object');
+
+            if (!$rows || strtotime($rows[0]->expires_at) < time()) {
+                $data['error_msg'] = 'Invalid or expired confirmation link.';
+                $data['view_file'] = 'email_confirm';
+                $this->template('public', $data);
+                return;
+            }
+
+            $user_id = $rows[0]->user_id;
+
+            $sql = "UPDATE comp_users cu
+                    JOIN trongate_users tu ON cu.trongate_user_id = tu.id
+                    SET cu.confirmed = 1
+                    WHERE tu.id = ?";
+            $this->model->query_bind($sql, [$user_id], 'array');
+            $this->model->delete($user_id, 'comp_password_resets');
+
+            $data['success_msg'] = 'Thank you! Your email has been confirmed. You can now log in.';
+            $data['view_file'] = 'email_confirm';
+            $this->template('public', $data);
+        }
+
+        private function _create_user_confirm_link(int $trongate_user_id): string {
+            $token = bin2hex(random_bytes(32));
+            $expires_at = date('Y-m-d H:i:s', time() + 345600); // 4 days
+
+            $sql = "DELETE FROM comp_password_resets WHERE user_id = ? OR expires_at < NOW()";
+            $this->model->query_bind($sql, [$trongate_user_id], 'array');
+
+            $data = [
+                'user_id'    => $trongate_user_id,
+                'token'      => $token,
+                'expires_at' => $expires_at,
+                'ip'         => $_SERVER['REMOTE_ADDR'] ?? null,
+                'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
+            ];
+            $this->module('logger');
+            $r = $this->model->insert($data, 'comp_password_resets');
+            if (!$r) { $this->logger->log_message('error', 'Users::_create_user_confirm_link: failed to insert comp_password_resets'); }
+
+            return rtrim(BASE_URL, '/') . '/users/email_confirm?token=' . $token;
         }
 
         // --- Modals  ---------------------------------------

@@ -5,7 +5,7 @@
         private const ERROR_MSG = 'Your email and/or password was not correct!';
         private const MAX_LOGIN_ATTEMPTS = 5;
         private const LOCKOUT_DURATION = 900; // 15 minutes in seconds
-        private const TOKEN_EXPIRY = 300; // 5 minutes
+        private const TOKEN_EXPIRY = 3600; // 1 hour
         private const TOKEN_EXPIRY_REMEMBER = 2592000; // 30 days
         private const TOKEN_EXPIRY_SESSION = 3600; // 1 hour
 

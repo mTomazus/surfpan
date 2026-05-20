@@ -977,6 +977,10 @@
             $update_data['num_logins'] = 0; // reset counter after lockout
             $this->model->update($user->id, $update_data, $table);
 
+            if ($table === 'comp_organizations' && (empty($user->confirmed) || $user->status === 'inactive')) {
+                return 'Please confirm your email before logging in.';
+            }
+
             return true; // validation passes
         }
 

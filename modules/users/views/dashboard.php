@@ -73,6 +73,30 @@
       case 'white': $color = 'black'; break;
       default:      $color = 'white';
     endswitch;
+
+    // Build schedule rows for the Upcoming Heats table and ICS export.
+    $schedule_heats = [];
+    foreach ($user_heats as $sh) {
+      if ($sh['start_time'] === null) continue;
+      $sh_tz = $sh['timezone'] ?? 'UTC';
+      $sh_start_utc = new DateTimeImmutable($sh['start_time'], new DateTimeZone('UTC'));
+      $sh_start_local = $sh_start_utc->setTimezone(new DateTimeZone($sh_tz));
+      $sh_end_utc = $sh['end_time']
+        ? (new DateTimeImmutable($sh['end_time'], new DateTimeZone('UTC')))
+        : $sh_start_utc->modify('+25 minutes');
+      $schedule_heats[] = [
+        'heat_number'  => (int) $sh['heat_number'],
+        'division'     => $sh['division_name'],
+        'round'        => $sh['round'],
+        'jersey'       => $sh['jersey_color'],
+        'location'     => $sh['location'] ?? '',
+        'comp_name'    => $sh['name'],
+        'display_time' => $sh_start_local->format('H:i'),
+        'iso_start'    => $sh_start_utc->format('Y-m-d\TH:i:s\Z'),
+        'iso_end'      => $sh_end_utc->format('Y-m-d\TH:i:s\Z'),
+        'title'        => trim($sh['name'] . ' — ' . $sh['division_name'] . ' Heat #' . $sh['heat_number']),
+      ];
+    }
   }
 
   $first_comp_id = array_key_first($comps) ?? null;
@@ -237,7 +261,8 @@
     </section>
 
     <!-- ===== Schedule ===== -->
-    <section class="card pad span-7 disabled d-none" aria-labelledby="schedule-title">
+    <?php if ($has_heats && !empty($schedule_heats)): ?>
+    <section class="card pad span-7" aria-labelledby="schedule-title">
       <div class="section-head">
         <h3 id="schedule-title">Upcoming Heats</h3>
         <div class="controls">
@@ -253,31 +278,32 @@
               <th>Heat</th>
               <th>Division</th>
               <th>Jersey</th>
-              <th>Status</th>
               <th class="right">Actions</th>
             </tr>
           </thead>
           <tbody>
+            <?php foreach ($schedule_heats as $sh): ?>
             <tr>
-              <td>11:30</td>
-              <td>#12</td>
-              <td>Men Longboard</td>
-              <td><span class="chip jersey" style="background:var(--jersey-blue);">BLUE</span></td>
-              <td><span class="badge">Scheduled</span></td>
-              <td class="right"><button class="btn" onclick="addCalendar('Heat 12', '2025-08-30T08:30:00Z')">Add to calendar</button></td>
+              <td><?= out($sh['display_time']) ?></td>
+              <td>#<?= out($sh['heat_number']) ?></td>
+              <td><?= out($sh['division']) ?><?= $sh['round'] ? ' — ' . out($sh['round']) : '' ?></td>
+              <td>
+                <?php if ($sh['jersey']): ?>
+                  <span class="chip jersey" style="background:var(--jersey-<?= out($sh['jersey']) ?>);"><?= strtoupper(out($sh['jersey'])) ?></span>
+                <?php else: ?>
+                  <span class="subtle">—</span>
+                <?php endif; ?>
+              </td>
+              <td class="right">
+                <button class="btn" onclick="addCalendar(<?= json_encode($sh['title']) ?>, <?= json_encode($sh['iso_start']) ?>, <?= json_encode($sh['iso_end']) ?>, <?= json_encode($sh['location']) ?>)">Add to calendar</button>
+              </td>
             </tr>
-            <tr>
-              <td>14:10</td>
-              <td>#28</td>
-              <td>Men Longboard — R2</td>
-              <td><span class="chip jersey" style="background:var(--jersey-blue);">BLUE</span></td>
-              <td><span class="badge">TBC</span></td>
-              <td class="right"><button class="btn" disabled>Pending</button></td>
-            </tr>
+            <?php endforeach; ?>
           </tbody>
         </table>
       </div>
     </section>
+    <?php endif; ?>
 
     <!-- ===== Documents ===== -->
     <section class="card pad span-5" aria-labelledby="docs-title">
@@ -542,28 +568,42 @@
       ev.preventDefault();
     }
 
-    function addCalendar(title, iso) {
-      const dtStart = new Date(iso);
-      const dtEnd = new Date(dtStart.getTime() + 20*60*1000);
-      const fmt = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-      const ics = [
-        'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Surf Club LT//Participant//EN','BEGIN:VEVENT',
-        'UID:'+crypto.randomUUID(),
-        'DTSTAMP:'+fmt(new Date()),
-        'DTSTART:'+fmt(dtStart),
-        'DTEND:'+fmt(dtEnd),
-        'SUMMARY:'+title,
-        'LOCATION:2nd Jetty, Melnrage',
-        'END:VEVENT','END:VCALENDAR' 
+    function icsDateTime(iso) {
+      return iso.replace(/[-:]/g, '').replace('.000Z', 'Z');
+    }
+
+    function buildVEvent(title, isoStart, isoEnd, location) {
+      return [
+        'BEGIN:VEVENT',
+        'UID:' + crypto.randomUUID(),
+        'DTSTAMP:' + icsDateTime(new Date().toISOString()),
+        'DTSTART:' + icsDateTime(isoStart),
+        'DTEND:' + icsDateTime(isoEnd),
+        'SUMMARY:' + title,
+        'LOCATION:' + (location || ''),
+        'END:VEVENT',
       ].join('\r\n');
-      const blob = new Blob([ics], {type:'text/calendar'});
+    }
+
+    function downloadIcs(filename, vevents) {
+      const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SurfPan//Participant//EN', ...vevents, 'END:VCALENDAR'].join('\r\n');
+      const blob = new Blob([ics], {type: 'text/calendar'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `${title.replace(/\s+/g,'_')}.ics`; a.click();
+      a.href = url; a.download = filename; a.click();
       URL.revokeObjectURL(url);
     }
 
-    function exportSchedule() { addCalendar('Heat 12', new Date(Date.now()+3600*1000).toISOString()); }
+    function addCalendar(title, isoStart, isoEnd, location) {
+      downloadIcs(title.replace(/\s+/g, '_') + '.ics', [buildVEvent(title, isoStart, isoEnd, location)]);
+    }
+
+    function exportSchedule() {
+      const scheduleData = <?= isset($schedule_heats) ? json_encode($schedule_heats, JSON_HEX_TAG | JSON_HEX_AMP) : '[]' ?>;
+      if (!scheduleData.length) return;
+      const vevents = scheduleData.map(h => buildVEvent(h.title, h.iso_start, h.iso_end, h.location));
+      downloadIcs('my_heats.ics', vevents);
+    }
 
     // ===== Schedule filter =====
     function filterSchedule() {

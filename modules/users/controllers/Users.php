@@ -59,7 +59,7 @@
             $trongate_user_id = $this->trongate_tokens->_get_user_id();
 
             $sql = "SELECT  cn.id, cn.name, cp.user_id, cd.name AS division_name, cd.id AS division_id,
-                            cn.location, cn.year, cn.status, cn.entry_type, 
+                            cn.location, cn.year, cn.status, cn.entry_type,
                             cp.id AS record_id, cp.status AS participation_status,
                             hp.jersey_color, ch.start_time, ch.end_time, ch.round,
                             ch.heat_number, ch.status AS heat_status, co.timezone
@@ -77,7 +77,7 @@
                     JOIN comp_heats AS ch
                     ON hp.heat_id = ch.id
                     WHERE cu.trongate_user_id = ? AND ch.status != 'finished'
-                    LIMIT 1";
+                    ORDER BY ch.start_time ASC";
             $data = [$trongate_user_id];
             $user_comps = $this->model->query_bind($sql, $data, 'array');
             return $user_comps;

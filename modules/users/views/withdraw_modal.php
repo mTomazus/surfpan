@@ -1,8 +1,9 @@
 <section class="card pad span-12 danger-border" aria-labelledby="profile-title">
     <h2>Withdraw from Competition?</h2>
     <p>
-        Are you sure you want to withdraw from this competition?  
-        Once you withdraw, your spot will be released and you may not be able to rejoin.
+        Are you sure you want to withdraw from this competition?
+        Once you withdraw, your spot is released and you cannot re-enter the same division.
+        If heats have already been drawn, withdrawal is blocked — contact the organiser instead.
     </p>
     <div class="modal-actions">
         <button class="btn" onclick="closeModal()">Cancel</button>

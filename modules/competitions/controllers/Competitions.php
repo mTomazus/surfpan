@@ -655,8 +655,26 @@
 
             $record_id = (int) segment(3);
 
-            $data['status'] = 'confirmed';
-            $this->model->update($record_id, $data, 'comp_participants');
+            $this->model->update($record_id, ['status' => 'confirmed'], 'comp_participants');
+
+            $sql = "SELECT COALESCE(cu.email, cp.email) AS email,
+                           COALESCE(cu.name, CONCAT(cp.first_name, ' ', cp.last_name)) AS name,
+                           cn.name AS comp_name, cn.year, cd.name AS division_name
+                    FROM comp_participants cp
+                    LEFT JOIN comp_users cu ON cu.id = cp.user_id
+                    JOIN comp_name cn       ON cn.id = cp.comp_id
+                    JOIN comp_divisions cd  ON cd.id = cp.division_id
+                    WHERE cp.id = ? LIMIT 1";
+            $p = $this->model->query_bind($sql, [$record_id], 'array');
+            if (!empty($p) && !empty($p[0]['email'])) {
+                $this->module('mailer');
+                $this->mailer->_send_registration_confirmed(
+                    $p[0]['email'],
+                    $p[0]['name'],
+                    $p[0]['comp_name'] . ' ' . $p[0]['year'],
+                    $p[0]['division_name']
+                );
+            }
         }
 
 //----------------- PARTICIPANTS END ----------------------------

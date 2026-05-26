@@ -1781,6 +1781,22 @@
 
             // Mark competition as generated (even with partial errors)
             $this->model->update($comp_id, ['status' => 'generated'], 'comp_name');
+
+            // Notify all confirmed participants that the draw is live.
+            $p_sql = "SELECT DISTINCT COALESCE(cu.email, cp.email) AS email,
+                             COALESCE(cu.name, CONCAT(cp.first_name, ' ', cp.last_name)) AS name
+                      FROM comp_participants cp
+                      LEFT JOIN comp_users cu ON cu.id = cp.user_id
+                      WHERE cp.comp_id = ? AND cp.status = 'confirmed'
+                        AND COALESCE(cu.email, cp.email) IS NOT NULL";
+            $participants = $this->model->query_bind($p_sql, [$comp_id], 'array');
+            if (!empty($participants)) {
+                $this->module('mailer');
+                foreach ($participants as $p) {
+                    $this->mailer->_send_heat_draw_published($p['email'], $p['name'], $comp_name);
+                }
+            }
+
             set_flashdata("Heats were generated successfully.");
             echo "Heats generated for competition {$comp_name} (ID: {$comp_id}).";
             redirect('heats/heat_generation_page');

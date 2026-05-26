@@ -1133,6 +1133,14 @@
                 return;
             }
 
+            $this->module('mailer');
+            $this->mailer->_send_registration_received(
+                $user[0]['email'],
+                $user[0]['name'],
+                $competition->name . ' ' . $competition->year,
+                $division_name
+            );
+
             // Success: 200 lets the modal auto-close (mx-close-on-success) and the
             // registrations table refresh (mx-on-success="#registrations").
             http_response_code(200);

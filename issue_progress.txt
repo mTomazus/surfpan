@@ -1,0 +1,51 @@
+SurfPan — Participant Flow Issue Progress
+==========================================
+Branch: master
+Started: 2026-05-26
+
+Order of work: P-8 → P-7 → P-3 → P-5 → P-6
+
+─────────────────────────────────────────────────────────────────
+ID    Title                                     Status
+─────────────────────────────────────────────────────────────────
+P-8   No empty/first-run state (crashes)        [ ] TODO
+P-7   Dashboard renders hardcoded mock data     [ ] TODO
+P-3   Weak division field validation            [ ] TODO
+P-5   _get_user_heats() capped at LIMIT 1       [ ] TODO
+P-6   Withdraw is hard delete, no status guard  [ ] TODO
+─────────────────────────────────────────────────────────────────
+
+Details
+-------
+
+P-8 — dashboard.php:15 dereferences $user_heats[0] unconditionally.
+  Brand-new users (no heats) get PHP undefined-index warnings and a
+  broken "Next Heat" card. Fix: guard for empty $user_heats and show
+  an onboarding empty state pointing to the search box.
+
+P-7 — Dashboard shows hardcoded mock data visible to all users:
+  - Documents card: fake "Liability Waiver (Signed 2025-08-25)" and
+    fake "Heat Draw (Men Longboard Rev 2)".
+  - Jersey chip: hardcoded "Jersey: BLUE" as initial render (JS does
+    fix it post-load, but initial state is wrong).
+  - My Scores / Upcoming Heats already hidden via d-none — OK.
+  Fix: remove fake doc items, fix jersey chip initial state.
+
+P-3 — join() division rule is min_length[6]|max_length[15], no required.
+  Empty/unmatched name leaves division_id NULL on insert.
+  Fix: add required; abort if submitted name doesn't match a valid
+  comp_divisions.id for this competition.
+
+P-5 — _get_user_heats() has LIMIT 1. Multi-division athletes see only
+  one heat. Fix: remove LIMIT 1, order by heat start_time ASC.
+
+P-6 — confirm_withdraw() calls model->delete() hard-deleting the row.
+  Orphans comp_heat_participants/scores rows if heats are drawn.
+  No server-side competition status check.
+  Fix: soft-delete (status='withdrawn') or block if heats drawn;
+  re-check comp status server-side.
+
+─────────────────────────────────────────────────────────────────
+Changelog
+─────────────────────────────────────────────────────────────────
+(entries added after each commit)

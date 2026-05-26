@@ -1,75 +1,71 @@
-<?php 
+<?php
   $user_heats = Modules::run("users/_get_user_heats");
   $user_comps = Modules::run("users/_get_user_comps");
-  // id, name, user_id, gender_age, location, year, status, entry_type, 
+  // id, name, user_id, gender_age, location, year, status, entry_type,
   // record_id, participation_status, jersey_color, start_time, end_time, round,
   // heat_number, heat_status, timezone
 
-  //json($user_heats);
+  $has_heats = !empty($user_heats);
 
-  // 1) Build unique competitions and grouped divisions.
-  $comps = [];               // comp_id => ['id'=>..., 'label'=>...]
-  $divisions_by_comp = [];   // comp_id => [ ['id'=>..., 'label'=>..., 'jersey'=>...], ... ]
-  $comp_status_map = []; // comp_id => 'open' | 'running' | 'scheduled' | 'finished'
+  if ($has_heats) {
+    // 1) Build unique competitions and grouped divisions.
+    $comps = [];               // comp_id => ['id'=>..., 'label'=>...]
+    $divisions_by_comp = [];   // comp_id => [ ['id'=>..., 'label'=>..., 'jersey'=>...], ... ]
+    $comp_status_map = []; // comp_id => 'open' | 'running' | 'scheduled' | 'finished'
 
-  $timezone = $user_heats[0]['timezone'];
+    $timezone = $user_heats[0]['timezone'];
 
-  if ($user_heats[0]['start_time'] != null) {
-  
-    // Set timezone for start_time formatting
-    $dt = new DateTimeImmutable($user_heats[0]['start_time'], new DateTimeZone('UTC'));
-    $start_time = $dt->setTimezone(new DateTimeZone($timezone))->format("Y-m-d H:i:s");
+    if ($user_heats[0]['start_time'] != null) {
 
-    $start = new DateTime($user_heats[0]['start_time']);
-    $end   = new DateTime($user_heats[0]['end_time']);
-    $int = $start->diff($end);
-    $minutes = ($int->days * 1440) + ($int->h * 60) + $int->i;
-    if ($int->invert) $minutes *= -1;
+      $dt = new DateTimeImmutable($user_heats[0]['start_time'], new DateTimeZone('UTC'));
+      $start_time = $dt->setTimezone(new DateTimeZone($timezone))->format("Y-m-d H:i:s");
 
-  } else {
+      $start = new DateTime($user_heats[0]['start_time']);
+      $end   = new DateTime($user_heats[0]['end_time']);
+      $int = $start->diff($end);
+      $minutes = ($int->days * 1440) + ($int->h * 60) + $int->i;
+      if ($int->invert) $minutes *= -1;
 
-    //$start_time = date('Y-m-d H:i:s', strtotime('+6 days'));
-    $start_time = null;
-    $minutes = "N/A";
+    } else {
 
+      $start_time = null;
+      $minutes = "N/A";
+
+    }
+
+    switch ($user_heats[0]['jersey_color']):
+      case 'white':
+        $color = 'black';
+        break;
+      default:
+        $color = 'white';
+    endswitch;
+
+    foreach ($user_heats as $row) {
+
+        $comp_id = (int) $row['id'];
+
+        if (!isset($comps[$comp_id])) {
+            $label = trim($row['name'].' '.$row['year']);
+            $comps[$comp_id] = [
+                'id'    => $comp_id,
+                'label' => $label
+            ];
+        }
+
+        if (!isset($comp_status_map[$comp_id])) {
+            $comp_status_map[$comp_id] = strtolower(trim($row['status']));
+        }
+
+        $divisions_by_comp[$comp_id][] = [
+            'id'     => (int)($row['division_id'] ?? 0),
+            'label'  => $row['division_name'],
+            'jersey' => $row['jersey_color'] ?? null,
+        ];
+    }
+
+    $first_comp_id = array_key_first($comps) ?? null;
   }
-
-
-  switch ($user_heats[0]['jersey_color']):
-    case 'white':
-      $color = 'black';
-      break;
-    default:
-      $color = 'white';
-  endswitch;
-
-  foreach ($user_heats as $row) {
-
-      $comp_id = (int) $row['id'];  // ensure you have id in $user_heats
-
-      // Unique competition label (dedupes even if same name repeats in $user_heats)
-      if (!isset($comps[$comp_id])) {
-          $label = trim($row['name'].' '.$row['year']);
-          $comps[$comp_id] = [
-              'id'    => $comp_id,
-              'label' => $label
-          ];
-      }
-
-      if (!isset($comp_status_map[$comp_id])) {
-          $comp_status_map[$comp_id] = strtolower(trim($row['status']));
-      }
-
-      // Collect divisions for this competition
-      $divisions_by_comp[$comp_id][] = [
-          'id'     => (int)($row['division_id'] ?? 0),          // ensure you have division_id in $user_heats
-          'label'  => $row['division_name'], // ensure you have division_name in $user_heats
-          'jersey' => $row['jersey_color'] ?? null,             // optional, if available
-      ];
-  }
-
-  // Decide which competition is selected by default
-  $first_comp_id = array_key_first($comps) ?? null;
 
 ?>
 
@@ -88,6 +84,20 @@
       </div>
       <div id="searchResults" class="list" style="margin-top:10px; display:none"></div>
     </section>
+
+    <?php if (!$has_heats): ?>
+
+    <!-- ===== Empty / onboarding state ===== -->
+    <section class="card pad span-12" style="text-align:center; padding: 3rem 2rem;">
+      <div style="max-width:420px; margin:auto;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--subtle)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:1rem"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <h2 style="margin-bottom:.5rem;">No heats scheduled yet</h2>
+        <p class="subtle" style="margin-bottom:1.5rem;">You're not drawn into any upcoming heats. Search for an open competition above and register to get started.</p>
+        <button class="btn" onclick="document.getElementById('searchCompetition').focus()">Find a competition</button>
+      </div>
+    </section>
+
+    <?php else: ?>
 
     <!-- ===== Context / Controls ===== -->
     <section class="card pad span-12" aria-labelledby="ctx-title">
@@ -116,8 +126,8 @@
           </select>
         </label>
 
-        <span class="chip" id="jerseyChip" title="Assigned jersey" style="background: var(--jersey-blue);font-weight: 900;color: <?= $color ?>">
-          Jersey: BLUE
+        <span class="chip" id="jerseyChip" title="Assigned jersey" style="font-weight:900;">
+          Jersey: —
         </span>
       </div>
     </section>
@@ -353,6 +363,8 @@
       </div>
     </section>
 
+    <?php endif; // $has_heats ?>
+
   </div>
 
   <script>
@@ -451,9 +463,8 @@
     function openCompetition(id){ if (!id) return; location.href = `heats/show_heats_draw/${id}`; }
     function openOrganiser(id){ if (!id) return; location.href = `organisers/view/${id}`; }
 
+    <?php if ($has_heats): ?>
     // ===== Countdown to next heat =====
-    //const startAt = new Date(Date.now() + 60 * 60 * 1000); // +1h
-
       const startAt = new Date('<?= out($start_time) ?>');
       const callAt  = new Date(startAt.getTime() - 15 * 60 * 1000); // -5 min
 
@@ -509,8 +520,8 @@
       }
         const timer = setInterval(tickCountdown, 1000);
         tickCountdown();
-      
-    
+    <?php endif; // $has_heats — countdown block ?>
+
     // ===== Actions =====
     function checkIn() {
       checkedIn = true;
@@ -565,8 +576,8 @@
 
     // ===== Division selector =====
     (function () {
-      const divisionsByComp   = <?= json_encode($divisions_by_comp, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
-      const compStatusMap     = <?= json_encode($comp_status_map, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+      const divisionsByComp   = <?= json_encode($divisions_by_comp ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+      const compStatusMap     = <?= json_encode($comp_status_map ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
 
       const competitionSelect = document.getElementById('competitionSelect');
       const divisionSelect    = document.getElementById('divisionSelect');

@@ -89,16 +89,14 @@
 
             $sql = "SELECT cn.id, cn.name, cp.user_id, cd.id AS division_id, cd.name AS division_name,
                             cn.location, cn.year, cn.status, cn.entry_type,
-                            cp.id AS record_id, cp.status AS participation_status
+                            cp.id AS record_id, cp.status AS participation_status,
+                            cp.billing_charge_id, cp.waiver_accepted_at
                     FROM comp_users AS cu
-                    LEFT JOIN comp_participants AS cp
-                    ON cu.id = cp.user_id
-                    LEFT JOIN comp_name AS cn
-                    ON cp.comp_id = cn.id
-                    JOIN comp_divisions AS cd
-                    ON cp.division_id = cd.id
+                    LEFT JOIN comp_participants AS cp ON cu.id = cp.user_id
+                    LEFT JOIN comp_name AS cn         ON cp.comp_id = cn.id
+                    JOIN comp_divisions AS cd          ON cp.division_id = cd.id
                     WHERE cu.trongate_user_id = ? AND cn.status != 'finished'
-                    ORDER BY cn.id ASC;";
+                    ORDER BY cn.id ASC";
             $data = [$trongate_user_id];
             $user_comps = $this->model->query_bind($sql, $data, 'array');
             return $user_comps;
@@ -1057,6 +1055,32 @@
 
             // Soft-delete: preserve the row so scores/history aren't orphaned.
             $this->model->update($record_id, ['status' => 'withdrawn'], 'comp_participants');
+            http_response_code(200);
+        }
+
+        function waiver_modal() {
+            $this->_make_sure_allowed();
+            $record_id = segment(3, 'int');
+            $user      = $this->_get_user_info();
+            $sql = "SELECT cp.id, cp.waiver_accepted_at, cn.name AS comp_name, cn.year
+                    FROM comp_participants cp
+                    JOIN comp_name cn ON cn.id = cp.comp_id
+                    WHERE cp.id = ? AND cp.user_id = ? LIMIT 1";
+            $rows = $this->model->query_bind($sql, [$record_id, $user[0]['id']], 'array');
+            if (empty($rows)) { http_response_code(403); return; }
+            $this->view('waiver_modal', ['participant' => $rows[0]]);
+        }
+
+        function accept_waiver() {
+            $this->_make_sure_allowed();
+            $record_id   = segment(3, 'int');
+            $user        = $this->_get_user_info();
+            $participant = $this->model->get_one_where('id', $record_id, 'comp_participants');
+            if (!$participant || (int)$participant->user_id !== (int)$user[0]['id']) {
+                http_response_code(403);
+                return;
+            }
+            $this->model->update($record_id, ['waiver_accepted_at' => date('Y-m-d H:i:s')], 'comp_participants');
             http_response_code(200);
         }
 

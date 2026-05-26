@@ -25,6 +25,22 @@ class Mailer extends Trongate {
         $this->_brevo_send($to_email, $to_name, $subject, $html);
     }
 
+    public function _send_entry_receipt(string $to_email, string $to_name, string $comp_name, string $division_name, float $amount, string $currency, string $payment_ref, string $receipt_url): void {
+        $subject = "Payment confirmed – {$comp_name}";
+        $amt     = number_format($amount, 2) . ' ' . $currency;
+        $html    = $this->_html_wrap($to_name, $subject,
+            "<p>Your entry fee payment for <strong>" . htmlspecialchars($comp_name) . "</strong>
+            (<strong>" . htmlspecialchars($division_name) . "</strong>) has been received.</p>
+            <table style='width:100%;border-collapse:collapse;font-size:.9rem;margin:1rem 0'>
+              <tr><td style='padding:4px 0;color:#666'>Amount</td><td style='text-align:right'><strong>" . htmlspecialchars($amt) . "</strong></td></tr>
+              <tr><td style='padding:4px 0;color:#666'>Reference</td><td style='text-align:right'><code>" . htmlspecialchars($payment_ref) . "</code></td></tr>
+            </table>
+            <p>Your registration is now confirmed. We will notify you when the heat draw is published.</p>",
+            'View receipt', $receipt_url
+        );
+        $this->_brevo_send($to_email, $to_name, $subject, $html);
+    }
+
     public function _send_heat_draw_published(string $to_email, string $to_name, string $comp_name): void {
         $subject = "Heat draw published – {$comp_name}";
         $html    = $this->_html_wrap($to_name, $subject,

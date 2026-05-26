@@ -39,6 +39,33 @@
             }
         }
         
+        function receipt() {
+            $this->module('trongate_tokens');
+            $trongate_user_id = $this->trongate_tokens->_get_user_id();
+            if (!$trongate_user_id) { redirect('users/login'); }
+
+            $charge_id = segment(3, 'int');
+
+            $sql = "SELECT bc.id, bc.amount, bc.currency, bc.payment_ref, bc.paid_at, bc.status,
+                           cn.name AS comp_name, cn.location AS comp_location, cn.year AS comp_year,
+                           cu.name AS user_name, cu.email AS user_email,
+                           cd.name AS division_name
+                    FROM billing_charges bc
+                    JOIN comp_participants cp ON cp.id = bc.user_id
+                    JOIN comp_name cn         ON cn.id = bc.comp_id
+                    JOIN comp_users cu        ON cu.id = cp.user_id
+                    JOIN trongate_users tu    ON tu.id = cu.trongate_user_id
+                    JOIN comp_divisions cd    ON cd.id = cp.division_id
+                    WHERE bc.id = ? AND tu.id = ?
+                    LIMIT 1";
+            $rows = $this->model->query_bind($sql, [$charge_id, $trongate_user_id], 'array');
+            if (empty($rows)) { redirect('users/dashboard'); }
+
+            $data['charge']    = $rows[0];
+            $data['view_file'] = 'receipt';
+            $this->template('users_area', $data);
+        }
+
         function entry_pay_modal() {
             $comp_id = (int)segment(3);
             $this->module('trongate_tokens');
@@ -603,16 +630,35 @@
                     redirect('heats/generate_heats/' . $comp_id);
 
                 } else {
-                    // Otherwise, it's a entry fee payment
-                    $user_id = $order->user_id;
-                    // Update the participant status as needed
-                    $data2 = [
-                        'status' => 'paid'
-                    ];
-                    $this->model->update($user_id, $data2, 'comp_participants');
-                    // (implementation depends on your schema)
+                    // Entry fee payment — promote participant to 'paid'
+                    $this->model->update($order->user_id, ['status' => 'paid'], 'comp_participants');
 
-                    redirect('users');
+                    // Send receipt email
+                    $p_sql = "SELECT cu.email, cu.name, cn.name AS comp_name, cn.year,
+                                     cd.name AS division_name
+                              FROM comp_participants cp
+                              JOIN comp_users cu     ON cu.id = cp.user_id
+                              JOIN comp_name cn      ON cn.id = cp.comp_id
+                              JOIN comp_divisions cd ON cd.id = cp.division_id
+                              WHERE cp.id = ? LIMIT 1";
+                    $p = $this->model->query_bind($p_sql, [$order->user_id], 'array');
+                    if (!empty($p)) {
+                        $receipt_url = BASE_URL . 'billings/receipt/' . $order_id;
+                        $this->module('mailer');
+                        $this->mailer->_send_entry_receipt(
+                            $p[0]['email'],
+                            $p[0]['name'],
+                            $p[0]['comp_name'] . ' ' . $p[0]['year'],
+                            $p[0]['division_name'],
+                            (float)($order->amount ?? 0),
+                            $order->currency ?? 'EUR',
+                            $payment_ref,
+                            $receipt_url
+                        );
+                    }
+
+                    set_flashdata('Payment confirmed! Your entry is now registered.');
+                    redirect('users/dashboard');
 
                 }
 

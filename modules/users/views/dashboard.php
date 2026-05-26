@@ -353,24 +353,31 @@
                 <?php } else { ?>
                   <td><span class="badge" style="background: indianred; border-color: rgb(125, 0, 0); color: whitesmoke;"><?= out(strtoupper($comp['entry_type'])) ?></span></td>
                 <?php } ?>
-                <td class="right" style="gap: 1rem;display: flex;justify-content: end;">
+                <td class="right" style="gap: 1rem;display: flex;justify-content: end;flex-wrap:wrap;">
                   <?php
-                    if ($comp['participation_status'] === 'pending') {
-                      if ($comp['entry_type'] === 'free entry') {
-                        // free entry, pending approval
-                        echo '<button class="btn disabled" disabled>Pending</button>';
-                      } else {
-                        // paid entry, pending payment
+                    $status  = $comp['participation_status'];
+                    $is_paid = in_array($status, ['paid', 'confirmed']);
+
+                    // Payment / receipt button
+                    if ($status === 'pending' && $comp['entry_type'] !== 'free entry') {
                         echo '<button class="btn" mx-get="billings/entry_pay_modal/' . out($comp['id']) . '" mx-build-modal="modalEntryPay">Pay now</button>';
-                      }
-                    } else if ($comp['participation_status'] === 'paid') {
-                        // paid entry, not confirmed
-                        echo '<button class="btn disabled" disabled>Receipt</button>';
-                    } else if ($comp['entry_type'] === 'entry fee') {
-                      // other status (e.g. withdrawn)
-                      echo '<button class="btn disabled" disabled>Receipt</button>';
+                    } elseif ($status === 'pending' && $comp['entry_type'] === 'free entry') {
+                        echo '<button class="btn disabled" disabled>Pending</button>';
+                    } elseif ($is_paid && !empty($comp['billing_charge_id'])) {
+                        echo '<a href="' . BASE_URL . 'billings/receipt/' . out($comp['billing_charge_id']) . '" class="btn" style="text-decoration:none">Receipt</a>';
                     }
-                    if ($comp['participation_status'] === 'withdrawn') {
+
+                    // Waiver button
+                    if ($status !== 'withdrawn') {
+                        if (!empty($comp['waiver_accepted_at'])) {
+                            echo '<span class="badge" style="background:color-mix(in oklab,var(--ok),transparent 80%);border-color:color-mix(in oklab,var(--ok),transparent 50%)">Waiver signed</span>';
+                        } else {
+                            echo '<button class="btn" mx-get="users/waiver_modal/' . out($comp['record_id']) . '" mx-build-modal="modalWaiver">Sign waiver</button>';
+                        }
+                    }
+
+                    // Withdraw button
+                    if ($status === 'withdrawn') {
                         echo '<button class="btn disabled" disabled>Withdrawn</button>';
                     } elseif ($comp['status'] === 'open') {
                         echo '<button class="btn danger" mx-get="users/withdraw/' . out($comp['record_id']) . '" mx-build-modal="modalWithdraw">Withdraw</button>';

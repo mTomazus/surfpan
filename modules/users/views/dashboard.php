@@ -265,7 +265,7 @@
     <section class="card pad span-5" aria-labelledby="docs-title">
       <div class="section-head">
         <h2 id="docs-title">Documents</h2>
-        <span class="subtle">Rulebook, waivers & heat draw</span>
+        <span class="subtle">Rulebook & heat draw</span>
       </div>
       <div class="doc-grid">
         <article class="doc">
@@ -275,24 +275,6 @@
           </div>
           <div class="controls">
             <a href="https://isasurf.org/downloads/ISA_RULEBOOK_April-2025.pdf" download="rulebook.pdf" style="text-decoration: none;" class="btn">Download</a>
-          </div>
-        </article>
-        <article class="doc">
-          <div>
-            <strong>Heat Draw (HTML)</strong>
-            <div class="subtle">Men Longboard · Rev 2</div>
-          </div>
-          <div class="controls">
-            <button class="btn" onclick="alert('Open heat draw…')">Open</button>
-          </div>
-        </article>
-        <article class="doc">
-          <div>
-            <strong>Liability Waiver</strong>
-            <div class="subtle">Signed · 2025‑08‑25</div>
-          </div>
-          <div class="controls">
-            <button class="btn" onclick="alert('View waiver…')">View</button>
           </div>
         </article>
       </div>

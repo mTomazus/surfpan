@@ -8,7 +8,7 @@ Order of work: P-8 → P-7 → P-3 → P-5 → P-6
 ─────────────────────────────────────────────────────────────────
 ID    Title                                     Status
 ─────────────────────────────────────────────────────────────────
-P-8   No empty/first-run state (crashes)        [ ] TODO
+P-8   No empty/first-run state (crashes)        [x] DONE — commit 8ef7f8c
 P-7   Dashboard renders hardcoded mock data     [ ] TODO
 P-3   Weak division field validation            [ ] TODO
 P-5   _get_user_heats() capped at LIMIT 1       [ ] TODO
@@ -48,4 +48,6 @@ P-6 — confirm_withdraw() calls model->delete() hard-deleting the row.
 ─────────────────────────────────────────────────────────────────
 Changelog
 ─────────────────────────────────────────────────────────────────
-(entries added after each commit)
+2026-05-26 — P-8 done (commit 8ef7f8c): Guard $user_heats[0] access with
+  $has_heats flag; show onboarding empty state for users not yet in heats;
+  wrap countdown JS block in same guard; fix Jersey chip initial text.

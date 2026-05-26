@@ -157,7 +157,7 @@
       }
 
       try {
-        const res  = await fetch(`/surfpan/results/search?q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } });
+        const res  = await fetch(`<?= BASE_URL ?>results/search?q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } });
         const text = await res.text();
         if (!res.ok) throw new Error('Network error');
         const data = JSON.parse(text);

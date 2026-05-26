@@ -44,7 +44,7 @@ window.initHeatDragDrop = function initHeatDragDrop(opts = {}) {
       return;
     }
 
-    fetch(`/surfpan/heats-schedules/reorder/${compId}`, {
+    fetch(`${document.baseURI}heats-schedules/reorder/${compId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ order })

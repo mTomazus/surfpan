@@ -413,7 +413,7 @@
         if (!q || q.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
 
         try {
-          const res = await fetch(`/surfpan/users/search?q=${encodeURIComponent(q)}`, {
+          const res = await fetch(`<?= BASE_URL ?>users/search?q=${encodeURIComponent(q)}`, {
             headers: { 'Accept': 'application/json' }
           });
 

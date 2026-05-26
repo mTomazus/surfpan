@@ -353,36 +353,32 @@
                 <?php } else { ?>
                   <td><span class="badge" style="background: indianred; border-color: rgb(125, 0, 0); color: whitesmoke;"><?= out(strtoupper($comp['entry_type'])) ?></span></td>
                 <?php } ?>
-                <td class="right" style="gap: 1rem;display: flex;justify-content: end;flex-wrap:wrap;">
+                <td class="right" style="gap:.6rem;display:flex;align-items:center;justify-content:flex-end;">
                   <?php
                     $status  = $comp['participation_status'];
                     $is_paid = in_array($status, ['paid', 'confirmed']);
 
-                    // Payment / receipt button
+                    // Payment / receipt
                     if ($status === 'pending' && $comp['entry_type'] !== 'free entry') {
                         echo '<button class="btn" mx-get="billings/entry_pay_modal/' . out($comp['id']) . '" mx-build-modal="modalEntryPay">Pay now</button>';
-                    } elseif ($status === 'pending' && $comp['entry_type'] === 'free entry') {
-                        echo '<button class="btn disabled" disabled>Pending</button>';
                     } elseif ($is_paid && !empty($comp['billing_charge_id'])) {
                         echo '<a href="' . BASE_URL . 'billings/receipt/' . out($comp['billing_charge_id']) . '" class="btn" style="text-decoration:none">Receipt</a>';
                     }
 
-                    // Waiver button
+                    // Waiver — chip (status) when done, secondary btn when needed
                     if ($status !== 'withdrawn') {
                         if (!empty($comp['waiver_accepted_at'])) {
-                            echo '<span class="badge" style="background:color-mix(in oklab,var(--ok),transparent 80%);border-color:color-mix(in oklab,var(--ok),transparent 50%)">Waiver signed</span>';
+                            echo '<span class="chip status-open" style="font-size:.75rem;cursor:default">✓ Waiver</span>';
                         } else {
-                            echo '<button class="btn" mx-get="users/waiver_modal/' . out($comp['record_id']) . '" mx-build-modal="modalWaiver">Sign waiver</button>';
+                            echo '<button class="btn" style="font-size:.8rem;padding:.4rem .75rem" mx-get="users/waiver_modal/' . out($comp['record_id']) . '" mx-build-modal="modalWaiver">Sign waiver</button>';
                         }
                     }
 
-                    // Withdraw button
+                    // Withdraw
                     if ($status === 'withdrawn') {
-                        echo '<button class="btn disabled" disabled>Withdrawn</button>';
+                        echo '<span class="chip" style="font-size:.75rem;cursor:default;opacity:.6">Withdrawn</span>';
                     } elseif ($comp['status'] === 'open') {
                         echo '<button class="btn danger" mx-get="users/withdraw/' . out($comp['record_id']) . '" mx-build-modal="modalWithdraw">Withdraw</button>';
-                    } else {
-                        echo '<button class="btn disabled" disabled>Withdraw</button>';
                     }
                   ?>
                 </td>

@@ -781,13 +781,17 @@
         public function submit_delete_comp() {
             $this->module('trongate_security');
             $this->trongate_security->_make_sure_allowed('organizers area');
-            $this->validation->run();
             $record_id = (int)segment(3);
             $object = $this->model->get_where($record_id, 'comp_name');
             $organizer_id = $this->_get_organizer_user_id();
-            if (isset($object) && !in_array($object->status, ['closed','generated', 'running', 'finished']) && $object->organizer_id === $organizer_id) {
+            if ($object !== false && !in_array($object->status, ['closed','generated', 'running', 'finished']) && (int)$object->organizer_id === (int)$organizer_id) {
+                // Remove child records before deleting the competition to avoid FK constraint errors
+                $this->model->query_bind("DELETE FROM comp_competition_divisions WHERE competition_id = ?", [$record_id]);
+                $this->model->query_bind("DELETE FROM competition_judges WHERE competition_id = ?", [$record_id]);
+                $this->model->query_bind("DELETE FROM comp_participants WHERE comp_id = ?", [$record_id]);
                 $this->model->delete($record_id, 'comp_name');
                 echo '<p style="color:white;background:green;text-align: center;padding: 0.5rem;">Competition with id ' . $record_id . ' was deleted!</p>';
+                return;
             }
             echo '<p style="color:black;background:orange;text-align:center;padding:0.5rem;">Cannot delete this. Due to competition being closed, running or finished!</p>';
         }

@@ -1160,7 +1160,6 @@
                 'comp_id'     => $comp_id,
                 'user_id'     => $user_id,
                 'division_id' => $division_id,
-                'gender_age'  => $division_name,
                 'status'      => 'pending',
             ];
 

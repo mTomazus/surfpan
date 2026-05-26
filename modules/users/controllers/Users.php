@@ -1063,30 +1063,15 @@
             $comp_id = (int)segment(3);
             $user = $this->_get_user_info();
             $data['user'] = $user;
-            $user_age = $this->find_age_end($user[0]['dob']);
-            $age = 'u' . $user_age;
-            $gender = $user[0]['gender'];
+            $user_age = (int) $this->find_age_end($user[0]['dob']);
+            $gender   = $user[0]['gender'];
 
             $competition = $this->model->get_where($comp_id, 'comp_name');
-            $organizer = $this->model->get_where($competition->organizer_id, 'comp_organizations');
-              
-            $sql = "SELECT * 
-                    FROM comp_competition_divisions AS ccd
-                    LEFT JOIN comp_divisions AS cd
-                    ON ccd.division_id = cd.id 
-                    WHERE ccd.competition_id = ?
-                    AND (cd.age >= ? OR cd.age = 'adult' OR cd.age = 'veteran')
-                    AND cd.gender = ?";
+            $organizer   = $this->model->get_where($competition->organizer_id, 'comp_organizations');
 
-            // Unnamed parameters to bind to the query.
-            $data = [$comp_id, $age, $gender];
-
-            // Execute the query using the unnamed parameters.
-            $rows = $this->model->query_bind($sql, $data, 'array');
-
-            $data['divisions'] = $rows;
+            $data['divisions']   = $this->_eligible_divisions($comp_id, $gender, $user_age);
             $data['competition'] = $competition;
-            $data['organizer'] = $organizer;    
+            $data['organizer']   = $organizer;
             $this->view('competition_modal', $data);
         }
         
@@ -1146,15 +1131,8 @@
             }
 
             // Server-side eligibility: the division must be one this competition
-            // offers AND must match the athlete's age/gender (mirrors competition()).
-            $age = 'u' . $this->find_age_end($dob);
-            $sql = "SELECT cd.id, cd.name
-                    FROM comp_competition_divisions AS ccd
-                    JOIN comp_divisions AS cd ON ccd.division_id = cd.id
-                    WHERE ccd.competition_id = ?
-                    AND (cd.age >= ? OR cd.age = 'adult' OR cd.age = 'veteran')
-                    AND cd.gender = ?";
-            $eligible = $this->model->query_bind($sql, [$comp_id, $age, $gender], 'array');
+            // offers AND must match the athlete's age/gender (same rule as the join modal).
+            $eligible = $this->_eligible_divisions($comp_id, $gender, (int) $this->find_age_end($dob));
 
             $division_name = post('division', true);
             $division_id   = null;
@@ -1205,6 +1183,24 @@
             http_response_code(422);
             header('Content-Type: application/json');
             echo json_encode([['field' => 'division', 'messages' => [$message]]]);
+        }
+
+        // Divisions an athlete may enter in a competition: offered by the competition,
+        // gender matches (or the division is 'mixed'), and age fits. 'open' and 'veteran'
+        // are open to all; 'uN' means the athlete's age must be at or below N.
+        private function _eligible_divisions(int $comp_id, string $gender, int $user_age): array {
+            $sql = "SELECT cd.id, cd.name
+                    FROM comp_competition_divisions AS ccd
+                    JOIN comp_divisions AS cd ON ccd.division_id = cd.id
+                    WHERE ccd.competition_id = ?
+                    AND (cd.gender = ? OR cd.gender = 'mixed')
+                    AND (
+                        cd.age = 'open'
+                        OR cd.age = 'veteran'
+                        OR (cd.age LIKE 'u%' AND CAST(SUBSTRING(cd.age, 2) AS UNSIGNED) >= ?)
+                    )
+                    ORDER BY cd.name";
+            return $this->model->query_bind($sql, [$comp_id, $gender, $user_age], 'array');
         }
 
         public function search() {

@@ -1,72 +1,81 @@
 <?php
   $user_heats = Modules::run("users/_get_user_heats");
   $user_comps = Modules::run("users/_get_user_comps");
-  // id, name, user_id, gender_age, location, year, status, entry_type,
-  // record_id, participation_status, jersey_color, start_time, end_time, round,
-  // heat_number, heat_status, timezone
 
   $has_heats = !empty($user_heats);
+  // $user_comps rows with no name come from the LEFT JOIN when there are no registrations.
+  $has_comps = !empty(array_filter($user_comps, fn($c) => !empty($c['name'])));
 
+  // --- Build competition/division maps from ALL registrations (not just drawn heats) ---
+  // This ensures open/scheduled comps appear in the dropdown, not only running ones.
+  $comps           = [];  // comp_id => ['id'=>..., 'label'=>...]
+  $divisions_by_comp = []; // comp_id => [ ['id'=>..., 'label'=>..., 'jersey'=>null], ... ]
+  $comp_status_map = [];  // comp_id => 'open'|'running'|'scheduled'|'finished'
+
+  if ($has_comps) {
+    foreach ($user_comps as $row) {
+      if (empty($row['name'])) continue;
+      $comp_id = (int) $row['id'];
+      if (!isset($comps[$comp_id])) {
+        $comps[$comp_id] = ['id' => $comp_id, 'label' => trim($row['name'].' '.$row['year'])];
+      }
+      if (!isset($comp_status_map[$comp_id])) {
+        $comp_status_map[$comp_id] = strtolower(trim($row['status']));
+      }
+      // Avoid duplicate division entries per comp (user may have multiple rows if multi-heat).
+      $div_id = (int)($row['division_id'] ?? 0);
+      $already = false;
+      foreach ($divisions_by_comp[$comp_id] ?? [] as $d) {
+        if ($d['id'] === $div_id) { $already = true; break; }
+      }
+      if (!$already) {
+        $divisions_by_comp[$comp_id][] = [
+          'id'     => $div_id,
+          'label'  => $row['division_name'],
+          'jersey' => null,  // overlaid from heat data below
+        ];
+      }
+    }
+
+    // Overlay jersey colour from heat assignments where available.
+    foreach ($user_heats as $row) {
+      $comp_id = (int) $row['id'];
+      $div_id  = (int)($row['division_id'] ?? 0);
+      if (!isset($divisions_by_comp[$comp_id])) continue;
+      foreach ($divisions_by_comp[$comp_id] as &$div) {
+        if ($div['id'] === $div_id && !empty($row['jersey_color'])) {
+          $div['jersey'] = $row['jersey_color'];
+          break;
+        }
+      }
+      unset($div);
+    }
+  }
+
+  // --- Heat-specific data for Next Heat card (only when heats are drawn) ---
   if ($has_heats) {
-    // 1) Build unique competitions and grouped divisions.
-    $comps = [];               // comp_id => ['id'=>..., 'label'=>...]
-    $divisions_by_comp = [];   // comp_id => [ ['id'=>..., 'label'=>..., 'jersey'=>...], ... ]
-    $comp_status_map = []; // comp_id => 'open' | 'running' | 'scheduled' | 'finished'
-
     $timezone = $user_heats[0]['timezone'];
 
     if ($user_heats[0]['start_time'] != null) {
-
       $dt = new DateTimeImmutable($user_heats[0]['start_time'], new DateTimeZone('UTC'));
       $start_time = $dt->setTimezone(new DateTimeZone($timezone))->format("Y-m-d H:i:s");
-
       $start = new DateTime($user_heats[0]['start_time']);
       $end   = new DateTime($user_heats[0]['end_time']);
       $int = $start->diff($end);
       $minutes = ($int->days * 1440) + ($int->h * 60) + $int->i;
       if ($int->invert) $minutes *= -1;
-
     } else {
-
       $start_time = null;
-      $minutes = "N/A";
-
+      $minutes    = "N/A";
     }
 
     switch ($user_heats[0]['jersey_color']):
-      case 'white':
-        $color = 'black';
-        break;
-      default:
-        $color = 'white';
+      case 'white': $color = 'black'; break;
+      default:      $color = 'white';
     endswitch;
-
-    foreach ($user_heats as $row) {
-
-        $comp_id = (int) $row['id'];
-
-        if (!isset($comps[$comp_id])) {
-            $label = trim($row['name'].' '.$row['year']);
-            $comps[$comp_id] = [
-                'id'    => $comp_id,
-                'label' => $label
-            ];
-        }
-
-        if (!isset($comp_status_map[$comp_id])) {
-            $comp_status_map[$comp_id] = strtolower(trim($row['status']));
-        }
-
-        $divisions_by_comp[$comp_id][] = [
-            'id'     => (int)($row['division_id'] ?? 0),
-            'label'  => $row['division_name'],
-            'jersey' => $row['jersey_color'] ?? null,
-        ];
-    }
-
-    $first_comp_id = array_key_first($comps) ?? null;
   }
 
+  $first_comp_id = array_key_first($comps) ?? null;
 ?>
 
   <div class="grid cards">
@@ -85,14 +94,14 @@
       <div id="searchResults" class="list" style="margin-top:10px; display:none"></div>
     </section>
 
-    <?php if (!$has_heats): ?>
+    <?php if (!$has_comps): ?>
 
     <!-- ===== Empty / onboarding state ===== -->
     <section class="card pad span-12" style="text-align:center; padding: 3rem 2rem;">
       <div style="max-width:420px; margin:auto;">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--subtle)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:1rem"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-        <h2 style="margin-bottom:.5rem;">No heats scheduled yet</h2>
-        <p class="subtle" style="margin-bottom:1.5rem;">You're not drawn into any upcoming heats. Search for an open competition above and register to get started.</p>
+        <h2 style="margin-bottom:.5rem;">No registrations yet</h2>
+        <p class="subtle" style="margin-bottom:1.5rem;">You haven't joined any competitions. Search for an open competition above and register to get started.</p>
         <button class="btn" onclick="document.getElementById('searchCompetition').focus()">Find a competition</button>
       </div>
     </section>
@@ -136,8 +145,11 @@
     <section class="card pad span-7" aria-labelledby="next-heat-title">
       <div class="section-head">
         <h2 id="next-heat-title">Your Next Heat</h2>
+        <?php if ($has_heats): ?>
         <span class="chip status-<?= out($user_heats[0]['heat_status']) ?>"><span class="dot" style="background:var(--chip-<?= out($user_heats[0]['heat_status']) ?>)"></span><span id="heatStatus"><?= out($user_heats[0]['heat_status']) ?></span></span>
+        <?php endif; ?>
       </div>
+      <?php if ($has_heats): ?>
       <div class="next-heat">
         <div class="countdown justify-around">
           <span class="pill" id="countdownPill">Starts in</span>
@@ -162,6 +174,12 @@
           <button class="btn" onclick="goLive(<?= out($user_heats[0]['id']) ?>)">Heats</button>
         </div>
       </div>
+      <?php else: ?>
+      <div style="text-align:center; padding: 2rem 1rem;">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--subtle)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:.75rem"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <p class="subtle">Heat draw not published yet.<br>Check back once the competition goes live.</p>
+      </div>
+      <?php endif; ?>
     </section>
 
     <!-- ===== Scores ===== -->
@@ -347,7 +365,7 @@
       </div>
     </section>
 
-    <?php endif; // $has_heats ?>
+    <?php endif; // $has_comps ?>
 
   </div>
 

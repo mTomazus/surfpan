@@ -87,8 +87,8 @@
             $this->module('trongate_tokens');
             $trongate_user_id = $this->trongate_tokens->_get_user_id();
 
-            $sql = "SELECT cn.id, cn.name, cp.user_id, cd.name AS division_name, 
-                            cn.location, cn.year, cn.status, cn.entry_type, 
+            $sql = "SELECT cn.id, cn.name, cp.user_id, cd.id AS division_id, cd.name AS division_name,
+                            cn.location, cn.year, cn.status, cn.entry_type,
                             cp.id AS record_id, cp.status AS participation_status
                     FROM comp_users AS cu
                     LEFT JOIN comp_participants AS cp
@@ -97,7 +97,8 @@
                     ON cp.comp_id = cn.id
                     JOIN comp_divisions AS cd
                     ON cp.division_id = cd.id
-                    WHERE cu.trongate_user_id = ? AND cn.status != 'finished';";
+                    WHERE cu.trongate_user_id = ? AND cn.status != 'finished'
+                    ORDER BY cn.id ASC;";
             $data = [$trongate_user_id];
             $user_comps = $this->model->query_bind($sql, $data, 'array');
             return $user_comps;

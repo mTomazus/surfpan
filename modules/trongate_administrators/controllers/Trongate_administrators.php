@@ -84,11 +84,11 @@ class Trongate_administrators extends Trongate {
      * @return void
      */
     public function submit(): void {
-        $data['token'] = $this->_make_sure_allowed();
+        $token = $this->_make_sure_allowed();
+        $data['token'] = $token;
         $submit = post('submit');
 
         if ($submit === 'Submit') {
-            // Set validation rules for username, password, and repeat password.
             $this->validation->set_rules('username', 'username', 'required|min_length[5]|callback_username_check');
             $this->validation->set_rules('password', 'password', 'required|min_length[5]');
             $this->validation->set_rules('repeat_password', 'repeat password', 'matches[password]');
@@ -101,26 +101,25 @@ class Trongate_administrators extends Trongate {
                 unset($data['repeat_password']);
                 $data['password'] = $this->hash_string($data['password']);
 
+                $admin_id = $this->get_my_id($token);
+
                 if (is_numeric($update_id)) {
-                    // Update existing administrator record.
                     $this->model->update($update_id, $data);
+                    $this->_log_action($admin_id, 'update_admin', (int)$update_id, $data['username'] ?? null);
                     set_flashdata('The record was successfully updated');
                 } else {
-                    // Create new administrator record.
                     $this->module('trongate_users');
                     $data['trongate_user_id'] = $this->trongate_users->_create_user(1);
-                    $this->model->insert($data);
+                    $new_id = $this->model->insert($data);
+                    $this->_log_action($admin_id, 'create_admin', (int)$new_id, $data['username'] ?? null);
                     set_flashdata('The record was successfully created');
                 }
 
-                // Redirect to administrators management page.
                 redirect('trongate_administrators/manage');
             } else {
-                // Reload creation form on validation failure.
                 $this->create();
             }
         } elseif ($submit === 'Cancel') {
-            // Redirect to administrators management page on cancel submission.
             redirect('trongate_administrators/manage');
         }
     }
@@ -133,22 +132,22 @@ class Trongate_administrators extends Trongate {
      * @return void
      */
     public function submit_delete(): void {
-        $this->_make_sure_allowed();
+        $token = $this->_make_sure_allowed();
         $update_id = segment(3);
         $submit = post('submit');
 
         if (($submit === 'Delete Record Now') && (is_numeric($update_id))) {
-            // Get the trongate_user_id associated with the administrator record.
             $user_obj = $this->model->get_where($update_id, 'trongate_administrators');
             $trongate_user_id = $user_obj->trongate_user_id;
 
-            // Delete records from 'trongate_users' and 'trongate_administrators' tables.
+            $admin_id = $this->get_my_id($token);
+            $this->_log_action($admin_id, 'delete_admin', (int)$update_id, $user_obj->username ?? null);
+
             $this->model->delete($trongate_user_id, 'trongate_users');
             $this->model->delete($update_id, 'trongate_administrators');
             set_flashdata('The record was successfully deleted');
         }
 
-        // Redirect to administrators management page.
         redirect('trongate_administrators/manage');
     }
 
@@ -377,7 +376,7 @@ class Trongate_administrators extends Trongate {
      * @return void
      */
     public function toggle_org_status(): void {
-        $this->_make_sure_allowed();
+        $token = $this->_make_sure_allowed();
 
         $org_id = (int) segment(3);
         if ($org_id <= 0) {
@@ -391,6 +390,10 @@ class Trongate_administrators extends Trongate {
 
         $new_status = ($org->status === 'active') ? 'inactive' : 'active';
         $this->model->update($org_id, ['status' => $new_status], 'comp_organizations');
+
+        $admin_id = $this->get_my_id($token);
+        $this->_log_action($admin_id, 'toggle_org_status', $org_id,
+            $org->organization . ': ' . $org->status . '→' . $new_status);
 
         redirect('trongate_administrators/org_detail/' . $org_id);
     }
@@ -450,12 +453,15 @@ class Trongate_administrators extends Trongate {
      * @return void
      */
     public function grant_free_event(): void {
-        $this->_make_sure_allowed();
+        $token = $this->_make_sure_allowed();
 
         $org_id = (int) segment(3);
         if ($org_id <= 0) {
             redirect('trongate_administrators/organizations_list');
         }
+
+        $org = $this->model->get_one_where('id', $org_id, 'comp_organizations');
+
         $data = [
             'organizer_id' => $org_id,
             'product_id'   => 6,
@@ -465,6 +471,9 @@ class Trongate_administrators extends Trongate {
             'provider'     => 'manual'
         ];
         $this->model->insert($data, 'billing_charges');
+
+        $admin_id = $this->get_my_id($token);
+        $this->_log_action($admin_id, 'grant_free_event', $org_id, $org->organization ?? null);
 
         set_flashdata('Free event granted to organization ID ' . $org_id);
         redirect('trongate_administrators/org_detail/' . $org_id);
@@ -669,6 +678,27 @@ class Trongate_administrators extends Trongate {
      */
     public function go_home(): void {
         redirect($this->dashboard_home);
+    }
+
+    /**
+     * Admin audit log — last 200 entries, newest first.
+     */
+    public function audit_log(): void {
+        $token = $this->_make_sure_allowed();
+        $data['my_admin_id'] = $this->get_my_id($token);
+
+        $sql = "SELECT al.id, al.action, al.target_id, al.note, al.ip, al.created_at,
+                       ta.username AS admin_username
+                FROM admin_audit_log al
+                LEFT JOIN trongate_administrators ta ON ta.id = al.admin_id
+                ORDER BY al.created_at DESC
+                LIMIT 200";
+        $rows = $this->model->query($sql, 'object');
+        $data['entries'] = is_array($rows) ? $rows : [];
+
+        $data['view_module'] = 'trongate_administrators';
+        $data['view_file']   = 'audit_log';
+        $this->load_template($data);
     }
 
     /**

@@ -331,6 +331,10 @@
 					<span class="hide-sm">Administrators</span>
 					<i class="fa fa-gears"></i>
 				</a>
+				<a href="<?= BASE_URL ?>trongate_administrators/audit_log">
+					<span class="hide-sm">Audit Log</span>
+					<i class="fa fa-history"></i>
+				</a>
 				<a href="<?= BASE_URL ?>trongate_administrators/create/<?= $data['my_admin_id'] ?? '' ?>">
 					<span class="hide-sm">Your Account</span>
 					<i class="fa fa-user"></i>

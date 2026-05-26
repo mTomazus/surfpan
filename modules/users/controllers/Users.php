@@ -102,6 +102,82 @@
             return $user_comps;
         }
 
+        function _get_user_scores() {
+            $this->module('trongate_tokens');
+            $trongate_user_id = $this->trongate_tokens->_get_user_id();
+
+            $sql = "SELECT
+                        cn.id          AS comp_id,
+                        cn.name        AS comp_name,
+                        cn.year,
+                        cd.id          AS division_id,
+                        cd.name        AS division_name,
+                        ch.id          AS heat_id,
+                        ch.heat_number,
+                        ch.round,
+                        cwa.wave_number,
+                        cwa.avg_score
+                    FROM comp_users cu
+                    JOIN comp_participants cp        ON cp.user_id = cu.id AND cp.status != 'withdrawn'
+                    JOIN comp_heat_participants hp   ON hp.participant_id = cp.id
+                    JOIN comp_heats ch               ON ch.id = hp.heat_id
+                    JOIN comp_name cn                ON cn.id = cp.comp_id
+                    JOIN comp_divisions cd           ON cd.id = cp.division_id
+                    JOIN comp_wave_averages cwa      ON cwa.heat_id = ch.id AND cwa.participant_id = cp.id
+                    WHERE cu.trongate_user_id = ?
+                    ORDER BY cn.id ASC, ch.id ASC, cwa.wave_number ASC";
+
+            $rows = $this->model->query_bind($sql, [$trongate_user_id], 'array');
+
+            // Group by comp_id → heat_id, compute best-2 per heat
+            $by_comp = [];
+            foreach ($rows as $row) {
+                $comp_id  = (int) $row['comp_id'];
+                $heat_id  = (int) $row['heat_id'];
+                if (!isset($by_comp[$comp_id])) {
+                    $by_comp[$comp_id] = ['comp_name' => $row['comp_name'], 'year' => $row['year'], 'heats' => []];
+                }
+                if (!isset($by_comp[$comp_id]['heats'][$heat_id])) {
+                    $by_comp[$comp_id]['heats'][$heat_id] = [
+                        'heat_number'   => (int) $row['heat_number'],
+                        'round'         => $row['round'],
+                        'division_name' => $row['division_name'],
+                        'waves'         => [],
+                    ];
+                }
+                $by_comp[$comp_id]['heats'][$heat_id]['waves'][] = [
+                    'wave_number' => (int) $row['wave_number'],
+                    'avg_score'   => (float) $row['avg_score'],
+                ];
+            }
+
+            // Mark best-2 waves per heat
+            foreach ($by_comp as &$comp) {
+                foreach ($comp['heats'] as &$heat) {
+                    $sorted = $heat['waves'];
+                    usort($sorted, fn($a, $b) => $b['avg_score'] <=> $a['avg_score']);
+                    $top_scores = array_slice(array_column($sorted, 'avg_score'), 0, 2);
+                    $best2_total = round(array_sum($top_scores), 2);
+                    $remaining  = $top_scores;
+                    foreach ($heat['waves'] as &$w) {
+                        $key = array_search($w['avg_score'], $remaining, true);
+                        if ($key !== false) {
+                            $w['best'] = true;
+                            unset($remaining[$key]);
+                        } else {
+                            $w['best'] = false;
+                        }
+                    }
+                    unset($w);
+                    $heat['best2_total'] = $best2_total;
+                }
+                unset($heat);
+            }
+            unset($comp);
+
+            return $by_comp;
+        }
+
         function login() {
             $data['view_module'] = 'users';
             $data['email'] = post('email', true);
@@ -1000,7 +1076,7 @@
             $this->module('trongate_security');
             $this->trongate_security->_make_sure_allowed('participants area');
             $comp_id = (int)segment(3);
-            $user = $this->_get_user_info();
+            $user    = $this->_get_user_info();
             $data['user'] = $user;
             $user_age = (int) $this->find_age_end($user[0]['dob']);
             $gender   = $user[0]['gender'];
@@ -1008,7 +1084,21 @@
             $competition = $this->model->get_where($comp_id, 'comp_name');
             $organizer   = $this->model->get_where($competition->organizer_id, 'comp_organizations');
 
-            $data['divisions']   = $this->_eligible_divisions($comp_id, $gender, $user_age);
+            $all_eligible = $this->_eligible_divisions($comp_id, $gender, $user_age);
+
+            // Fetch divisions this athlete is already registered for (non-withdrawn)
+            $sql = "SELECT cp.division_id, cd.name AS division_name
+                    FROM comp_participants cp
+                    JOIN comp_divisions cd ON cd.id = cp.division_id
+                    WHERE cp.comp_id = ? AND cp.user_id = ? AND cp.status != 'withdrawn'";
+            $already = $this->model->query_bind($sql, [$comp_id, $user[0]['id']], 'array');
+            $joined_ids = array_map('intval', array_column($already, 'division_id'));
+
+            // Only show divisions the athlete hasn't joined yet
+            $available = array_values(array_filter($all_eligible, fn($d) => !in_array((int)$d['id'], $joined_ids)));
+
+            $data['divisions']   = $available;
+            $data['joined']      = $already;      // already-registered rows with names
             $data['competition'] = $competition;
             $data['organizer']   = $organizer;
             $this->view('competition_modal', $data);

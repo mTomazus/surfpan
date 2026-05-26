@@ -1,6 +1,7 @@
 <?php
-  $user_heats = Modules::run("users/_get_user_heats");
-  $user_comps = Modules::run("users/_get_user_comps");
+  $user_heats  = Modules::run("users/_get_user_heats");
+  $user_comps  = Modules::run("users/_get_user_comps");
+  $user_scores = Modules::run("users/_get_user_scores");
 
   $has_heats = !empty($user_heats);
   // $user_comps rows with no name come from the LEFT JOIN when there are no registrations.
@@ -207,57 +208,57 @@
     </section>
 
     <!-- ===== Scores ===== -->
-    <section class="card pad span-5 disabled d-none" aria-labelledby="scores-title">
+    <section class="card pad span-5" aria-labelledby="scores-title">
       <div class="section-head">
         <h3 id="scores-title">My Scores</h3>
-        <span class="subtle">Best two waves count</span>
+        <span class="subtle">Best 2 waves count</span>
       </div>
-      <div class="table-wrap">
-        <table class="table" aria-describedby="scores-title">
-          <thead>
-            <tr>
-              <th>Heat</th>
-              <th>Wave</th>
-              <th>J1</th>
-              <th>J2</th>
-              <th>J3</th>
-              <th>J4</th>
-              <th>J5</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>#5</td>
-              <td>1</td>
-              <td>4.5</td><td>4.7</td><td>4.8</td><td>4.6</td><td>4.9</td>
-              <td>23.5</td>
-            </tr>
-            <tr>
-              <td>#5</td>
-              <td>2</td>
-              <td>6.2</td><td>6.0</td><td>6.1</td><td>6.3</td><td>6.2</td>
-              <td>30.8</td>
-            </tr>
-            <tr>
-              <td>#5</td>
-              <td>3</td>
-              <td>1.5</td><td>1.8</td><td>1.7</td><td>1.9</td><td>1.6</td>
-              <td>8.5</td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <th colspan="7" class="right">Best 2 waves</th>
-              <th>54.3</th>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-      <div class="controls" style="margin-top:10px">
-        <button class="btn disabled" disabled>View heat details</button>
-        <button class="btn disabled" disabled>Event rankings</button>
-      </div>
+
+      <?php if (empty($user_scores)): ?>
+        <div style="text-align:center;padding:2rem 1rem;">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--subtle)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:.75rem"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <p class="subtle">No scores recorded yet.<br>Scores appear once judges submit wave results.</p>
+        </div>
+      <?php else: ?>
+        <?php foreach ($user_scores as $comp_id => $comp_scores): ?>
+        <div class="scores-block" data-score-comp="<?= (int)$comp_id ?>">
+          <?php foreach ($comp_scores['heats'] as $heat): ?>
+          <div style="margin-bottom:1.25rem">
+            <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.4rem">
+              <?= out($heat['division_name']) ?> · <?= out($heat['round'] ?: 'Heat') ?> #<?= out($heat['heat_number']) ?>
+            </div>
+            <div class="table-wrap">
+              <table class="table" style="font-size:.82rem">
+                <thead>
+                  <tr>
+                    <th>Wave</th>
+                    <th class="right">Avg Score</th>
+                    <th class="right"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach ($heat['waves'] as $w): ?>
+                  <tr<?= $w['best'] ? ' style="color:var(--ok);font-weight:600"' : '' ?>>
+                    <td>#<?= out($w['wave_number']) ?></td>
+                    <td class="right"><?= number_format($w['avg_score'], 2) ?></td>
+                    <td class="right" style="font-size:.7rem"><?= $w['best'] ? '★' : '' ?></td>
+                  </tr>
+                  <?php endforeach; ?>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th>Best 2 total</th>
+                    <th class="right"><?= number_format($heat['best2_total'], 2) ?></th>
+                    <th></th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+          <?php endforeach; ?>
+        </div>
+        <?php endforeach; ?>
+      <?php endif; ?>
     </section>
 
     <!-- ===== Schedule ===== -->
@@ -709,9 +710,16 @@
         showTab('running');
       });
 
+      function updateScoresBlock(compId) {
+        document.querySelectorAll('.scores-block').forEach(el => {
+          el.style.display = el.dataset.scoreComp === String(compId) ? '' : 'none';
+        });
+      }
+
       function onCompetitionChange(compId) {
         populateDivisions(compId);
         highlightStatus(compStatusMap[compId]);
+        updateScoresBlock(compId);
       }
 
       // Single set of listeners

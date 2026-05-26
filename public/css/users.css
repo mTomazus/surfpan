@@ -901,7 +901,7 @@ aside {
   /* ===== Tables ===== */
   .table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 12px; }
   .table th, .table td { padding: 10px 12px; border-bottom: 1px solid color-mix(in oklab, var(--text), transparent 90%); text-align: left; }
-  .table th { font-size: .86rem; background: light-dark(var(--accent-dark), var(--opposite-light)); font-weight: 600; }
+  .table th { font-size: .86rem; background: light-dark(var(--accent-dark), var(--opposite-light)); font-weight: 600; color: var(--bg); }
   .table tr:last-child td { border-bottom: none; }
   .table .right { text-align: right; }
   thead { color: var(--bg); }

@@ -382,70 +382,7 @@
         public function athletes() {
             $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 
-            // Build the full athlete dataset as a final CTE so we can filter with WHERE on aliases
-            $cte = "WITH top2 AS (
-                        SELECT js.heat_id, js.participant_id, js.avg_score,
-                               ROW_NUMBER() OVER (PARTITION BY js.heat_id, js.participant_id ORDER BY js.avg_score DESC) AS rn
-                        FROM comp_wave_averages js
-                    ),
-                    heat_totals AS (
-                        SELECT heat_id, participant_id,
-                               COALESCE(SUM(avg_score), 0) AS total_score,
-                               MAX(avg_score)              AS best_wave
-                        FROM top2 WHERE rn <= 2
-                        GROUP BY heat_id, participant_id
-                    ),
-                    all_best AS (
-                        SELECT cn.id AS comp_id, cd.name AS division, cp.user_id,
-                               CASE
-                                   WHEN LOWER(h.round) = 'final'                                THEN 100
-                                   WHEN LOWER(h.round) IN ('semifinal','semi')                  THEN 80
-                                   WHEN LOWER(h.round) IN ('quarterfinal','qf')                 THEN 75
-                                   WHEN LOWER(h.round) IN ('round 2','round2','r2')             THEN 70
-                                   WHEN LOWER(h.round) IN ('repechage 2','repechage2','rep2')   THEN 60
-                                   WHEN LOWER(h.round) IN ('repechage 1','repechage1','rep1')   THEN 50
-                                   WHEN LOWER(h.round) IN ('round 1','round1','r1')             THEN 30
-                                   ELSE 0
-                               END AS round_weight,
-                               COALESCE(ht.total_score, 0) AS total_score,
-                               COALESCE(ht.best_wave, 0)   AS best_wave
-                        FROM comp_participants cp
-                        JOIN comp_heat_participants hp ON hp.participant_id = cp.id
-                        JOIN comp_heats h              ON h.id = hp.heat_id
-                        JOIN comp_name cn              ON cn.id = h.comp_id
-                        JOIN comp_divisions cd         ON cd.id = cp.division_id
-                        LEFT JOIN heat_totals ht       ON ht.heat_id = h.id AND ht.participant_id = hp.participant_id
-                    ),
-                    best_per_athlete AS (
-                        SELECT *,
-                               ROW_NUMBER() OVER (PARTITION BY comp_id, division, user_id ORDER BY round_weight DESC, total_score DESC, best_wave DESC) AS rn
-                        FROM all_best
-                    ),
-                    div_ranked AS (
-                        SELECT *,
-                               RANK() OVER (PARTITION BY comp_id, division ORDER BY round_weight DESC, total_score DESC, best_wave DESC) AS place
-                        FROM best_per_athlete WHERE rn = 1
-                    ),
-                    athlete_points AS (
-                        SELECT user_id,
-                               SUM(CASE place
-                                   WHEN 1 THEN 1000 WHEN 2 THEN 860 WHEN 3 THEN 730
-                                   WHEN 4 THEN 670  WHEN 5 THEN 610 WHEN 6 THEN 583
-                                   WHEN 7 THEN 555  WHEN 8 THEN 528 WHEN 9 THEN 500
-                                   WHEN 10 THEN 488 WHEN 11 THEN 475 WHEN 12 THEN 462
-                                   WHEN 13 THEN 450 WHEN 14 THEN 438 WHEN 15 THEN 425
-                                   WHEN 16 THEN 413 WHEN 17 THEN 400
-                                   ELSE IF(place <= 65, 160 + (65 - place) * 5, 80)
-                               END) AS total_points
-                        FROM div_ranked
-                        WHERE user_id IN (SELECT id FROM comp_users)
-                        GROUP BY user_id
-                    ),
-                    global_rank AS (
-                        SELECT user_id, total_points,
-                               RANK() OVER (ORDER BY total_points DESC) AS ranking
-                        FROM athlete_points
-                    ),
+            $cte = $this->_global_rank_cte() . ",
                     athlete_base AS (
                         SELECT cu.id, cu.name, cup.country, co.name AS country_name,
                                cup.club_name, cup.avatar,
@@ -521,8 +458,7 @@
             $athlete['age']  = $this->find_age_end($athlete['dob'] ?? null);
             $athlete['slug'] = $this->_make_slug($athlete['name'], $athlete['id']);
 
-            // Competition history with best result per competition/division
-            // Rank across ALL participants per comp+division, then filter to this athlete
+            $weight = $this->_round_weight_case();
             $sql = "WITH top2 AS (
                         SELECT js.heat_id, js.participant_id, js.avg_score,
                                ROW_NUMBER() OVER (PARTITION BY js.heat_id, js.participant_id ORDER BY js.avg_score DESC) AS rn
@@ -539,16 +475,7 @@
                         SELECT cn.id AS comp_id, cn.name AS comp_name, cn.year, cn.location, cn.status AS comp_status,
                                cd.name AS division, cp.user_id,
                                h.round,
-                               CASE
-                                   WHEN LOWER(h.round) = 'final'                                THEN 100
-                                   WHEN LOWER(h.round) IN ('semifinal','semi')                  THEN 80
-                                   WHEN LOWER(h.round) IN ('quarterfinal','qf')                 THEN 75
-                                   WHEN LOWER(h.round) IN ('round 2','round2','r2')             THEN 70
-                                   WHEN LOWER(h.round) IN ('repechage 2','repechage2','rep2')   THEN 60
-                                   WHEN LOWER(h.round) IN ('repechage 1','repechage1','rep1')   THEN 50
-                                   WHEN LOWER(h.round) IN ('round 1','round1','r1')             THEN 30
-                                   ELSE 0
-                               END AS round_weight,
+                               $weight AS round_weight,
                                COALESCE(ht.total_score, 0) AS total_score,
                                COALESCE(ht.best_wave, 0)   AS best_wave
                         FROM comp_participants cp
@@ -575,13 +502,8 @@
                     ORDER BY year DESC, comp_name ASC";
             $history = $this->model->query_bind($sql, [$user_id], 'array');
 
-            // Points by place
-            $points_table = [
-                1=>1000, 2=>860, 3=>730, 4=>670,  5=>610, 6=>583, 7=>555, 8=>528,
-                9=>500, 10=>488, 11=>475, 12=>462, 13=>450, 14=>438, 15=>425, 16=>413, 17=>400,
-            ];
+            $points_table = $this->_points_table();
 
-            // Aggregate stats
             $comp_count   = count(array_unique(array_column($history, 'comp_id')));
             $total_points = 0;
             foreach ($history as $row) {
@@ -589,73 +511,9 @@
                 $total_points += $points_table[$p] ?? ($p <= 65 ? 160 + (65 - $p) * 5 : 80);
             }
 
-            // Global rank — calculate points for every athlete and rank this one
-            $rank_sql = "WITH top2 AS (
-                            SELECT js.heat_id, js.participant_id, js.avg_score,
-                                   ROW_NUMBER() OVER (PARTITION BY js.heat_id, js.participant_id ORDER BY js.avg_score DESC) AS rn
-                            FROM comp_wave_averages js
-                         ),
-                         heat_totals AS (
-                            SELECT heat_id, participant_id,
-                                   COALESCE(SUM(avg_score), 0) AS total_score,
-                                   MAX(avg_score)              AS best_wave
-                            FROM top2 WHERE rn <= 2
-                            GROUP BY heat_id, participant_id
-                         ),
-                         all_best AS (
-                            SELECT cn.id AS comp_id, cd.name AS division, cp.user_id,
-                                   CASE
-                                       WHEN LOWER(h.round) = 'final'                                THEN 100
-                                       WHEN LOWER(h.round) IN ('semifinal','semi')                  THEN 80
-                                       WHEN LOWER(h.round) IN ('quarterfinal','qf')                 THEN 75
-                                       WHEN LOWER(h.round) IN ('round 2','round2','r2')             THEN 70
-                                       WHEN LOWER(h.round) IN ('repechage 2','repechage2','rep2')   THEN 60
-                                       WHEN LOWER(h.round) IN ('repechage 1','repechage1','rep1')   THEN 50
-                                       WHEN LOWER(h.round) IN ('round 1','round1','r1')             THEN 30
-                                       ELSE 0
-                                   END AS round_weight,
-                                   COALESCE(ht.total_score, 0) AS total_score,
-                                   COALESCE(ht.best_wave, 0)   AS best_wave
-                            FROM comp_participants cp
-                            JOIN comp_heat_participants hp ON hp.participant_id = cp.id
-                            JOIN comp_heats h              ON h.id = hp.heat_id
-                            JOIN comp_name cn              ON cn.id = h.comp_id
-                            JOIN comp_divisions cd         ON cd.id = cp.division_id
-                            LEFT JOIN heat_totals ht       ON ht.heat_id = h.id AND ht.participant_id = hp.participant_id
-                         ),
-                         best_per_athlete AS (
-                            SELECT *,
-                                   ROW_NUMBER() OVER (PARTITION BY comp_id, division, user_id ORDER BY round_weight DESC, total_score DESC, best_wave DESC) AS rn
-                            FROM all_best
-                         ),
-                         ranked AS (
-                            SELECT *,
-                                   RANK() OVER (PARTITION BY comp_id, division ORDER BY round_weight DESC, total_score DESC, best_wave DESC) AS place
-                            FROM best_per_athlete WHERE rn = 1
-                         ),
-                         athlete_points AS (
-                            SELECT user_id,
-                                   SUM(CASE place
-                                        WHEN 1 THEN 1000 WHEN 2 THEN 860 WHEN 3 THEN 730
-                                        WHEN 4 THEN 670  WHEN 5 THEN 610 WHEN 6 THEN 583
-                                        WHEN 7 THEN 555  WHEN 8 THEN 528 WHEN 9 THEN 500
-                                        WHEN 10 THEN 488 WHEN 11 THEN 475 WHEN 12 THEN 462
-                                        WHEN 13 THEN 450 WHEN 14 THEN 438 WHEN 15 THEN 425
-                                        WHEN 16 THEN 413 WHEN 17 THEN 400
-                                        ELSE IF(place <= 65, 160 + (65 - place) * 5, 80)
-                                   END) AS pts
-                            FROM ranked
-                            WHERE user_id IN (SELECT id FROM comp_users)
-                            GROUP BY user_id
-                         ),
-                         global_rank AS (
-                            SELECT user_id, pts,
-                                   RANK() OVER (ORDER BY pts DESC) AS ranking
-                            FROM athlete_points
-                         )
-                         SELECT ranking FROM global_rank WHERE user_id = ?";
-            $rank_row     = $this->model->query_bind($rank_sql, [$user_id], 'array');
-            $global_rank  = !empty($rank_row) ? (int)$rank_row[0]['ranking'] : 0;
+            $rank_sql    = $this->_global_rank_cte() . " SELECT ranking FROM global_rank WHERE user_id = ?";
+            $rank_row    = $this->model->query_bind($rank_sql, [$user_id], 'array');
+            $global_rank = !empty($rank_row) ? (int)$rank_row[0]['ranking'] : 0;
 
             $data['athlete']      = $athlete;
             $data['history']      = $history;
@@ -676,6 +534,88 @@
                 return (int) $m[1];
             }
             return 0;
+        }
+
+        private function _round_weight_case(): string {
+            return "CASE
+                           WHEN LOWER(h.round) = 'final'                                THEN 100
+                           WHEN LOWER(h.round) IN ('semifinal','semi')                  THEN 80
+                           WHEN LOWER(h.round) IN ('quarterfinal','qf')                 THEN 75
+                           WHEN LOWER(h.round) IN ('round 2','round2','r2')             THEN 70
+                           WHEN LOWER(h.round) IN ('repechage 2','repechage2','rep2')   THEN 60
+                           WHEN LOWER(h.round) IN ('repechage 1','repechage1','rep1')   THEN 50
+                           WHEN LOWER(h.round) IN ('round 1','round1','r1')             THEN 30
+                           ELSE 0
+                       END";
+        }
+
+        private function _points_case_sql(string $col = 'place'): string {
+            return "CASE $col
+                           WHEN 1 THEN 1000 WHEN 2 THEN 860 WHEN 3 THEN 730
+                           WHEN 4 THEN 670  WHEN 5 THEN 610 WHEN 6 THEN 583
+                           WHEN 7 THEN 555  WHEN 8 THEN 528 WHEN 9 THEN 500
+                           WHEN 10 THEN 488 WHEN 11 THEN 475 WHEN 12 THEN 462
+                           WHEN 13 THEN 450 WHEN 14 THEN 438 WHEN 15 THEN 425
+                           WHEN 16 THEN 413 WHEN 17 THEN 400
+                           ELSE IF($col <= 65, 160 + (65 - $col) * 5, 80)
+                       END";
+        }
+
+        private function _points_table(): array {
+            return [
+                1=>1000, 2=>860,  3=>730,  4=>670,  5=>610, 6=>583, 7=>555, 8=>528,
+                9=>500, 10=>488, 11=>475, 12=>462, 13=>450, 14=>438, 15=>425, 16=>413, 17=>400,
+            ];
+        }
+
+        private function _global_rank_cte(): string {
+            $weight = $this->_round_weight_case();
+            $points = $this->_points_case_sql();
+            return "WITH top2 AS (
+                        SELECT js.heat_id, js.participant_id, js.avg_score,
+                               ROW_NUMBER() OVER (PARTITION BY js.heat_id, js.participant_id ORDER BY js.avg_score DESC) AS rn
+                        FROM comp_wave_averages js
+                    ),
+                    heat_totals AS (
+                        SELECT heat_id, participant_id,
+                               COALESCE(SUM(avg_score), 0) AS total_score,
+                               MAX(avg_score)              AS best_wave
+                        FROM top2 WHERE rn <= 2
+                        GROUP BY heat_id, participant_id
+                    ),
+                    all_best AS (
+                        SELECT cn.id AS comp_id, cd.name AS division, cp.user_id,
+                               $weight AS round_weight,
+                               COALESCE(ht.total_score, 0) AS total_score,
+                               COALESCE(ht.best_wave, 0)   AS best_wave
+                        FROM comp_participants cp
+                        JOIN comp_heat_participants hp ON hp.participant_id = cp.id
+                        JOIN comp_heats h              ON h.id = hp.heat_id
+                        JOIN comp_name cn              ON cn.id = h.comp_id
+                        JOIN comp_divisions cd         ON cd.id = cp.division_id
+                        LEFT JOIN heat_totals ht       ON ht.heat_id = h.id AND ht.participant_id = hp.participant_id
+                    ),
+                    best_per_athlete AS (
+                        SELECT *,
+                               ROW_NUMBER() OVER (PARTITION BY comp_id, division, user_id ORDER BY round_weight DESC, total_score DESC, best_wave DESC) AS rn
+                        FROM all_best
+                    ),
+                    ranked AS (
+                        SELECT *,
+                               RANK() OVER (PARTITION BY comp_id, division ORDER BY round_weight DESC, total_score DESC, best_wave DESC) AS place
+                        FROM best_per_athlete WHERE rn = 1
+                    ),
+                    athlete_points AS (
+                        SELECT user_id, SUM($points) AS total_points
+                        FROM ranked
+                        WHERE user_id IN (SELECT id FROM comp_users)
+                        GROUP BY user_id
+                    ),
+                    global_rank AS (
+                        SELECT user_id, total_points,
+                               RANK() OVER (ORDER BY total_points DESC) AS ranking
+                        FROM athlete_points
+                    )";
         }
 
         function request_modal() {

@@ -70,7 +70,7 @@
     </label>
     <div class="controls" style="margin-top:12px; grid-column: -1 / 1; display: flex; gap: 0.5rem;">
         <button class="btn primary" type="submit" name="submit" value="Save">Save</button>
-        <button class="btn" style="flex:2" onclick="alert('Change password…')">Change password</button>
+        <a href="<?= BASE_URL ?>pass_reset" class="btn" style="flex:2;text-decoration:none">Change password</a>
         <a href="users" class="btn alt" style="flex:1;text-decoration: none;">Close</a>
     </div>
     <?= form_close() ?>

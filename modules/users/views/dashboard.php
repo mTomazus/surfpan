@@ -170,7 +170,7 @@
         </div>
         <div class="controls mt-2" style="margin:auto; text-align:center; gap:1rem;display: grid;grid-template-columns: 1fr 1fr 1fr;">
           <button class="btn" onclick="checkIn()">Check-in</button>
-          <button class="btn" onclick="alert('Rules opened (wire to /docs/rulebook.pdf)')">Rules</button>
+          <button class="btn disabled" disabled>Rules</button>
           <button class="btn" onclick="goLive(<?= out($user_heats[0]['id']) ?>)">Heats</button>
         </div>
       </div>
@@ -231,8 +231,8 @@
         </table>
       </div>
       <div class="controls" style="margin-top:10px">
-        <button class="btn" onclick="alert('Open detailed heat results…')">View heat details</button>
-        <button class="btn" onclick="alert('Open rankings…')">Event rankings</button>
+        <button class="btn disabled" disabled>View heat details</button>
+        <button class="btn disabled" disabled>Event rankings</button>
       </div>
     </section>
 
@@ -332,17 +332,17 @@
                     if ($comp['participation_status'] === 'pending') {
                       if ($comp['entry_type'] === 'free entry') {
                         // free entry, pending approval
-                        echo '<button class="btn" onclick="alert(\'Entry pending approval…\')" >Pending</button>';
+                        echo '<button class="btn disabled" disabled>Pending</button>';
                       } else {
                         // paid entry, pending payment
                         echo '<button class="btn" mx-get="billings/entry_pay_modal/' . out($comp['id']) . '" mx-build-modal="modalEntryPay">Pay now</button>';
                       }
                     } else if ($comp['participation_status'] === 'paid') {
                         // paid entry, not confirmed
-                        echo '<button class="btn" onclick="alert(\'Open receipt…\')">Receipt</button>';
+                        echo '<button class="btn disabled" disabled>Receipt</button>';
                     } else if ($comp['entry_type'] === 'entry fee') {
                       // other status (e.g. withdrawn)
-                      echo '<button class="btn" onclick="alert(\'Open receipt…\')">Receipt</button>';
+                      echo '<button class="btn disabled" disabled>Receipt</button>';
                     }
                     if ($comp['participation_status'] === 'withdrawn') {
                         echo '<button class="btn disabled" disabled>Withdrawn</button>';
@@ -527,21 +527,19 @@
     // ===== Actions =====
     function checkIn() {
       checkedIn = true;
-      alert('Checked-in! (POST /heats/checkin)');
       $('#countdownPill').textContent = 'Checked-in';
     }
 
-    function copyJoinCode(code) {
+    function copyJoinCode(btn, code) {
       navigator.clipboard.writeText(code).then(() => {
-        alert('Your join code copied: ' + code);
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = orig, 1500);
       });
     }
 
     function joinCompetition(ev) {
       ev.preventDefault();
-      const code = $('#joinCode').value.trim();
-      if (!code) return alert('Enter a code');
-      alert('Joining with code: ' + code + ' (POST /competitions/join)');
     }
 
     function addCalendar(title, iso) {

@@ -41,7 +41,7 @@
         </div>
         <div class="controls" style="margin-top:12px">
             <button class="btn" type="submit" name="submit" value="Save">Save</button>
-            <button class="btn" style="flex:2" onclick="alert('Change password…')">Change password</button>
+            <a href="<?= BASE_URL ?>pass_reset" class="btn" style="flex:2;text-decoration:none">Change password</a>
             <a href="users" class="btn" style="flex:1;text-decoration: none;">Close</a>
         </div>
         <?= form_close() ?>

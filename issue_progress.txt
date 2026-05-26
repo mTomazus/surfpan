@@ -12,7 +12,7 @@ P-8   No empty/first-run state (crashes)        [x] DONE — commit 8ef7f8c
 P-7   Dashboard renders hardcoded mock data     [x] DONE — commit a382fd8
 P-3   Weak division field validation            [x] ALREADY FIXED — resolved in P-1/P-2 work (required added, eligibility check prevents NULL division_id)
 P-5   _get_user_heats() capped at LIMIT 1       [x] DONE — commit 8038b5c
-P-6   Withdraw is hard delete, no status guard  [ ] TODO
+P-6   Withdraw is hard delete, no status guard  [x] DONE — commit 1be37df
 ─────────────────────────────────────────────────────────────────
 
 Details
@@ -54,3 +54,12 @@ Changelog
 2026-05-26 — P-7 done (commit a382fd8): Removed fake "Heat Draw" and
   "Liability Waiver" doc items from Documents card. My Scores / Upcoming
   Heats were already d-none. Jersey chip initial text fixed in P-8.
+2026-05-26 — P-3: Already resolved as part of P-1/P-2 — required rule
+  added and eligibility check prevents NULL division_id on insert.
+2026-05-26 — P-5 done (commit 8038b5c): Removed LIMIT 1 from
+  _get_user_heats(); added ORDER BY ch.start_time ASC so $user_heats[0]
+  is always the next upcoming heat for multi-division athletes.
+2026-05-26 — P-6 done (commit 1be37df): confirm_withdraw() now
+  soft-deletes (status='withdrawn') instead of hard-deleting. Guards:
+  comp must be open, participant must not be in comp_heat_participants.
+  Dashboard shows "Withdrawn" button (disabled) for withdrawn entries.

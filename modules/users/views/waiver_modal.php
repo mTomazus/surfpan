@@ -20,7 +20,7 @@
   <?php else: ?>
     <div id="waiverResult"></div>
     <label style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;font-size:.9rem;cursor:pointer">
-      <input type="checkbox" id="waiverCheck" />
+      <input type="checkbox" id="waiverCheck" onchange="document.getElementById('waiverBtn').disabled = !this.checked;" />
       I have read and accept the terms of this waiver
     </label>
     <div style="display:flex;justify-content:flex-end;gap:.6rem">
@@ -32,10 +32,5 @@
         Accept &amp; Sign
       </button>
     </div>
-    <script>
-      document.getElementById('waiverCheck').addEventListener('change', function() {
-        document.getElementById('waiverBtn').disabled = !this.checked;
-      });
-    </script>
   <?php endif; ?>
 </div>

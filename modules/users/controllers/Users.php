@@ -227,14 +227,14 @@
                     $data_user['name'] = post('name', true);
                     $data_user['phone'] = post('phone', true);
                     $this->model->update($user_id, $data_user, 'comp_users');
-                    echo '<p style="text-align: center;background: green;padding: 0.5rem 0;margin-bottom: 1rem;">Profile updated successfully!</p>';
+                    $this->view('mx_banner', ['type' => 'success', 'message' => 'Profile updated successfully!']);
                 } else {
                     if ($this->email_unique($email) === true) {
                         $data_user['name'] = post('name', true);
                         $data_user['phone'] = post('phone', true);
                         $data_user['email'] = $email;
                         $this->model->update($user_id, $data_user, 'comp_users');
-                        echo '<p style="text-align: center;background: green;padding: 0.5rem 0;margin-bottom: 1rem;">Profile updated successfully!</p>';
+                        $this->view('mx_banner', ['type' => 'success', 'message' => 'Profile updated successfully!']);
                     }
                 }
                 return;

@@ -640,12 +640,12 @@
                     $flash_msg = 'The record was successfully created';
                 }
 
-                echo '<p style="color:white;background:green;text-align: center;padding: 0.5rem;">Participant successfully registered!</p>';
+                $this->view('mx_banner', ['type' => 'success', 'message' => 'Participant successfully registered!']);
 
             } else {
 
-                echo '<p style="color: black;background: orange;text-align: center;padding: 0.5rem;">Form fields have to be filled!</p>';
-            
+                $this->view('mx_banner', ['type' => 'error', 'message' => 'Form fields have to be filled!']);
+
             }
         }
 

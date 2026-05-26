@@ -57,6 +57,10 @@
   }
 
   .danger { background-color: var(--danger);border: 1px solid var(--danger-dark);color: var(--primary-color); }
+
+  .mx-banner { text-align: center; padding: .5rem 1rem; margin-bottom: .75rem; border-radius: .5rem; font-size: .9rem; }
+  .mx-banner.success { background: color-mix(in oklab, var(--ok), transparent 75%); color: var(--text); border: 1px solid color-mix(in oklab, var(--ok), transparent 40%); }
+  .mx-banner.error   { background: color-mix(in oklab, var(--warn), transparent 75%); color: var(--text); border: 1px solid color-mix(in oklab, var(--warn), transparent 40%); }
   
   .actions { display: flex; align-items: center;justify-content: space-around; gap: 10px; }
   .btn, button { font: inherit; cursor: pointer; }

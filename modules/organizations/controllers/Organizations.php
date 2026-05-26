@@ -9,13 +9,6 @@
             $this->template('public', $data);
         }
 
-        function time_local() {
-            date_default_timezone_set('Europe/Vilnius');
-            $t=time();
-            echo($t . "<br>");
-            echo(date("W D H:i T O",$t));die();
-        }
-
         public function _to_utc(?string $local, string $orgTz): ?string {
             $local = trim((string)$local);
             if ($local === '') return null;

@@ -2,6 +2,8 @@
 
 This document is inferred from controller/view SQL and README notes. There is no SurfPan domain `.sql` dump in the repository. Exact column types, indexes, constraints, default values, and seed rows need confirmation against the real database.
 
+**FK migration:** `database/add_fk_constraints.sql` — additive ALTER TABLE statements to enforce all foreign-key relationships and critical unique constraints against an existing database. Run once; disable FK checks first (the file does this automatically). Clean orphan rows before running or the migration will fail.
+
 ## Schema Sources Reviewed
 
 | Source | Notes |

@@ -1115,45 +1115,96 @@
 
         function join() {
             $this->_make_sure_allowed();
-            $data['comp_id'] = segment(3, 'int');
-            $user = $this->_get_user_info();
-            $data['user_id'] = $user[0]['id'];
 
-            $this->validation->set_rules('division', 'division', 'min_length[6]|max_length[15]');
-            $result = $this->validation->run(); //returns true or false
-        
-            if($result === true) {
+            $comp_id = segment(3, 'int');
+            $user    = $this->_get_user_info();
+            $user_id = $user[0]['id'];
 
-                $data['gender_age'] = post('division', true);
-
-                // Get the division ID from the division name
-                $division = $this->model->get_one_where('name', $data['gender_age'], 'comp_divisions');
-
-                $sql = "SELECT id 
-                        FROM comp_participants 
-                        WHERE comp_id = ? 
-                        AND user_id = ?
-                        AND division_id = ?";
-                $signed_up = $this->model->query_bind($sql, [$data['comp_id'], $data['user_id'], $division->id], 'array');
-
-                if ($signed_up) {
-                    $flash_msg = 'You have already signed up for this competition in this division.';
-                    set_flashdata($flash_msg);
-                    redirect('users');
-                }
-
-                if ($division) {
-                    $data['division_id'] = $division->id;
-                }
-
-                //insert the new record
-                $this->module('logger');
-                $r = $this->model->insert($data, 'comp_participants');
-                if (!$r) { $this->logger->log_message('error', 'Users::join: failed to insert comp_participants'); }
-                $flash_msg = 'The record was successfully created';
-                set_flashdata($flash_msg);
+            // validation->run() also enforces CSRF protection.
+            $this->validation->set_rules('division', 'division', 'required|min_length[2]|max_length[40]');
+            if ($this->validation->run() === false) {
+                // Errors are reported inline via MX (422 JSON); drop the session copy
+                // so form_close() doesn't replay them when the modal is next opened.
+                unset($_SESSION['form_submission_errors']);
+                $this->_join_error('Please select a division.');
+                return;
             }
 
+            // Athlete needs DOB + gender before we can check eligibility.
+            $dob    = $user[0]['dob'] ?? null;
+            $gender = $user[0]['gender'] ?? null;
+            if (empty($dob) || empty($gender)) {
+                $this->_join_error('Please complete your profile (date of birth and gender) before registering.');
+                return;
+            }
+
+            // Competition must exist and be open for registration.
+            $competition = $this->model->get_where($comp_id, 'comp_name');
+            if (!$competition || strtolower((string) $competition->status) !== 'open') {
+                $this->_join_error('Registration for this competition is not open.');
+                return;
+            }
+
+            // Server-side eligibility: the division must be one this competition
+            // offers AND must match the athlete's age/gender (mirrors competition()).
+            $age = 'u' . $this->find_age_end($dob);
+            $sql = "SELECT cd.id, cd.name
+                    FROM comp_competition_divisions AS ccd
+                    JOIN comp_divisions AS cd ON ccd.division_id = cd.id
+                    WHERE ccd.competition_id = ?
+                    AND (cd.age >= ? OR cd.age = 'adult' OR cd.age = 'veteran')
+                    AND cd.gender = ?";
+            $eligible = $this->model->query_bind($sql, [$comp_id, $age, $gender], 'array');
+
+            $division_name = post('division', true);
+            $division_id   = null;
+            foreach ($eligible as $row) {
+                if ($row['name'] === $division_name) {
+                    $division_id = (int) $row['id'];
+                    break;
+                }
+            }
+
+            if (!$division_id) {
+                $this->_join_error('You are not eligible for the selected division.');
+                return;
+            }
+
+            // Prevent a duplicate entry in the same division.
+            $sql = "SELECT id FROM comp_participants WHERE comp_id = ? AND user_id = ? AND division_id = ? LIMIT 1";
+            $already = $this->model->query_bind($sql, [$comp_id, $user_id, $division_id], 'array');
+            if ($already) {
+                $this->_join_error('You are already registered for this competition in that division.');
+                return;
+            }
+
+            $data = [
+                'comp_id'     => $comp_id,
+                'user_id'     => $user_id,
+                'division_id' => $division_id,
+                'gender_age'  => $division_name,
+                'status'      => 'pending',
+            ];
+
+            $this->module('logger');
+            $new_id = $this->model->insert($data, 'comp_participants');
+            if (!$new_id) {
+                $this->logger->log_message('error', 'Users::join: failed to insert comp_participants');
+                $this->_join_error('Something went wrong while registering. Please try again.');
+                return;
+            }
+
+            // Success: 200 lets the modal auto-close (mx-close-on-success) and the
+            // registrations table refresh (mx-on-success="#registrations").
+            http_response_code(200);
+        }
+
+        // Emit a Trongate MX validation error so it renders inline on the join form
+        // (form carries the 'highlight-errors' class). Keyed to the division field.
+        private function _join_error(string $message): void {
+            http_response_code(422);
+            header('Content-Type: application/json');
+            echo json_encode([['field' => 'division', 'messages' => [$message]]]);
         }
 
         public function search() {

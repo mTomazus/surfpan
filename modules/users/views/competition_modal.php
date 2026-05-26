@@ -44,7 +44,16 @@
     ?>
     <?php if ($competition->status === 'open'): ?>
     <!-- Join competition form -->
-    <form mx-post="users/join/<?= $competition->id ?>" mx-close-on-success="true" mx-on-success="#registrations" id="joinForm" action="#" method="post">
+    <?php
+        $join_form_attr = [
+            'id'                   => 'joinForm',
+            'class'                => 'highlight-errors',
+            'mx-post'              => 'users/join/' . (int) $competition->id,
+            'mx-close-on-success'  => 'true',
+            'mx-on-success'        => '#registrations',
+        ];
+        echo form_open('#', $join_form_attr);
+    ?>
 
         <fieldset class="divisions">
             <legend>Select your division</legend>

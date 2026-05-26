@@ -326,12 +326,14 @@
                       // other status (e.g. withdrawn)
                       echo '<button class="btn" onclick="alert(\'Open receipt…\')">Receipt</button>';
                     }
-                    If ($comp['status'] === 'open') {
+                    if ($comp['participation_status'] === 'withdrawn') {
+                        echo '<button class="btn disabled" disabled>Withdrawn</button>';
+                    } elseif ($comp['status'] === 'open') {
+                        echo '<button class="btn danger" mx-get="users/withdraw/' . out($comp['record_id']) . '" mx-build-modal="modalWithdraw">Withdraw</button>';
+                    } else {
+                        echo '<button class="btn disabled" disabled>Withdraw</button>';
+                    }
                   ?>
-                    <button class="btn danger" mx-get="users/withdraw/<?= out($comp['record_id']) ?>" mx-build-modal="modalWithdraw">Withdraw</button>
-                  <?php } else { ?>
-                    <button class="btn disabled" disabled>Withdraw</button>
-                  <?php } ?>
                 </td>
               </tr>
             <?php } else { ?>

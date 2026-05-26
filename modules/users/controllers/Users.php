@@ -1079,23 +1079,44 @@
 
         function confirm_withdraw() {
             $this->_make_sure_allowed();
+
+            if (!from_trongate_mx()) {
+                http_response_code(403);
+                return;
+            }
+
             $record_id = (int)segment(3);
-            $user = $this->_get_user_info();
-            $user_id = $user[0]['id'];
-            if (from_trongate_mx()) {
-                $participant = $this->model->get_one_where('id', $record_id, 'comp_participants');
-                if ($user_id != $participant->user_id) {
-                    set_flashdata('Request is NOT allowed');
-                    redirect('users');
-                } else {
-                    $is_deleted = $this->model->delete($record_id, 'comp_participants');
-                    set_flashdata('You have successfully withdrawn from the competition.');
-                    redirect('users');
-                }
-            } else {
-                set_flashdata('You are not registered for this competition.');
-                redirect('users');
-            };
+            $user      = $this->_get_user_info();
+            $user_id   = $user[0]['id'];
+
+            $participant = $this->model->get_one_where('id', $record_id, 'comp_participants');
+            if (!$participant || (int)$participant->user_id !== $user_id) {
+                http_response_code(403);
+                return;
+            }
+
+            // Block if competition is not open.
+            $comp = $this->model->get_where((int)$participant->comp_id, 'comp_name');
+            if (!$comp || strtolower((string)$comp->status) !== 'open') {
+                http_response_code(422);
+                header('Content-Type: application/json');
+                echo json_encode([['field' => 'withdraw', 'messages' => ['Withdrawal is not allowed — this competition is not open for changes.']]]);
+                return;
+            }
+
+            // Block if already drawn into a heat — withdrawing would orphan heat rows.
+            $sql = "SELECT id FROM comp_heat_participants WHERE participant_id = ? LIMIT 1";
+            $in_heats = $this->model->query_bind($sql, [$record_id], 'array');
+            if ($in_heats) {
+                http_response_code(422);
+                header('Content-Type: application/json');
+                echo json_encode([['field' => 'withdraw', 'messages' => ['You cannot withdraw after the heat draw has been published. Contact the organiser.']]]);
+                return;
+            }
+
+            // Soft-delete: preserve the row so scores/history aren't orphaned.
+            $this->model->update($record_id, ['status' => 'withdrawn'], 'comp_participants');
+            http_response_code(200);
         }
 
         function join() {

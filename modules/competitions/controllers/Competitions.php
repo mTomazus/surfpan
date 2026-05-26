@@ -617,16 +617,17 @@
             $update_id = segment(3, 'int');
         
             if($result === true) {
-    
+
                 // Now build up array of $data for the comp_participants record.
                 $data['first_name'] = post('first_name', true);
                 $data['last_name'] = post('last_name', true);
                 $data['email'] = post('email', true);
                 $data['comp_id'] = post('comp_id', true);
 
-                $division_id = post('division_id', true);
-                $gender_age = $this->model->get_one_where('id', $division_id, 'comp_divisions');
-                $data['gender_age'] = $gender_age->name ?? '';
+                $division_id = (int)post('division_id', true);
+                $division = $this->model->get_one_where('id', $division_id, 'comp_divisions');
+                $data['division_id'] = $division_id;
+                $data['gender_age']  = $division->name ?? '';
 
                 if ($update_id>0) {
                     //update an existing record
@@ -634,6 +635,7 @@
                     $flash_msg = 'The record was successfully updated';
                 } else {
                     //insert the new record
+                    $data['status'] = 'confirmed';
                     $update_id = $this->model->insert($data, 'comp_participants');
                     $flash_msg = 'The record was successfully created';
                 }

@@ -5,7 +5,7 @@
     <h2 class="mt-0"><span>User</span> Profile</h2>
     <p class="mb-0">Keep your contact info up to date</p>
 
-    <div id="response"><? flashdata() ?></div>
+    <div id="response"><?php flashdata(); ?></div>
     <?php
     $form_attr = [
         'mx-post' => 'users/submit_update_profile',

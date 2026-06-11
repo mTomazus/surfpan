@@ -277,7 +277,8 @@
             $this->validation->set_rules('gender', 'gender', 'required|callback_valid_gender');
             $this->validation->set_rules('country', 'country', 'required|callback_valid_country');
             $this->validation->set_rules('club_name', 'club name', 'min_length[2]|max_length[25]');
-            $this->validation->set_rules('avatar','avatar','max_size[1000]|max_width[400]|max_height[400]');
+            // No avatar rule here: avatars upload separately via upload_avatar(). Validating the
+            // always-present empty file input makes every submit fail with "No file was uploaded".
 
             $result = $this->validation->run(); //returns true or false
 

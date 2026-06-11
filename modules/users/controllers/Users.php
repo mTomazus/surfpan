@@ -42,14 +42,16 @@
             $this->module('trongate_tokens');
             $trongate_user_id = $this->trongate_tokens->_get_user_id();
 
-            $sql = "SELECT cu.id, cu.name, cu.phone, cu.email, cup.dob, cup.gender, cup.club_name, c.code AS country, cup.avatar
+            $sql = "SELECT cu.id, cu.name, cu.phone, cu.email, cup.dob, cup.gender, cup.club_name, cup.country, cup.avatar
                     FROM comp_users AS cu
                     LEFT JOIN comp_users_profiles AS cup ON cu.id = cup.user_id
-                    JOIN countries AS c ON cup.country = c.code
                     WHERE cu.trongate_user_id = ?
                     LIMIT 1";
             $data = [$trongate_user_id];
             $user_info = $this->model->query_bind($sql, $data, 'array');
+            if (empty($user_info)) {
+                return [];
+            }
             $user_info[0]['user_age'] = $this->find_age_end($user_info[0]['dob'] ?? null);
             return $user_info;
         }
@@ -214,10 +216,10 @@
             $this->validation->set_rules('email', 'email', 'required|min_length[6]|valid_email|callback_email_unique');
             $this->validation->set_rules('password', 'password', 'required|min_length[6]|max_length[55]');
             $this->validation->set_rules('repeat_password', 'repeat password', 'required|matches[password]');
-            $this->validation->set_rules('birthday', 'birthday', 'required|min_length[8]|max_length[15]');
+            $this->validation->set_rules('birthday', 'birthday', 'required|callback_valid_dob');
             $this->validation->set_rules('phone', 'phone', 'required|min_length[8]|max_length[15]');
-            $this->validation->set_rules('gender', 'gender', 'required');
-            $this->validation->set_rules('country', 'country', 'required');
+            $this->validation->set_rules('gender', 'gender', 'required|callback_valid_gender');
+            $this->validation->set_rules('country', 'country', 'required|callback_valid_country');
 
             $result = $this->validation->run(); //returns true or false
         
@@ -233,7 +235,7 @@
 
                 // Now build up array of $data for the comp_users record.
                 $data['name'] = post('name', true);
-                $data['email'] = post('email', true);
+                $data['email'] = $this->normalize_email((string) post('email', true));
                 $data['phone'] = post('phone', true);
                 $password = post('password');
                 $data['password'] = password_hash($password, PASSWORD_BCRYPT, ['cost' => 11]);
@@ -268,63 +270,108 @@
 
         function submit_update_profile() {
             $this->_make_sure_allowed();
-            $this->validation->set_rules('name', 'name', 'min_length[6]|max_length[55]');
-            $this->validation->set_rules('email', 'email', 'min_length[6]|valid_email');
-            $this->validation->set_rules('phone', 'phone', 'min_length[8]|max_length[15]');
-            $this->validation->set_rules('dob', 'dob', 'required|min_length[8]|max_length[15]');
-            $this->validation->set_rules('gender', 'gender', 'required');
-            $this->validation->set_rules('club_name', 'club_name', 'min_length[4]|max_length[25]');
+            $this->validation->set_rules('name', 'name', 'required|min_length[2]|max_length[55]');
+            $this->validation->set_rules('email', 'email', 'required|min_length[6]|valid_email');
+            $this->validation->set_rules('phone', 'phone', 'required|min_length[8]|max_length[15]');
+            $this->validation->set_rules('dob', 'date of birth', 'required|callback_valid_dob');
+            $this->validation->set_rules('gender', 'gender', 'required|callback_valid_gender');
+            $this->validation->set_rules('country', 'country', 'required|callback_valid_country');
+            $this->validation->set_rules('club_name', 'club name', 'min_length[2]|max_length[25]');
             $this->validation->set_rules('avatar','avatar','max_size[1000]|max_width[400]|max_height[400]');
-            
+
             $result = $this->validation->run(); //returns true or false
-        
-            if($result === true) {
-                // Update participant account.
-                $user_info = $this->_get_user_info();
-                $user_id = $user_info[0]['id'];
 
-                $data['gender'] = post('gender', true);
-                $data['club_name'] = post('club_name', true);
-                $data['dob'] = post('dob', true);
-
-                $num_profiles = $this->model->count_rows('user_id', $user_id, 'comp_users_profiles');
-
-                if ($num_profiles === 0) {
-                    $data['user_id'] = $user_id;
-                    $this->model->insert($data, 'comp_users_profiles');
-                } 
-                else {            
-                    $this->model->update_where('user_id', $user_id, $data, 'comp_users_profiles');
-                }
-                $email = post('email', true);
-                if ($user_info[0]['email'] === $email ) {
-                    $data_user['name'] = post('name', true);
-                    $data_user['phone'] = post('phone', true);
-                    $this->model->update($user_id, $data_user, 'comp_users');
-                    $this->view('mx_banner', ['type' => 'success', 'message' => 'Profile updated successfully!']);
-                } else {
-                    if ($this->email_unique($email) === true) {
-                        $data_user['name'] = post('name', true);
-                        $data_user['phone'] = post('phone', true);
-                        $data_user['email'] = $email;
-                        $this->model->update($user_id, $data_user, 'comp_users');
-                        $this->view('mx_banner', ['type' => 'success', 'message' => 'Profile updated successfully!']);
-                    }
-                }
-                return;
-            } else {
-                set_flashdata('Profile not updated! Please check the errors.');
+            if ($result === false) {
+                validation_errors(400); // outputs field errors as JSON for Trongate MX, then exits
             }
+
+            $user_info = $this->_get_user_info();
+            if (empty($user_info)) {
+                http_response_code(400);
+                $this->view('mx_banner', ['type' => 'error', 'message' => 'Could not load your account. Please log in again.']);
+                return;
+            }
+            $user_id = (int) $user_info[0]['id'];
+
+            // Run ALL checks before writing anything, so a failure never leaves a half-updated profile.
+            $email = $this->normalize_email((string) post('email', true));
+            $current_email = $this->normalize_email((string) ($user_info[0]['email'] ?? ''));
+            if ($email !== $current_email) {
+                [$existing_user] = $this->find_user_by_email($email);
+                if ($existing_user !== false) {
+                    $this->_mx_field_error('email', 'This email address is already in use.');
+                    return;
+                }
+            }
+
+            $data['gender'] = post('gender', true);
+            $data['club_name'] = post('club_name', true);
+            $data['dob'] = post('dob', true);
+            $data['country'] = post('country', true);
+
+            $num_profiles = $this->model->count_rows('user_id', $user_id, 'comp_users_profiles');
+
+            if ($num_profiles === 0) {
+                $data['user_id'] = $user_id;
+                $this->model->insert($data, 'comp_users_profiles');
+            }
+            else {
+                $this->model->update_where('user_id', $user_id, $data, 'comp_users_profiles');
+            }
+
+            $data_user['name'] = post('name', true);
+            $data_user['phone'] = post('phone', true);
+            $data_user['email'] = $email;
+            $this->model->update($user_id, $data_user, 'comp_users');
+            $this->view('mx_banner', ['type' => 'success', 'message' => 'Profile updated successfully!']);
+        }
+
+        // Emits a single field error in the same JSON format as validation_errors(400),
+        // so Trongate MX highlights the field on forms with the 'highlight-errors' class.
+        private function _mx_field_error(string $field, string $message): void {
+            http_response_code(400);
+            header('Content-Type: application/json');
+            echo json_encode([['field' => $field, 'messages' => [$message]]]);
         }
 
         function email_unique($email) {
-            $member_obj = $this->model->get_one_where('email', $email, 'comp_users');
-            if($member_obj === false) {
-                return true; // email is not in table, means available
-            } else {
-                $error_msg = 'email is not available!';
-                return $error_msg;
+            // Checks every login table (participants, organizations, judges) — an email
+            // taken in any of them would shadow that account at login.
+            $email = $this->normalize_email((string) $email);
+            [$existing_user] = $this->find_user_by_email($email);
+            if ($existing_user === false) {
+                return true; // email is available
             }
+            return 'email is not available!';
+        }
+
+        function valid_dob($value) {
+            if ($value === '') {
+                return true; // the 'required' rule reports empty values
+            }
+            $dob = DateTime::createFromFormat('Y-m-d', (string) $value);
+            if ($dob === false || $dob->format('Y-m-d') !== $value) {
+                return 'The {label} field must be a valid date (YYYY-MM-DD).';
+            }
+            if ((int) $dob->format('Y') < 1900 || $dob > new DateTime('today')) {
+                return 'The {label} field must be a valid date of birth.';
+            }
+            return true;
+        }
+
+        function valid_gender($value) {
+            if ($value === '') {
+                return true;
+            }
+            return in_array($value, ['female', 'male'], true) ? true : 'The {label} field must be either female or male.';
+        }
+
+        function valid_country($value) {
+            if ($value === '') {
+                return true;
+            }
+            $country = $this->model->get_one_where('code', $value, 'countries');
+            return ($country !== false) ? true : 'Please choose a valid {label}.';
         }
 
         function submit_login() {

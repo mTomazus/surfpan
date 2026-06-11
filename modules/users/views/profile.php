@@ -11,7 +11,7 @@
         'mx-post' => 'users/submit_update_profile',
         'mx-target' => '#response',
         'mx-close-on-success' => 'true',
-        'class' => 'grid',
+        'class' => 'grid highlight-errors',
         'style' => 'gap: 1rem; grid-template-columns: 1fr 1fr;'
     ];
     echo form_open_upload('#', $form_attr);

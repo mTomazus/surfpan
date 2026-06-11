@@ -23,14 +23,15 @@
       <input type="checkbox" id="waiverCheck" onchange="document.getElementById('waiverBtn').disabled = !this.checked;" />
       I have read and accept the terms of this waiver
     </label>
-    <div style="display:flex;justify-content:flex-end;gap:.6rem">
-      <button class="btn" onclick="closeModal()">Cancel</button>
-      <button class="btn primary" id="waiverBtn" disabled
-              mx-post="users/accept_waiver/<?= out($participant['id']) ?>"
-              mx-target="#waiverResult"
-              mx-close-on-success="true">
-        Accept &amp; Sign
-      </button>
-    </div>
+    <form mx-post="users/accept_waiver/<?= out($participant['id']) ?>"
+          mx-target="#waiverResult"
+          mx-close-on-success="true">
+      <div style="display:flex;justify-content:flex-end;gap:.6rem">
+        <button class="btn" type="button" onclick="closeModal()">Cancel</button>
+        <button class="btn primary" id="waiverBtn" disabled type="submit">
+          Accept &amp; Sign
+        </button>
+      </div>
+      <?= form_close() ?>
   <?php endif; ?>
 </div>

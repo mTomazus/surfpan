@@ -55,7 +55,7 @@
                             if ($row->entry_type === 'free entry') { ?>
                             <td><p class="chip" style="border: 1px solid orange;color: orange;box-shadow: 0 0 3px orange, 0 0 3px orange inset;">pending</p></td>
                             <td>
-                                <a class="confirm" mx-post="competitions/confirm_participant/<?= $row->id ?>" mx-on-success="#participants-list"><i class="fa fa-square-o" aria-hidden="true"></i></a>
+                                <a class="confirm" mx-post="competitions/confirm_participant/<?= $row->id ?>" mx-vals='{"csrf_token":"<?= $_SESSION['csrf_token'] ?? '' ?>"}' mx-on-success="#participants-list"><i class="fa fa-square-o" aria-hidden="true"></i></a>
                             </td>
                             <?php } else { ?>
                                 <td>
@@ -68,7 +68,12 @@
                         <?php } else if ($row->status === 'paid') { ?>
                             <td><p class="chip" style="border: 1px solid dodgerblue;color: dodgerblue;box-shadow: 0 0 3px dodgerblue, 0 0 3px dodgerblue inset;">entry paid</p></td>
                             <td>
-                                <a class="confirm" mx-post="competitions/confirm_participant/<?= $row->id ?>" mx-on-success="#participants-list"><i class="fa fa-square-o" aria-hidden="true"></i></a>
+                                <a class="confirm" mx-post="competitions/confirm_participant/<?= $row->id ?>" mx-vals='{"csrf_token":"<?= $_SESSION['csrf_token'] ?? '' ?>"}' mx-on-success="#participants-list"><i class="fa fa-square-o" aria-hidden="true"></i></a>
+                            </td>
+                        <?php } else if ($row->status === 'withdrawn') { ?>
+                            <td><p class="chip" style="border: 1px solid gray;color: gray;box-shadow: 0 0 3px gray, 0 0 3px gray inset;">withdrawn</p></td>
+                            <td>
+                                <a style="color:gray; font-size: 1.5rem;" title="Participant withdrew"><i class="fa fa-minus-square-o" aria-hidden="true"></i></a>
                             </td>
                         <?php } else { ?>
                             <td>
@@ -88,6 +93,8 @@
                             <?php } ?>
                         <?php } else if ($row->status === 'paid') { ?>
                             <td><p class="chip" style="border: 1px solid dodgerblue;color: dodgerblue;box-shadow: 0 0 3px dodgerblue, 0 0 3px dodgerblue inset;">paid</p></td>
+                        <?php } else if ($row->status === 'withdrawn') { ?>
+                            <td><p class="chip" style="border: 1px solid gray;color: gray;box-shadow: 0 0 3px gray, 0 0 3px gray inset;">withdrawn</p></td>
                         <?php } else { ?>
                             <td><p class="chip" style="border: 1px solid var(--status-green);color: var(--status-green);box-shadow: 0 0 3px var(--status-green), 0 0 3px var(--status-green) inset;">confirmed</p></td>
                         <?php } ?>

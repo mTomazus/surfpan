@@ -210,8 +210,14 @@
         }
 
         function save_division_elimination() {
+            $this->validation->run(); // enforces CSRF protection
             $comp_id = segment(3);
             $division_id = segment(4);
+
+            // Security check: only the owning organizer can perform this action
+            if (!$this->_check_organizer_permission((int)$comp_id)) {
+                return;
+            }
 
             $elimination_format = post('elimination_format');
 
@@ -2113,8 +2119,14 @@
         // -------------------------------------------------------
 
         public function delete_generation() {
-            
+            $this->validation->run(); // enforces CSRF protection
+
             $comp_id = segment(3, 'int');
+
+            // Security check: only the owning organizer can perform this action
+            if (!$this->_check_organizer_permission($comp_id)) {
+                return;
+            }
 
             $competition = $this->model->get_one_where('id', $comp_id, 'comp_name');
 
@@ -2142,6 +2154,7 @@
         // -------------------------------------------------------
 
         public function regenerate() {
+            $this->validation->run(); // enforces CSRF protection
             $comp_id = segment(3, 'int');
 
             // Security check: only organizers can perform this action

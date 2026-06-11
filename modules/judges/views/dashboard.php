@@ -94,10 +94,10 @@ function chip_status($label, $status){ // running/open/scheduled/past/etc.
                 <td class="actions" style="max-width: -webkit-fit-content;margin: auto;">
                   <form mx-post="<?= BASE_URL ?>judges/accept_invite/<?= (int)$c['link_id'] ?>" mx-on-success="#form-container" mx-select="#form-container" mx-target="#response" style="display:inline">
                     <button class="btn accept" type="submit"><i class="fa fa-check" aria-hidden="true"></i> Accept</button>
-                  </form>
+                  <?= form_close() ?>
                   <form mx-post="<?= BASE_URL ?>judges/decline_invite/<?= (int)$c['link_id'] ?>" mx-on-success="#form-container" mx-select="#form-container" mx-target="#response" style="display:inline">
                     <button class="btn danger modal-delete" type="submit"><i class="fa fa-times" aria-hidden="true"></i> Decline</button>
-                  </form>
+                  <?= form_close() ?>
                 </td>
               </tr>
             <?php endforeach; ?>

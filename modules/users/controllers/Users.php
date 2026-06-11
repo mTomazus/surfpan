@@ -1156,6 +1156,7 @@
 
         function confirm_withdraw() {
             $this->_make_sure_allowed();
+            $this->validation->run(); // enforces CSRF protection
 
             if (!from_trongate_mx()) {
                 http_response_code(403);
@@ -1211,6 +1212,7 @@
 
         function accept_waiver() {
             $this->_make_sure_allowed();
+            $this->validation->run(); // enforces CSRF protection
             $record_id   = segment(3, 'int');
             $user        = $this->_get_user_info();
             $participant = $this->model->get_one_where('id', $record_id, 'comp_participants');

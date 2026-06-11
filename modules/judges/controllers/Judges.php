@@ -191,6 +191,7 @@
             $this->module('trongate_security');
             $this->module('competitions');
             $this->trongate_security->_make_sure_allowed('judges area');
+            $this->validation->run(); // enforces CSRF protection
 
             $organizer_id = $this->competitions->_get_organizer_user_id();
             $competition_id = (int)segment(3);

@@ -25,7 +25,7 @@
             </div>
             <div class="actions">
                 <button type="button" class="btn primary" mx-build-modal="auto-schedule" mx-get="heats-schedules/auto_schedule_modal/<?= $comp_id ?>"><i class="fa fa-bolt" aria-hidden="true"></i> Auto Schedule</button>
-                <button type="button" class="btn danger" mx-post="heats-schedules/clear_schedule/<?= $comp_id ?>" mx-target="result" mx-on-success="#heat-list"><i class="fa fa-trash" aria-hidden="true"></i> Clear Schedule</button>
+                <button type="button" class="btn danger" mx-post="heats-schedules/clear_schedule/<?= $comp_id ?>" mx-vals='{"csrf_token":"<?= $_SESSION['csrf_token'] ?? '' ?>"}' mx-target="result" mx-on-success="#heat-list"><i class="fa fa-trash" aria-hidden="true"></i> Clear Schedule</button>
             </div>
         </div>
 

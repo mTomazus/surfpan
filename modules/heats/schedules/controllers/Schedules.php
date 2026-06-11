@@ -2,7 +2,14 @@
 class Schedules extends Trongate {
 
     public function clear_schedule() {
+        $this->validation->run(); // enforces CSRF protection
         $comp_id = (int) segment(3);
+
+        // Security check: only the owning organizer can perform this action
+        $this->module('heats');
+        if (!$this->heats->_check_organizer_permission($comp_id)) {
+            return;
+        }
 
         $p = json_decode(file_get_contents('php://input'), true) ?? [];
         $include_locked = (bool)($p['include_locked'] ?? false);

@@ -88,6 +88,7 @@
                         } else {
                             $btn_attr = [
                                 'mx-post' => 'judges/submit_assign/' . $comp_id . '/' . $org_judges[$i]->id,
+                                'mx-vals' => '{"csrf_token":"' . ($_SESSION['csrf_token'] ?? '') . '"}',
                                 'mx-on-success' => '#judge-assign',
                                 'mx-target' => '#response',
                                 'class' => 'btn'

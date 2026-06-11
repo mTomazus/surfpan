@@ -69,6 +69,7 @@
                     <select id="elimination-format-<?= $division['id'] ?>"
                     name="elimination_format"
                     mx-post="heats/save_division_elimination/<?= $row['id'] ?>/<?= $division['id'] ?>"
+                    mx-vals='{"csrf_token":"<?= $_SESSION['csrf_token'] ?? '' ?>"}'
                     mx-trigger="change"
                     mx-dom-vals='{"elimination_format": {"selector": "#elimination-format-<?= $division['id'] ?>","property": "value"}}'
                     mx-on-success="#generation-table"

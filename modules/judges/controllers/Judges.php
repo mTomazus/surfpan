@@ -82,6 +82,7 @@
         public function accept_invite() {
             $this->module('trongate_security');
             $this->trongate_security->_make_sure_allowed('judges area');
+            $this->validation->run();
             $link_id = (int)segment(3);
 
             $this->module("competitions");
@@ -106,7 +107,7 @@
         public function decline_invite() {
             $this->module('trongate_security');
             $this->trongate_security->_make_sure_allowed('judges area');
-
+            $this->validation->run();
             $link_id = (int)segment(3);
 
             $this->module("competitions");
@@ -222,8 +223,7 @@
             // If not assigned, insert new record
 
             if ($judge_count[0]->count > 0) {
-                // Judge already assigned
-                echo '<p>Judge is already assigned to this competition.</p>';
+                $this->view('mx_banner', ['type' => 'error', 'message' => 'Judge is already assigned to this competition.']);
                 return;
             }
             // Assign judge to competition
@@ -235,7 +235,7 @@
             ];
 
             $this->model->insert($data, 'competition_judges');
-            echo '<p style="padding:0.5rem;background: mediumseagreen;color: white;">Successfully assigned judge to competition.</p>';
+            $this->view('mx_banner', ['type' => 'success', 'message' => 'Successfully assigned judge to competition.']);
             // Optionally: send email notification to judge
         }
 
@@ -283,7 +283,7 @@
                     WHERE judge_id = :judge_id
                     AND competition_id = :competition_id;";
             $this->model->query_bind($sql, ['judge_id' => $judge_id, 'competition_id' => $competition_id]);
-            echo '<p style="padding:0.5rem;background: indianred;color: white;;">Successfully removed judge from competition.</p>';
+            $this->view('mx_banner', ['type' => 'success', 'message' => 'Judge removed from competition.']);
         }
 
         public function _validate_organizer($org_id, $comp_id, $judge_id) {
@@ -567,9 +567,6 @@
         }
 
         public function _get_missing_score($heat_id, $judge_id) {
-            $this->module('trongate_security');
-            $this->trongate_security->_make_sure_allowed('judges area');
-
             $sql = "SELECT
                 hp.jersey_color,
                 ex.participant_id,

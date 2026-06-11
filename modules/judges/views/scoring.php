@@ -24,7 +24,7 @@
             foreach ($wave_numbers as $participant_id => $wave_number): ?>
                 <label class="radio_label" style="--var:<?= $colors[$i] ?>; background:var(--gradient-<?= $colors[$i] ?>);" mx-build-modal="modalScoring" mx-get="judges/scores_modal/<?= $heat_id ?>/<?= $participant_id ?>">
                     <?= strtoupper($colors[$i]) ?>
-                    <p style="padding: 0;margin: 0;font-size: 0.8rem;">Total Waves: <?= $wave_number - 1 ?></p>
+                    <p style="padding: 0;margin: 0;font-size: 0.8rem;">Scored: <?= $wave_number - 1 ?></p>
                     <?php foreach ($missing_scores as $score): 
                         if ($score['jersey_color'] === $colors[$i]): ?>
                             <p class="text-center blink" style="padding: 0;margin: 0;font-size: 0.8rem;">wave  <?= $score['wave_number'] ?? '' ?> score missing</p>
@@ -102,12 +102,12 @@
         }
     });
     (function countdownTimerWatcher() {
+    let transitioned = false;
     function updateCountdown() {
         const timerEl = document.querySelector('[data-end-time]');
         if (timerEl) {
             const endTimeStr = timerEl.getAttribute('data-end-time');
-            const endTime = new Date(endTimeStr.replace(' ', 'T') + 'Z').getTime(); // Treat as UTC
-            // const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            const endTime = new Date(endTimeStr.replace(' ', 'T') + 'Z').getTime();
             const now = new Date().getTime();
             let diff = Math.floor((endTime - now) / 1000);
             if (diff > 0) {
@@ -116,6 +116,18 @@
                 timerEl.textContent = `${minutes}:${seconds}`;
             } else {
                 timerEl.textContent = "00:00";
+                if (!transitioned) {
+                    transitioned = true;
+                    // Give the server 3 s to process results, then reload scoring state
+                    setTimeout(function() {
+                        const container = document.getElementById('form-container');
+                        if (container && window.trongateMX) {
+                            trongateMX.get('judges/score_heat', { target: '#form-container', select: '#form-container' });
+                        } else {
+                            window.location.href = '<?= BASE_URL ?>judges/score_heat';
+                        }
+                    }, 3000);
+                }
             }
         }
     }

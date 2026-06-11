@@ -17,7 +17,12 @@
                 ?>
 
                 <h3 class="text-center"><?= $local_formated ?></h3>
-                <h3 id="time-left" class="text-center">STARTS IN: <?php if (!empty($heat[0])): ?><?= date("H:i:s",(strtotime($heat[0]->start_time) - time())); ?><?php endif; ?></h3>
+                <h3 id="time-left" class="text-center">STARTS IN: <?php if (!empty($heat[0])): ?><?php
+                    $start_utc = new DateTimeImmutable($heat[0]->start_time, new DateTimeZone('UTC'));
+                    $now_utc   = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+                    $diff_secs = max(0, $start_utc->getTimestamp() - $now_utc->getTimestamp());
+                    echo gmdate('H:i:s', $diff_secs);
+                ?><?php endif; ?></h3>
                 <div class="flex justify-center gap-1">
                     <p class="text-center chip" style="background: var(--chip-<?= strtolower($heat[0]->status) ?>); color: white;"><?= $heat[0]->status ?></p>
                     <p class="chip">LOCAL:

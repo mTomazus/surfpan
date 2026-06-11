@@ -43,15 +43,11 @@ function chip_status($label, $status){ // running/open/scheduled/past/etc.
             <th>Role</th>
             <th>Action</th>
           </tr>
-          <tr><td colspan="4" 
-          style="border-bottom: 1px solid var(--primary-20);
-                          align-content: end;
-                          font-size: 1.2rem;
-                          background: hsl(0, 0%, 100%, 0.1);
-                          color: var(--chip-running);
-                          text-transform: uppercase;">Your active assignments</td></tr>
         </thead>
         <tbody>
+          <tr>
+            <td colspan="4" class="section-header" style="color: var(--chip-running);">Your active assignments</td>
+          </tr>
           <?php if (!empty($active_assigned)): ?>
             <?php foreach ($active_assigned as $c): ?>
               <tr>
@@ -74,93 +70,66 @@ function chip_status($label, $status){ // running/open/scheduled/past/etc.
                 </td>
               </tr>
             <?php endforeach; ?>
-
-          <!-- If no active assignments message -->
           <?php else: ?>
-              <tr class="empty no-assigned"><td colspan="4">You are not currently assigned to any competition.</td></tr>
+            <tr class="empty no-assigned"><td colspan="4">You are not currently assigned to any competition.</td></tr>
           <?php endif; ?>
 
-          <thead>
-            <tr class="d-sm-none"></tr>
-            <tr>
-              <td colspan="4" rowspan="1"
-                          style="border-bottom: 1px solid var(--primary-20);
-                                align-content: end;
-                                font-size: 1.2rem;
-                                background: hsl(0, 0%, 100%, 0.1);
-                                color: var(--chip-closed);
-                                text-transform: uppercase;">Your pending invitations</td>
-            </tr>
-          </thead>
+          <tr>
+            <td colspan="4" class="section-header" style="color: var(--chip-closed);">Your pending invitations</td>
+          </tr>
+          <?php if (empty($pending_invites)): ?>
+            <tr class="empty no-invited"><td colspan="4">You have no pending invitations.</td></tr>
+          <?php else: ?>
+            <?php foreach ($pending_invites as $c): ?>
+              <tr>
+                <td>
+                  <strong style="font-size: 0.75rem;color: var(--primary-60);text-transform: uppercase;"><?= out($c['name']) ?>
+                  <?= !empty($c['year']) ? ' '.out($c['year']) : '' ?></strong><br>
+                  <?= fmt_date($c['start_date']) ?>
+                  <?php if (!empty($c['end_date'])): ?> – <?= fmt_date($c['end_date']) ?><?php endif; ?>
+                  <?php if (!empty($c['location'])): ?> <br> <?= out($c['location']) ?><?php endif; ?>
+                </td>
+                <td><?= chip_status('Pending Invite','warn') ?></td>
+                <td><?= out(ucwords(str_replace('_',' ', $c['judge_role'] ?? 'judge'))) ?></td>
+                <td class="actions" style="max-width: -webkit-fit-content;margin: auto;">
+                  <form mx-post="<?= BASE_URL ?>judges/accept_invite/<?= (int)$c['link_id'] ?>" mx-on-success="#form-container" mx-select="#form-container" mx-target="#response" style="display:inline">
+                    <button class="btn accept" type="submit"><i class="fa fa-check" aria-hidden="true"></i> Accept</button>
+                  </form>
+                  <form mx-post="<?= BASE_URL ?>judges/decline_invite/<?= (int)$c['link_id'] ?>" mx-on-success="#form-container" mx-select="#form-container" mx-target="#response" style="display:inline">
+                    <button class="btn danger modal-delete" type="submit"><i class="fa fa-times" aria-hidden="true"></i> Decline</button>
+                  </form>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          <?php endif; ?>
 
-            <!-- If there are no pending invitations -->
-            <?php if (empty($pending_invites)): ?>
-              <tr class="empty no-invited"><td colspan="4">You have no pending invitations.</td></tr>
-
-            <?php else: ?>
-              <?php foreach ($pending_invites as $c): ?>
-                <tr>
-                  <td>
-                    <strong style="font-size: 0.75rem;color: var(--primary-60);text-transform: uppercase;"><?= out($c['name']) ?>
-                    <?= !empty($c['year']) ? ' '.out($c['year']) : '' ?></strong><br>
-                    <?= fmt_date($c['start_date']) ?>
-                    <?php if (!empty($c['end_date'])): ?> – <?= fmt_date($c['end_date']) ?><?php endif; ?>
-                    <?php if (!empty($c['location'])): ?> <br> <?= out($c['location']) ?><?php endif; ?>
-                  </td>
-                  <td><?= chip_status('Pending Invite','warn') ?></td>
-                  <td><?= out(ucwords(str_replace('_',' ', $c['judge_role'] ?? 'judge'))) ?></td>
-                  <td class="actions" style="max-width: -webkit-fit-content;margin: auto;">
-                    <form mx-post="<?= BASE_URL ?>judges/accept_invite/<?= (int)$c['link_id'] ?>" mx-on-success="#form-container" mx-select="#form-container" mx-target="#response" style="display:inline">
-                      <button class="btn accept" type="submit"><i class="fa fa-check" aria-hidden="true"></i> Accept</button>
-                    </form>
-                    <form mx-post="<?= BASE_URL ?>judges/decline_invite/<?= (int)$c['link_id'] ?>" mx-on-success="#form-container" mx-select="#form-container" mx-target="#response" style="display:inline">
-                      <button class="btn danger modal-delete" type="submit"><i class="fa fa-times" aria-hidden="true"></i> Decline</button>
-                    </form>
-                  </td>
-                </tr>
-              <?php endforeach; ?>
-            <?php endif; ?>
-
-          <thead>
-            <tr class="d-sm-none"></tr>
-            <tr>
-              <td colspan="4" rowspan="1"
-              style="border-bottom: 1px solid var(--primary-20);
-                                align-content: end;
-                                color: var(--chip-info);
-                                font-size: 1.2rem;
-                                background: hsl(0, 0%, 100%, 0.1);
-                                text-transform: uppercase;">You've been linked to these organizations</td>
-            </tr>
-          </thead>
-
-            <!-- If there are no linked organizations -->
-            <?php if (empty($orgs)): ?>
-              <tr class="empty no-linked"><td colspan="4">You are not linked to any organizations.</td></tr>
-            <?php else: ?>
-                  <?php foreach ($orgs as $o): ?>
-                    <tr>
-                      <td>
-                        <strong style="font-size: 0.75rem; color: var(--primary-60); text-transform: uppercase;"><?= out($o['organization']) ?></strong><br>
-                        organization
-                      </td>
-                      <td>
-                        <?php
-                          $st = strtolower($o['org_status'] ?? 'neutral');
-                          echo chip_status(ucfirst($st), $st === 'pending invite' ? 'warn' : ($st === 'active' ? 'ok' : ($st === 'suspended' ? 'finished' : 'neutral')));
-                          ?>
-                      </td>
-                      <td><?= out(ucwords(str_replace('_',' ', $o['org_role'] ?? 'judge'))) ?></td>
-                      <td>
-                        <a href="" class="btn danger" mx-post="judges/leave_organization/<?= (int)$o['org_id'] ?>" mx-on-success="#form-container" mx-target="#response" mx-select="#form-container"><i class="fa fa-chain-broken" aria-hidden="true"> </i>Unlink</a>
-                      </td>
-                    </tr>
-                  <?php endforeach; ?>
-            <?php endif; ?>
-
-          </tbody>
-          <tr></tr>
-          <tfoot>
+          <tr>
+            <td colspan="4" class="section-header" style="color: var(--chip-info);">Linked organizations</td>
+          </tr>
+          <?php if (empty($orgs)): ?>
+            <tr class="empty no-linked"><td colspan="4">You are not linked to any organizations.</td></tr>
+          <?php else: ?>
+            <?php foreach ($orgs as $o): ?>
+              <tr>
+                <td>
+                  <strong style="font-size: 0.75rem; color: var(--primary-60); text-transform: uppercase;"><?= out($o['organization']) ?></strong><br>
+                  organization
+                </td>
+                <td>
+                  <?php
+                    $st = strtolower($o['org_status'] ?? 'neutral');
+                    echo chip_status(ucfirst($st), $st === 'pending invite' ? 'warn' : ($st === 'active' ? 'ok' : ($st === 'suspended' ? 'finished' : 'neutral')));
+                  ?>
+                </td>
+                <td><?= out(ucwords(str_replace('_',' ', $o['org_role'] ?? 'judge'))) ?></td>
+                <td>
+                  <a href="" class="btn danger" mx-post="judges/leave_organization/<?= (int)$o['org_id'] ?>" mx-on-success="#form-container" mx-target="#response" mx-select="#form-container"><i class="fa fa-chain-broken" aria-hidden="true"> </i>Unlink</a>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </tbody>
+        <tfoot>
             <tr><td colspan="4">
               <div style="display:flex;justify-content:space-between;align-items:center">
                 <?= '<span>Active Assignments: <strong style="font-weight:bold;color:var(--text);">' . count($active_assigned) . '</strong></span><span>Pending Invitations: <strong style="font-weight:bold;color:var(--text);">' . (count($pending_invites ?? [])) . '</strong></span><span>Linked Organizations: <strong style="font-weight:bold;color:var(--text);">' . count($orgs ?? []) . '</strong></span>' ?>

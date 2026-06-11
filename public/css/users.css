@@ -1303,6 +1303,15 @@ footer .bottom-details .bottom_text{
     }
   }
 
+  #assignments-table .section-header {
+      border-bottom: 1px solid var(--primary-20);
+      font-size: 1.2rem;
+      background: hsl(0, 0%, 100%, 0.1);
+      text-transform: uppercase;
+      padding: 0.5rem 1rem;
+      align-content: end;
+  }
+
   #assignments-table {
       & tr {
         width: 100%;

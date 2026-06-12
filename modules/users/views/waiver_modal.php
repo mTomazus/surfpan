@@ -1,4 +1,4 @@
-<div style="max-width:480px">
+<div>
   <div class="section-head" style="margin-bottom:1rem">
     <h3 style="margin:0">Liability Waiver</h3>
     <span class="subtle"><?= out($participant['comp_name']) ?> <?= out($participant['year']) ?></span>

@@ -1,13 +1,16 @@
 <?php
-    $user_info = Modules::run("users/_get_user_info");
-    $canJoin   = ($competition->status ?? 'open') === 'open';
-    $btnText   = ($competition->entry_type ?? 'free entry') === 'FREE ENTRY' ? 'Proceed to Payment' : 'Join Now';
-    $allJoined = $canJoin && empty($divisions) && !empty($joined);
+    $user_info    = Modules::run("users/_get_user_info");
+    $canJoin      = ($competition->status ?? 'open') === 'open';
+    $btnText      = ($competition->entry_type ?? 'free entry') === 'FREE ENTRY' ? 'Proceed to Payment' : 'Join Now';
+    $needsProfile = $canJoin && !empty($profile_incomplete);
+    $allJoined    = $canJoin && !$needsProfile && empty($divisions) && !empty($joined);
 ?>
 <!-- Header -->
 <div class="modal-title">
     <?php if (!$canJoin): ?>
         <p style="background:skyblue;padding:.5rem;color:black;text-transform:uppercase;margin-top:0;">Registration is not open yet!</p>
+    <?php elseif ($needsProfile): ?>
+        <p style="background:orange;padding:.5rem;color:black;text-transform:uppercase;margin-top:0;">Complete your profile to register!</p>
     <?php elseif ($allJoined): ?>
         <p style="background:var(--ok);padding:.5rem;color:black;text-transform:uppercase;margin-top:0;">You are registered!</p>
     <?php else: ?>
@@ -48,7 +51,18 @@
         </div>
         <?php endif; ?>
 
-        <?php if ($allJoined): ?>
+        <?php if ($needsProfile): ?>
+            <!-- Profile missing DOB and/or gender — eligibility can't be checked, no form -->
+            <p style="font-size:.9rem;color:var(--text-muted);margin:1rem 0">
+                We need your date of birth and gender to show the divisions you can enter.
+                Add them to your profile, then come back to register.
+            </p>
+            <div class="actions">
+                <button type="button" class="btn" onclick="closeModal()">Close</button>
+                <a class="btn" href="<?= BASE_URL ?>users/profile_info">Complete Profile</a>
+            </div>
+
+        <?php elseif ($allJoined): ?>
             <!-- All eligible divisions already joined — no form -->
             <p style="font-size:.9rem;color:var(--text-muted);margin:1rem 0">You have joined all available divisions for this competition.</p>
             <div class="actions">

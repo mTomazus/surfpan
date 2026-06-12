@@ -504,19 +504,28 @@
         public function athletes() {
             $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 
+            // Events = distinct comps the athlete was drawn into heats for ('ranked'
+            // comes from _global_rank_cte) — same definition as the profile page,
+            // so the two counts always agree. Confirmed-but-not-yet-run registrations
+            // don't count.
             $cte = $this->_global_rank_cte() . ",
+                    athlete_events AS (
+                        SELECT user_id, COUNT(DISTINCT comp_id) AS comp_count
+                        FROM ranked
+                        GROUP BY user_id
+                    ),
                     athlete_base AS (
                         SELECT cu.id, cu.name, cup.country, co.name AS country_name,
                                cup.club_name, cup.avatar,
-                               COUNT(DISTINCT cp.comp_id) AS comp_count,
+                               COALESCE(ae.comp_count, 0) AS comp_count,
                                COALESCE(gr.total_points, 0) AS total_points,
                                COALESCE(gr.ranking, 999999) AS ranking
                         FROM comp_users cu
                         LEFT JOIN comp_users_profiles cup ON cu.id = cup.user_id
                         LEFT JOIN countries co            ON co.code = cup.country
-                        LEFT JOIN comp_participants cp    ON cu.id = cp.user_id AND cp.status = 'confirmed'
+                        LEFT JOIN athlete_events ae       ON ae.user_id = cu.id
                         LEFT JOIN global_rank gr          ON gr.user_id = cu.id
-                        GROUP BY cu.id, cu.name, cup.country, co.name, cup.club_name, cup.avatar, gr.total_points, gr.ranking
+                        GROUP BY cu.id, cu.name, cup.country, co.name, cup.club_name, cup.avatar, ae.comp_count, gr.total_points, gr.ranking
                     )";
 
             if ($q !== '') {
@@ -1126,13 +1135,20 @@
             $comp_id = (int)segment(3);
             $user    = $this->_get_user_info();
             $data['user'] = $user;
-            $user_age = (int) $this->find_age_end($user[0]['dob']);
-            $gender   = $user[0]['gender'];
 
             $competition = $this->model->get_where($comp_id, 'comp_name');
             $organizer   = $this->model->get_where($competition->organizer_id, 'comp_organizations');
 
-            $all_eligible = $this->_eligible_divisions($comp_id, $gender, $user_age);
+            // Eligibility needs DOB + gender. Without them, age would compute as 0
+            // (DateTime(null) = "now") and mislabel divisions as joinable — show the
+            // "complete your profile" state instead of the join form.
+            $dob    = $user[0]['dob'] ?? null;
+            $gender = $user[0]['gender'] ?? null;
+            $profile_incomplete = (empty($dob) || empty($gender));
+
+            $all_eligible = $profile_incomplete
+                ? []
+                : $this->_eligible_divisions($comp_id, $gender, (int) $this->find_age_end($dob));
 
             // Fetch divisions this athlete is already registered for (non-withdrawn)
             $sql = "SELECT cp.division_id, cd.name AS division_name
@@ -1145,10 +1161,11 @@
             // Only show divisions the athlete hasn't joined yet
             $available = array_values(array_filter($all_eligible, fn($d) => !in_array((int)$d['id'], $joined_ids)));
 
-            $data['divisions']   = $available;
-            $data['joined']      = $already;      // already-registered rows with names
-            $data['competition'] = $competition;
-            $data['organizer']   = $organizer;
+            $data['divisions']          = $available;
+            $data['joined']             = $already;      // already-registered rows with names
+            $data['competition']        = $competition;
+            $data['organizer']          = $organizer;
+            $data['profile_incomplete'] = $profile_incomplete;
             $this->view('competition_modal', $data);
         }
         

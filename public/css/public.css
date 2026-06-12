@@ -135,8 +135,6 @@ main h2 + p, .modal-body h2 + p {
   #slide-nav {
     background:transparent;
     color:light-dark(var(--accent), var(--opposite));
-    -webkit-backdrop-filter: blur(30px);
-    backdrop-filter: blur(30px);
     top: calc(65px + 0.5rem);
     right:0.5rem;
     overflow: hidden;

@@ -1,279 +1,269 @@
 <style>
-  :root{
-    --bg1:#0e1a3a;
-    --bg2:#291d4d;
-    --panel:#ffffff;
-    --muted:#8b91a5;
-    --text:white;
-    --primary:rgb(29, 26, 73);
-    --accent-strong:#8de07e;
-    --ring:rgba(76, 130, 251, .35);
-    --shadow: 0 10px 30px rgba(0,0,0,.25);
-    --radius:18px;
-    --btn--primary:darkorchid;
+  /* ============ Night Swell — auth ============ */
+  main.public_area {
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
   }
-
-  h2 {
-    text-transform: uppercase;
-    font-family: inherit;
-    text-align: center;
-    margin-bottom: 1.5rem;
-    color:black;
-    & strong {
-        background: var(--accent);
-        color: white;
-        padding-inline: 0.5rem;
-    }
-  }
-  h2:not(strong){
-        color: black;
-  }
-  hr {
-    border: 0;
-    height: 1px;
-    background: var(--border);
-    margin: 1rem 0 2em;
-  }
-  .auth-wrapper{
-    min-height:100%;
-    display:grid;
-    place-items:center;
-    padding:32px 16px;
-  }
-  .auth-card{
-    width: min(868px, 100%);
+  .auth-stage {
+    position: relative;
+    min-height: 100dvh;
     display: grid;
-    grid-template-columns: 294px 1fr;
-    overflow:hidden;
-    background: transparent;
-    -webkit-backdrop-filter: blur(5px);
-    backdrop-filter: blur(5px);
-    border: var(--card-border);
-    border-radius: var(--radius);
-    box-shadow: 0 0px 3px var(--primary-60), 0 0px 3px var(--primary-60) inset;
+    place-items: center;
+    padding: calc(65px + 2rem) 16px 3rem;
+    overflow: hidden;
+    background: #000208;
   }
-  .auth-card .panel {
-    border:none;
+  #ocean-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    display: block;
+  }
+  .auth-stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(55% 40% at 50% 18%, rgba(23,225,239,.08), transparent 70%),
+      linear-gradient(to bottom, rgba(0,2,8,.6), transparent 40%, rgba(0,2,8,.7) 100%);
   }
 
-  /* Left promo panel */
-  .promo {
-    position:relative;
-    box-shadow: var(--shadow);
-    border-radius: calc(var(--radius) + 2px);
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    padding:18px;
-    color:#fff;
+  .auth-card {
+    position: relative;
+    z-index: 1;
+    width: min(900px, 100%);
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    overflow: hidden;
+    border-radius: 18px;
+    border: 1px solid rgba(23,225,239,.22);
+    background: linear-gradient(160deg, rgba(23,225,239,.06), rgba(0,2,8,.72));
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow:
+      0 30px 80px -30px rgba(0,0,0,.8),
+      0 0 40px -18px var(--primary-shadow),
+      inset 0 0 30px -22px var(--primary-shadow);
   }
-  .promo-card {
-    position:absolute; inset:0;
-    background: rgba(255,255,255,.06);
-    border-radius: var(--radius);
-    margin:18px;
-    backdrop-filter: blur(2px);
+  .auth-card .auth-panel { border: none; background: transparent; }
+
+  /* ---------- left promo ---------- */
+  .promo {
+    position: relative;
+    padding: 2rem 1.5rem;
+    border-right: 1px solid rgba(23,225,239,.14);
+    background:
+      linear-gradient(rgba(23,225,239,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(23,225,239,.045) 1px, transparent 1px),
+      linear-gradient(200deg, rgba(23,225,239,.08), transparent 60%);
+    background-size: 44px 44px, 44px 44px, auto;
   }
   .promo-inner {
-    position:relative;
-    height:100%;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:1rem;
-    text-align:center;
-    z-index:2;
-    & h1 {
-      font-size: 2.1rem;
-    }
-    & h2 {
-      margin:0;
-      font-weight:400; 
-      letter-spacing:.2px; 
-      color:#e7ebff;
-      font-size:14px;
-      text-align: center;
-      border-bottom: none;
-      & b {
-        display: block;
-        font-size: 20px;
-        color: #fff;
-      }
-    }
-    & img {
-      width:70%;
-    }
-    & .dot {
-      width:40px; height:40px; border-radius:50%;
-      display:grid; place-items:center; margin-top:8px;
-      background:#0f1633; color:#a1ff8b; box-shadow: inset 0 0 0 2px rgba(255,255,255,.08);
-    }
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.1rem;
+    text-align: center;
+  }
+  .promo-kicker {
+    font-size: .62rem;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+  .promo-inner h1 {
+    font-family: 'Krungthep', 'Lato', sans-serif;
+    font-size: 2.3rem;
+    margin: 0;
+    letter-spacing: .04em;
+    color: var(--text-light);
+    text-shadow: 0 0 24px var(--primary-shadow);
+  }
+  .promo-inner img {
+    width: 64%;
+    filter: drop-shadow(0 12px 28px rgba(23,225,239,.25));
+  }
+  .promo-tag {
+    margin: 0;
+    font-size: .8rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dark);
+  }
+  .promo-tag b {
+    display: block;
+    font-size: 1.05rem;
+    color: var(--primary);
+    letter-spacing: 4px;
+  }
+  .promo-line {
+    width: 4rem;
+    height: 2px;
+    background: var(--primary);
+    box-shadow: 0 0 12px var(--primary-shadow);
   }
 
-  /* Right form panel */
-  .auth-card .panel {
-    padding: 32px 24px;
+  /* ---------- right form panel ---------- */
+  .auth-card .auth-panel { padding: 2.2rem 2rem; }
+
+  .form-head { text-align: center; margin-bottom: 1.4rem; }
+  .form-head .kicker {
+    display: block;
+    font-size: .62rem;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: .5rem;
   }
-  .form-wrap {
-    & h2 {
-      font-size: 1.4rem;
-      border-bottom: none;
-      color: white;
-    }
-    & .lbl {
+  .form-head h2 {
+    font-family: 'Krungthep', 'Lato', sans-serif;
+    font-size: 1.6rem;
+    text-transform: uppercase;
+    margin: 0;
+    color: var(--text-light);
+  }
+
+  .fld { margin-bottom: 1rem; }
+  .lbl {
     display: block;
     font-size: 11px;
     letter-spacing: 2px;
     color: var(--primary-light);
     text-transform: uppercase;
     margin: 0;
-    padding: 1em 1em 0;
-    }
-    & .txt {
-      font-size:16px;
-      max-height: 39px;
-    }
-    & label span {
-      font-size: 12px;
-      text-transform: uppercase;
-      color: var(--opposite);
-    }
-    & .checkbox-wrapper-30 .checkbox {
-      width: calc(var(--size, 1) * 16px);
-      margin-bottom: 4px;
-    }
-    & svg {
-      color:var(--accent);
-    }
+    padding: 0 .25rem .35rem;
   }
-  .fld {
-    margin-bottom: 1rem;
-    }
   .fld .txt {
-    color:var(--text); 
-    background: var(--bg);
-    border: 1px solid var(--primary-60);
-    box-shadow: 0 0 3px var(--primary-20), 0 0 3px var(--primary-20) inset;
-    transition: all 600ms ease;
+    width: 100%;
+    font-size: 16px;
+    max-height: 41px;
+    padding: 10px 12px;
+    color: var(--text-light);
+    background: rgba(0,2,8,.55);
+    border: 1px solid rgba(23,225,239,.22);
+    border-radius: 8px;
+    box-shadow: inset 0 0 12px -8px var(--primary-shadow);
+    transition: border-color .3s ease, box-shadow .3s ease, background .3s ease;
   }
+  .fld .txt:hover { border-color: var(--primary-60); }
   .fld .txt:focus {
-    border: 1px solid var(--primary-light);
-    box-shadow: 0 0 3px var(--primary-60), 0 0 3px var(--primary-60) inset;
-  }
-  .fld .txt:hover {
-    border: 1px solid var(--primary-light);
-    box-shadow: 0 0 3px var(--primary-60), 0 0 3px var(--primary-60) inset;
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(0,2,8,.75);
+    box-shadow: 0 0 0 3px var(--primary-20), inset 0 0 12px -8px var(--primary-shadow);
   }
 
-  .foot a:hover {
-    transform:translate(1px);
+  .row2 { display: flex; gap: 12px; }
+  .row2 > .fld { flex: 1; }
+  .rel { position: relative; }
+
+  .agree, .remember {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; color: var(--text-dark); margin: 0 0 1rem;
   }
-
-  .row2{display:flex; gap:10px}
-  .row2 > .fld{flex:1}
-
-  .agree, .remember{
-    display:flex; align-items:center; gap:10px; font-size:12px; color:#8a90a3;
-    margin:0;
+  .agree input, .remember input { width: 16px; height: 16px; }
+  .agree span, .remember span {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-dark);
   }
-  .agree input, .remember input{width:16px; height:16px}
+  .checkbox-wrapper-30 .checkbox { width: 16px; margin-bottom: 4px; }
+  .form-wrap svg { color: var(--primary); }
 
-  #loginForm .login-btn, #signupForm .signup-btn {
+  .auth-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: .5rem;
+  }
+  .auth-submit {
     display: inline-block;
-    position: relative;
-    color: var(--bg);
-    background: var(--opposite);
-    margin-inline-start:2rem;
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    min-width: 100px;
-    box-shadow: 0 0 3px var(--primary-60), 0 0 3px var(--primary-60) inset;
-    font-size:14px;
-    min-height:fit-content;
-    font-weight: 500;
-    letter-spacing: 2px;
-    cursor: pointer;
-    transition: all 0.8s ease;
-    text-align: center;
-  }
-
-  #loginForm .login-btn:active, #signupForm .signup-btn:active {
-    transform: translateY(1px);
-  }
-
-  #loginForm .login-btn:hover, #signupForm .signup-btn:hover {
-    color: var(--opposite);
-    background: transparent;
-  }
-  .mute{color:#7e8499}
-  .link{color:#0f63ff; text-decoration:none;cursor: default;}
-
-  .foot{
+    padding: .65rem 1.6rem;
+    min-width: 130px;
+    width: auto;
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    background: var(--primary);
+    color: #00161a;
+    font-weight: 900;
     font-size: 13px;
-    color: var(--primary-dark);
-    text-align: right;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: center;
+    transition: transform .25s ease, box-shadow .25s ease, background .25s ease, color .25s ease;
   }
-  .err{color:#d33; font-size:13px; margin:-6px 0 10px}
+  .auth-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px -10px var(--primary-shadow);
+  }
+  .auth-submit:active { transform: translateY(0); }
 
   .change-btn {
-    background: var(--accent);
-    color: var(--primary-white);
-    font-size: 0.7rem;
-    font-weight: 100;
+    display: inline-block;
+    padding: .55rem 1rem;
+    font-size: 11px;
     letter-spacing: 2px;
-    border: 1px solid;
-    border-radius: 6px;
+    color: var(--primary);
+    border: 1px solid var(--primary-60);
+    border-radius: 8px;
     text-decoration: none;
-    margin:auto;
-    padding: 0.4rem 0.8rem;
-    box-shadow: 0 0 3px, 0 0 3px inset;
-    transition: all 0.8s ease;
-  }
-  .change-btn:hover {
-    color: var(--accent);
     background: transparent;
-    box-shadow: 0 0 3px, 0 0 3px inset;
+    transition: background .25s ease, color .25s ease, border-color .25s ease;
   }
+  .change-btn:hover { background: var(--primary-20); border-color: var(--primary); }
 
-  /* Success tick style (decorative) */
-  .ok{
-    position:absolute; right:0; top:34px; transform:translateY(-50%);
-    font-size:16px; color:#7bd67a;
-  }
-  .rel{position:relative}
+  .foot { font-size: 13px; color: var(--text-dark); text-align: center; margin-top: 1rem; }
+  .foot .link { color: var(--primary); text-decoration: none; cursor: pointer; }
+  .foot .link:hover { text-decoration: underline; }
+  .link { color: var(--primary); text-decoration: none; }
+  .err { color: #ff7a7a; font-size: 13px; margin: -4px 0 10px; }
 
-  /* Responsive */
-  @media (max-width: 920px){
-    .auth-card{grid-template-columns: 1fr}
-    .promo{display:none}
-    .row2{flex-direction: column;gap: 0;}
+  hr { border: 0; height: 1px; background: rgba(23,225,239,.15); margin: 1.2rem 0 1rem; }
+
+  @media (max-width: 920px) {
+    .auth-card { grid-template-columns: 1fr; }
+    .promo { display: none; }
+    .row2 { flex-direction: column; gap: 0; }
+    .auth-card .auth-panel { padding: 1.6rem 1.2rem; }
+    .auth-actions { flex-direction: column; align-items: stretch; }
+    .change-btn { text-align: center; }
   }
 </style>
 
-<div class="auth-wrapper">
-  <div class="auth-card">
+<div class="auth-stage">
+  <canvas id="ocean-canvas" aria-hidden="true"></canvas>
+
+  <div class="auth-card fx-card">
 
     <!-- LEFT PROMO -->
     <aside class="promo">
-      <div class="promo-card" aria-hidden="true"></div>
       <div class="promo-inner">
+        <span class="promo-kicker">Ride the data</span>
         <h1>SURFPAN</h1>
-        <div>
-          <img src="images/surfpan-hero-2.svg" alt="Logo">
-        </div>
-        <h2>Competition <b>management</b></h2>
-        <div class="dot">➜</div>
+        <img src="images/surfpan-hero-2.svg" alt="SurfPan logo">
+        <span class="promo-line" aria-hidden="true"></span>
+        <p class="promo-tag">Competition <b>management</b></p>
       </div>
     </aside>
-    
+
     <!-- RIGHT PANEL -->
-    <section class="panel">
+    <section class="auth-panel">
       <!-- ===== SIGNUP ===== -->
       <div id="signup" class="form-wrap" style="display:none;">
-        <h2 class="mt-0 text-center"><strong>create</strong> your account</h2>
-        <div class="foot">We’ll <strong>never</strong> share your email with no one.</div>
+        <div class="form-head">
+          <span class="kicker">Join the lineup</span>
+          <h2>Create account</h2>
+        </div>
         <?php
-          // Example attributes – tweak as you like
           $form_attr = [
             'id'=>'signupForm',
             'autocomplete'=>'off',
@@ -311,7 +301,6 @@
             </div>
           </div>
 
-          
           <div class="row2">
             <div class="fld">
               <label class="lbl" for="phone">Phone number</label>
@@ -356,13 +345,12 @@
             </div>
             <div class="fld">
               <label class="lbl" for="country">Country</label>
-              <?php 
+              <?php
                 $country_attr = [
                   'class' => 'txt',
                   'id'    => 'country',
                   'style' => 'appearance:none;',
                 ];
-                // build country options array
                 $country_options = ['-- Select your country --'];
                 if (!empty($countries) && is_array($countries)) {
                   foreach ($countries as $c) {
@@ -389,7 +377,7 @@
             </div>
           </div>
 
-          <label class="mb-1 ml-2 agree">
+          <label class="agree">
             <div class="checkbox-wrapper-30">
               <span class="checkbox">
                 <input type="checkbox" name="agree" value="1" required/>
@@ -406,20 +394,24 @@
             <span>By signing up I agree with <a class="link" href="welcome/terms">terms and conditions</a></span>
         </label>
 
-        <div style="display: grid;grid-template-columns: 1fr auto;gap: 1rem;margin-inline: 1rem;">
-          <button class="signup-btn" type="submit">CREATE</button>
-          <a class="change-btn" href="#" data-target="login">LOGIN</a>
+        <div class="auth-actions">
+          <button class="auth-submit" type="submit">CREATE</button>
+          <a class="change-btn" href="#" data-target="login">LOG IN INSTEAD</a>
         </div>
+        <div class="foot">We&rsquo;ll <strong>never</strong> share your email with anyone.</div>
         <?= form_close(); ?>
       </div>
 
       <!-- ===== LOGIN ===== -->
       <div id="login" class="form-wrap">
-        <h2 class="mb-1 mt-0 text-center"><strong>login</strong> your account</h2>
+        <div class="form-head">
+          <span class="kicker">Welcome back</span>
+          <h2>Log in</h2>
+        </div>
         <?php
-          flashdata('<p style="color: firebrick;text-align: center;">', '</p>'); // from set_flashdata()
+          flashdata('<p style="color: #ff7a7a;text-align: center;">', '</p>');
           $attr = ['id'=>'loginForm','autocomplete'=>'off'];
-          echo form_open('users/submit_login', $attr); // e.g. modules/members/controllers/Members::submit_login()
+          echo form_open('users/submit_login', $attr);
           echo validation_errors('<div class="text-center err"><strong>', '</strong></div>');
         ?>
             <div class="fld">
@@ -431,7 +423,7 @@
                 <label class="lbl" for="login_password">Password</label>
                 <input class="txt" type="password" id="login_password" name="password" required>
             </div>
-            <label class="mb-1 ml-2 remember">
+            <label class="remember">
                 <div class="checkbox-wrapper-30">
                   <span class="checkbox">
                     <input type="checkbox" name="remember" value="1"/>
@@ -447,34 +439,34 @@
                 </div>
                 <span>remember me</span>
             </label>
-            <button class="login-btn mt-1 mb-1" type="submit">LOGIN</button>
+            <div class="auth-actions">
+              <button class="auth-submit" type="submit">LOGIN</button>
+              <a class="change-btn" href="#" data-target="signup">CREATE ACCOUNT</a>
+            </div>
             <div class="foot">
                 <a class="link" mx-get="users/request_modal" mx-build-modal="request-modal">Forgot password?</a>
             </div>
-            <hr>
-            <a class="change-btn" href="#" data-target="signup" style="float: right;">CREATE ACCOUNT</a>
         <?= form_close(); ?>
       </div>
     </section>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.149.0/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="js/auth-fx.js"></script>
 <script>
-  // tiny tab switcher
-  (function(){
-    const switchTo = (name)=>{
-      document.querySelectorAll('.tabs a').forEach(a=>{
-        a.classList.toggle('active', a.dataset.target===name);
-      });
-      document.querySelectorAll('.form-wrap').forEach(w=>{
-        w.style.display = (w.id===name)?'block':'none';
-      });
-    };
-    document.querySelectorAll('[data-target]').forEach(el=>{
-      el.addEventListener('click', e=>{
-        e.preventDefault();
-        switchTo(el.dataset.target);
-      });
+  // login/signup switcher — animated via authSwitch (auth-fx.js), static fallback otherwise
+  document.querySelectorAll('[data-target]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.preventDefault();
+      if (typeof window.authSwitch === 'function') {
+        window.authSwitch(el.dataset.target);
+      } else {
+        document.querySelectorAll('.form-wrap').forEach(w => {
+          w.style.display = (w.id === el.dataset.target) ? 'block' : 'none';
+        });
+      }
     });
-  })();
+  });
 </script>

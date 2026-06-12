@@ -2,11 +2,13 @@
 # Deploy SurfPan to production (Hostinger).
 #
 # Server layout:
-#   modules/ engine/ templates/  ->  domains/surfpan.com/
-#   public/                      ->  domains/surfpan.com/public_html/  (docroot)
+#   modules/ templates/  ->  domains/surfpan.com/
+#   public/              ->  domains/surfpan.com/public_html/  (docroot)
 #
 # Never synced:
+#   engine/            — framework core is managed on the server, not deployed
 #   config/            — production credentials & BASE_URL live only on the server
+#   database/ docs/ remotion/ tutorial_videos/ — dev-only, never belong on prod
 #   upload dirs        — user avatars / org logos uploaded in production
 #
 # Usage:  ./deploy.sh [--dry-run]
@@ -39,7 +41,7 @@ rsync "${RSYNC_FLAGS[@]}" \
   --exclude='users/assets/images/avatars/' \
   --exclude='organizations/assets/images/org_avatars/' \
   -e "ssh -p ${SSH_PORT}" \
-  modules engine templates "${SSH_HOST}:${REMOTE_ROOT}/"
+  modules templates "${SSH_HOST}:${REMOTE_ROOT}/"
 
 echo "-- public assets (docroot) --"
 rsync "${RSYNC_FLAGS[@]}" \

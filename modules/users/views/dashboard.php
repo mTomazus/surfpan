@@ -70,11 +70,6 @@
       $minutes    = "N/A";
     }
 
-    switch ($user_heats[0]['jersey_color']):
-      case 'white': $color = 'black'; break;
-      default:      $color = 'white';
-    endswitch;
-
     // Build schedule rows for the Upcoming Heats table and ICS export.
     $schedule_heats = [];
     foreach ($user_heats as $sh) {
@@ -103,30 +98,29 @@
   $first_comp_id = array_key_first($comps) ?? null;
 ?>
 
-  <div class="grid cards">
+  <div class="grid cards dash<?= $has_comps ? ' has-comps' : '' ?>">
 
     <!-- ===== Search Competitions / Organisers ===== -->
-    <section class="card pad span-12" aria-labelledby="search-title">
+    <section class="card pad span-12 search-card" aria-labelledby="search-title">
       <div class="section-head">
-        <h2 id="search-title">Search Competitions</h2>
+        <h2 id="search-title">Find Competitions</h2>
+        <span class="subtle kbd-hint">Press <kbd>/</kbd> to search</span>
       </div>
-      <div class="controls">
-        <label class="field">
-          <input type="search" id="searchCompetition" placeholder="Type competition or organiser name…" oninput="searchCompetitions()" />
-        </label>
-        <button class="btn" onclick="searchCompetitions()">Search</button>
-      </div>
+      <label class="field search-field">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="searchCompetition" placeholder="Type competition or organiser name…" oninput="searchCompetitions()" autocomplete="off" />
+      </label>
       <div id="searchResults" class="list" style="margin-top:10px; display:none"></div>
     </section>
 
     <?php if (!$has_comps): ?>
 
     <!-- ===== Empty / onboarding state ===== -->
-    <section class="card pad span-12" style="text-align:center; padding: 3rem 2rem;">
-      <div style="max-width:420px; margin:auto;">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--subtle)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:1rem"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-        <h2 style="margin-bottom:.5rem;">No registrations yet</h2>
-        <p class="subtle" style="margin-bottom:1.5rem;">You haven't joined any competitions. Search for an open competition above and register to get started.</p>
+    <section class="card pad span-12 empty-state">
+      <div class="empty-state__inner">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--subtle)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <h2>No registrations yet</h2>
+        <p class="subtle">You haven't joined any competitions. Search for an open competition above and register to get started.</p>
         <button class="btn" onclick="document.getElementById('searchCompetition').focus()">Find a competition</button>
       </div>
     </section>
@@ -176,32 +170,34 @@
       </div>
       <?php if ($has_heats): ?>
       <div class="next-heat">
-        <div class="countdown justify-around">
+        <div class="countdown-hero">
           <span class="pill" id="countdownPill">Starts in</span>
-          <span id="countdown">—:—:—</span>
+          <span class="count" id="countdown" role="timer">—:—:—</span>
+          <div class="heat-meta">
+            <span><?= out($user_heats[0]['division_name']) ?></span>
+            <span class="heat-meta__sep" aria-hidden="true"></span>
+            <span><?= out($user_heats[0]['round']) ?></span>
+            <span class="heat-meta__sep" aria-hidden="true"></span>
+            <span>Heat #<?= out($user_heats[0]['heat_number']) ?></span>
+            <span class="jersey-tag" style="--jersey: var(--jersey-<?= out($user_heats[0]['jersey_color']) ?>)">
+              <i class="swatch" aria-hidden="true"></i><?= out($user_heats[0]['jersey_color']) ?> jersey
+            </span>
+          </div>
         </div>
-        <div class="meta" style="margin:1rem auto 0; text-align:center; padding-bottom:1rem;justify-content:center;">
-          <span><?= out($user_heats[0]['division_name']) ?></span>
-          <span>· <?= out($user_heats[0]['round']) ?> ·</span>
-          <span>Heat #<?= out($user_heats[0]['heat_number']) ?></span>
-          <h3 class="chip" style="color: <?= $color ?>; border: 1px solid;background: var(--jersey-<?= out($user_heats[0]['jersey_color']) ?>);
-          font-weight: 900;font-size:1.2rem;text-align: center;margin: auto;display: grid;width: 100%;
-          grid-template-columns: auto auto;justify-content: center;">Jersey: <span style="text-transform:uppercase"><?= out($user_heats[0]['jersey_color']) ?></span></h3>
-        </div>
-        <div class="meta justify-around">
-          <h4><i class="fa fa-ticket" aria-hidden="true"></i> <strong id="callTime"><?= out($call_time) ?></strong></h4>
-          <h4><i class="fa fa-clock-o" aria-hidden="true"></i> <strong id="startTimeLabel"><?= out($start_time) ?></strong></h4>
-          <h4 class="text-center"><i class="fa fa-hourglass-start" aria-hidden="true"></i> <strong id="durationLabel"><?= out($minutes) ?> mins</strong></h4>
-        </div>
-        <div class="controls mt-2" style="margin:auto; text-align:center; gap:1rem;display: grid;grid-template-columns: 1fr 1fr 1fr;">
-          <button class="btn" onclick="checkIn()">Check-in</button>
-          <button class="btn disabled" disabled>Rules</button>
-          <button class="btn" onclick="goLive(<?= out($user_heats[0]['id']) ?>)">Heats</button>
+        <dl class="stat-row">
+          <div class="stat"><dt>Call time</dt><dd id="callTime">—</dd></div>
+          <div class="stat"><dt>Start</dt><dd id="startTimeLabel"><?= out($start_time) ?></dd></div>
+          <div class="stat"><dt>Duration</dt><dd id="durationLabel"><?= out($minutes) ?> min</dd></div>
+        </dl>
+        <div class="heat-actions">
+          <button class="btn" onclick="checkIn()">Check in</button>
+          <button class="btn" onclick="goLive(<?= out($user_heats[0]['id']) ?>)">Heat draw</button>
+          <a class="btn" href="https://isasurf.org/downloads/ISA_RULEBOOK_April-2025.pdf" target="_blank" rel="noopener">Rulebook</a>
         </div>
       </div>
       <?php else: ?>
-      <div style="text-align:center; padding: 2rem 1rem;">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--subtle)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:.75rem"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <div class="empty-state">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--subtle)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         <p class="subtle">Heat draw not published yet.<br>Check back once the competition goes live.</p>
       </div>
       <?php endif; ?>
@@ -210,38 +206,38 @@
     <!-- ===== Scores ===== -->
     <section class="card pad span-5" aria-labelledby="scores-title">
       <div class="section-head">
-        <h3 id="scores-title">My Scores</h3>
+        <h2 id="scores-title">My Scores</h2>
         <span class="subtle">Best 2 waves count</span>
       </div>
 
       <?php if (empty($user_scores)): ?>
-        <div style="text-align:center;padding:2rem 1rem;">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--subtle)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:.75rem"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <div class="empty-state">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--subtle)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           <p class="subtle">No scores recorded yet.<br>Scores appear once judges submit wave results.</p>
         </div>
       <?php else: ?>
         <?php foreach ($user_scores as $comp_id => $comp_scores): ?>
         <div class="scores-block" data-score-comp="<?= (int)$comp_id ?>">
           <?php foreach ($comp_scores['heats'] as $heat): ?>
-          <div style="margin-bottom:1.25rem">
-            <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.4rem">
+          <div class="scores-heat">
+            <div class="scores-heat__label">
               <?= out($heat['division_name']) ?> · <?= out($heat['round'] ?: 'Heat') ?> #<?= out($heat['heat_number']) ?>
             </div>
             <div class="table-wrap">
-              <table class="table" style="font-size:.82rem">
+              <table class="table scores-table">
                 <thead>
                   <tr>
                     <th>Wave</th>
                     <th class="right">Avg Score</th>
-                    <th class="right"></th>
+                    <th class="right"><span class="sr-only">Counts toward total</span></th>
                   </tr>
                 </thead>
                 <tbody>
                   <?php foreach ($heat['waves'] as $w): ?>
-                  <tr<?= $w['best'] ? ' style="color:var(--ok);font-weight:600"' : '' ?>>
+                  <tr<?= $w['best'] ? ' class="is-best"' : '' ?>>
                     <td>#<?= out($w['wave_number']) ?></td>
                     <td class="right"><?= number_format($w['avg_score'], 2) ?></td>
-                    <td class="right" style="font-size:.7rem"><?= $w['best'] ? '★' : '' ?></td>
+                    <td class="right best-mark"><?php if ($w['best']): ?><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-label="counted"><path d="M12 2l2.9 6.26L21.5 9.3l-4.75 4.4 1.15 6.55L12 17.1l-5.9 3.15 1.15-6.55L2.5 9.3l6.6-1.04z"/></svg><?php endif; ?></td>
                   </tr>
                   <?php endforeach; ?>
                 </tbody>
@@ -265,7 +261,7 @@
     <?php if ($has_heats && !empty($schedule_heats)): ?>
     <section class="card pad span-7" aria-labelledby="schedule-title">
       <div class="section-head">
-        <h3 id="schedule-title">Upcoming Heats</h3>
+        <h2 id="schedule-title">Upcoming Heats</h2>
         <div class="controls">
           <label class="field"><input type="search" id="scheduleSearch" placeholder="Filter by heat/division…" oninput="filterSchedule()" /></label>
           <button class="btn" onclick="exportSchedule()">Export .ICS</button>
@@ -349,12 +345,8 @@
                 <td><?= out($comp['name']) ?> <?= out($comp['year']) ?></td>
                 <td><?= out($comp['division_name']) ?></td>
                 <td><span class="badge <?= out($comp['participation_status']) ?>"><?= out($comp['participation_status']) ?></span></td>
-                <?php if ($comp['entry_type'] === 'free entry') { ?>
-                  <td><span class="badge" style="background: color-mix(in oklab, var(--warning), transparent 80%); border-color: color-mix(in oklab, var(--warning), transparent 50%);"><?= out(strtoupper($comp['entry_type'])) ?></span></td>
-                <?php } else { ?>
-                  <td><span class="badge" style="background: indianred; border-color: rgb(125, 0, 0); color: whitesmoke;"><?= out(strtoupper($comp['entry_type'])) ?></span></td>
-                <?php } ?>
-                <td class="right" style="gap:.6rem;display:flex;align-items:center;justify-content:flex-end;">
+                <td><span class="badge <?= $comp['entry_type'] === 'free entry' ? 'entry-free' : 'entry-paid' ?>"><?= out(strtoupper($comp['entry_type'])) ?></span></td>
+                <td class="right actions-cell">
                   <?php
                     $status  = $comp['participation_status'];
                     $is_paid = in_array($status, ['paid', 'confirmed']);
@@ -369,15 +361,15 @@
                     // Waiver — chip (status) when done, secondary btn when needed
                     if ($status !== 'withdrawn') {
                         if (!empty($comp['waiver_accepted_at'])) {
-                            echo '<span class="chip status-open" style="font-size:.75rem;cursor:default">✓ Waiver</span>';
+                            echo '<span class="chip waiver-ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Waiver signed</span>';
                         } else {
-                            echo '<button class="btn" style="font-size:.8rem;padding:.4rem .75rem" mx-get="users/waiver_modal/' . out($comp['record_id']) . '" mx-build-modal="modalWaiver">Sign waiver</button>';
+                            echo '<button class="btn btn-sm" mx-get="users/waiver_modal/' . out($comp['record_id']) . '" mx-build-modal="modalWaiver">Sign waiver</button>';
                         }
                     }
 
                     // Withdraw
                     if ($status === 'withdrawn') {
-                        echo '<span class="chip" style="font-size:.75rem;cursor:default;opacity:.6">Withdrawn</span>';
+                        echo '<span class="chip chip-muted">Withdrawn</span>';
                     } elseif ($comp['status'] === 'open') {
                         echo '<button class="btn danger" mx-get="users/withdraw/' . out($comp['record_id']) . '" mx-build-modal="modalWithdraw">Withdraw</button>';
                     }
@@ -411,6 +403,11 @@
         const box = document.getElementById('searchResults');
 
         if (!q || q.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
+
+        // Skeleton rows while fetching — same shape as result cards.
+        box.style.display = 'grid';
+        box.style.gap = '8px';
+        box.innerHTML = '<div class="skeleton skeleton-row"></div><div class="skeleton skeleton-row"></div>';
 
         try {
           const res = await fetch(`<?= BASE_URL ?>users/search?q=${encodeURIComponent(q)}`, {
@@ -460,6 +457,16 @@
         }
       }, 250);
     }
+
+    // "/" focuses the competition search from anywhere on the page
+    document.addEventListener('keydown', e => {
+      if (e.key === '/' && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) {
+        e.preventDefault();
+        const inp = document.getElementById('searchCompetition');
+        inp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        inp.focus({ preventScroll: true });
+      }
+    });
 
     function escapeHtml(s='') {
       return String(s).replace(/[&<>"']/g, m => ({

@@ -1339,3 +1339,83 @@ footer .bottom-details .bottom_text{
   }
 
 }
+/* ===== Participant dashboard (scoped to .dash — other users-area pages unaffected) ===== */
+.dash { --ease-out: cubic-bezier(.16, 1, .3, 1); }
+
+/* Entrance: cards cascade once, top to bottom */
+.dash > section { opacity: 0; transform: translateY(10px); animation: dash-in .55s var(--ease-out) forwards; }
+.dash > section:nth-child(2) { animation-delay: 60ms; }
+.dash > section:nth-child(3) { animation-delay: 120ms; }
+.dash > section:nth-child(4) { animation-delay: 180ms; }
+.dash > section:nth-child(5) { animation-delay: 240ms; }
+.dash > section:nth-child(6) { animation-delay: 300ms; }
+@keyframes dash-in { to { opacity: 1; transform: none; } }
+
+/* Registered users: search drops below the day-to-day cards */
+.dash.has-comps .search-card { order: 9; }
+
+/* Quieter table chrome */
+.dash .table th { background: transparent; color: var(--primary); font-size: .72rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid color-mix(in oklab, var(--primary), transparent 55%); }
+.dash thead { color: var(--primary); }
+.dash .table td { font-variant-numeric: tabular-nums; }
+.dash .table tbody tr { transition: background .18s ease; }
+.dash .table tbody tr:hover { background: color-mix(in oklab, var(--primary), transparent 94%); }
+
+/* Dashboard form controls: app sans, left aligned */
+.dash .field input, .dash .field select { font-family: inherit; font-weight: 600; text-align: left; }
+.dash select { text-align-last: left; }
+.dash .search-field { max-width: 560px; }
+.dash .search-field svg { color: var(--primary); flex: none; }
+.dash .kbd-hint kbd { font-family: ui-monospace, 'SF Mono', Menlo, monospace; border: 1px solid color-mix(in oklab, var(--text), transparent 70%); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font-size: .9em; }
+
+/* Tactile buttons */
+.dash .btn { transition: transform .12s var(--ease-out), background .2s ease, box-shadow .2s ease, color .2s ease; }
+.dash .btn:active { transform: translateY(1px) scale(.985); }
+.dash .btn-sm { font-size: .8rem; padding: .4rem .75rem; }
+
+/* ----- Next heat hero ----- */
+.dash .countdown-hero { display: grid; justify-items: center; gap: .65rem; padding: 1.1rem 0 .4rem; text-align: center; }
+.dash .countdown-hero .count { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-feature-settings: "tnum" 1; font-size: clamp(2.4rem, 6vw, 3.6rem); font-weight: 700; line-height: 1; letter-spacing: .02em; color: var(--text); }
+.dash .heat-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .6rem; font-size: .85rem; letter-spacing: 1px; text-transform: uppercase; color: var(--text); }
+.dash .heat-meta__sep { width: 3px; height: 3px; border-radius: 50%; background: var(--primary); }
+.dash .jersey-tag { display: inline-flex; align-items: center; gap: .45rem; padding: .25rem .7rem; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--jersey, var(--text)), transparent 40%); font-weight: 700; }
+.dash .jersey-tag .swatch { width: 12px; height: 12px; border-radius: 50%; background: var(--jersey, var(--text)); }
+.dash .stat-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: .85rem 0 0; border-block: 1px solid color-mix(in oklab, var(--primary), transparent 82%); }
+.dash .stat { display: grid; gap: .2rem; padding: .8rem .5rem; text-align: center; }
+.dash .stat + .stat { border-inline-start: 1px solid color-mix(in oklab, var(--primary), transparent 82%); }
+.dash .stat dt { font-size: .62rem; letter-spacing: 2px; text-transform: uppercase; color: color-mix(in oklab, var(--text), transparent 45%); }
+.dash .stat dd { margin: 0; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.dash .heat-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+.dash .heat-actions .btn { text-align: center; text-decoration: none; }
+
+/* ----- Scores ----- */
+.dash .scores-heat { margin-bottom: 1.25rem; }
+.dash .scores-heat__label { font-size: .78rem; color: color-mix(in oklab, var(--text), transparent 40%); margin-bottom: .4rem; letter-spacing: .5px; }
+.dash .scores-table { font-size: .82rem; }
+.dash .scores-table .is-best { color: var(--ok); font-weight: 600; }
+.dash .best-mark svg { vertical-align: -1px; color: var(--ok); }
+
+/* ----- Registrations ----- */
+.dash .actions-cell { display: flex; gap: .6rem; align-items: center; justify-content: flex-end; flex-wrap: wrap; }
+.dash .badge.entry-free { background: color-mix(in oklab, var(--chip-closed), transparent 82%); border-color: color-mix(in oklab, var(--chip-closed), transparent 50%); }
+.dash .badge.entry-paid { background: color-mix(in oklab, var(--chip-finished), transparent 80%); border-color: color-mix(in oklab, var(--chip-finished), transparent 45%); }
+.dash .chip.waiver-ok { gap: .4rem; color: var(--ok); border-color: color-mix(in oklab, var(--ok), transparent 50%); background: color-mix(in oklab, var(--ok), transparent 88%); font-size: .75rem; cursor: default; }
+.dash .chip-muted { font-size: .75rem; cursor: default; opacity: .55; }
+
+/* ----- Empty states ----- */
+.dash .empty-state { text-align: center; padding: 2.5rem 1.5rem; }
+.dash section.empty-state { padding: 3rem 2rem; }
+.dash .empty-state__inner { max-width: 420px; margin: auto; display: grid; gap: .6rem; justify-items: center; }
+.dash .empty-state h2 { margin: 0; }
+
+/* ----- Search skeleton ----- */
+.dash .skeleton { border-radius: 12px; background: linear-gradient(90deg, color-mix(in oklab, var(--text), transparent 92%) 0%, color-mix(in oklab, var(--text), transparent 85%) 50%, color-mix(in oklab, var(--text), transparent 92%) 100%); background-size: 200% 100%; animation: dash-shimmer 1.4s linear infinite; }
+.dash .skeleton-row { height: 64px; }
+@keyframes dash-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dash > section { animation: none; opacity: 1; transform: none; }
+  .dash .skeleton { animation: none; }
+}

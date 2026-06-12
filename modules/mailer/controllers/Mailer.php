@@ -8,7 +8,7 @@ class Mailer extends Trongate {
             in the <strong>" . htmlspecialchars($division_name) . "</strong> division
             has been received and is pending organiser approval.</p>
             <p>You will get another email once your registration is confirmed.</p>",
-            'View your dashboard', BASE_URL . 'users/dashboard'
+            'View your dashboard', BASE_URL . 'users'
         );
         $this->_brevo_send($to_email, $to_name, $subject, $html);
     }
@@ -20,7 +20,7 @@ class Mailer extends Trongate {
             in the <strong>" . htmlspecialchars($division_name) . "</strong> division
             has been confirmed.</p>
             <p>Keep an eye on your dashboard — we will notify you when the heat draw is published.</p>",
-            'View your dashboard', BASE_URL . 'users/dashboard'
+            'View your dashboard', BASE_URL . 'users'
         );
         $this->_brevo_send($to_email, $to_name, $subject, $html);
     }
@@ -46,7 +46,7 @@ class Mailer extends Trongate {
         $html    = $this->_html_wrap($to_name, $subject,
             "<p>The heat draw for <strong>" . htmlspecialchars($comp_name) . "</strong> is now live.</p>
             <p>Log in to see your heat number, jersey colour, and scheduled start time.</p>",
-            'View heat draw', BASE_URL . 'users/dashboard'
+            'View heat draw', BASE_URL . 'users'
         );
         $this->_brevo_send($to_email, $to_name, $subject, $html);
     }
@@ -96,8 +96,9 @@ class Mailer extends Trongate {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6fa;padding:40px 0;">
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-        <tr><td style="background:#0d1b2a;padding:24px 32px;">
-          <span style="color:#4ad9c7;font-size:20px;font-weight:700;letter-spacing:1px;">SURFPAN</span>
+        <tr><td style="background:#0d1b2a;padding:24px 32px;display:flex;align-items:center;gap:12px;">
+            <img src="https://www.surfpan.com/images/surfpan-hero-2.svg" alt="SurfPan Logo" style="vertical-align:middle;" width="32" height="32">
+            <span style="color:#4ad9c7;font-size:20px;font-weight:700;letter-spacing:1px;"><strong style="color:white">SURF</strong>PANEL</span>
         </td></tr>
         <tr><td style="padding:32px;">
           <p style="margin:0 0 16px;font-size:15px;">Hi {$name_safe},</p>

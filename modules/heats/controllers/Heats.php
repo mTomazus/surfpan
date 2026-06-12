@@ -3,14 +3,28 @@
 
         function index() {
 
-            $competitions = $this->model->get('id', 'comp_name');
+            // Public event finder: live events first, then upcoming (soonest
+            // first), then past events (most recent first). Drafts stay hidden.
+            $sql = "SELECT c.id, c.name, c.year, c.location, c.status,
+                           c.start_date, c.end_date,
+                           o.organization AS organiser
+                    FROM comp_name c
+                    LEFT JOIN comp_organizations o ON o.id = c.organizer_id
+                    WHERE c.status != 'created'
+                    ORDER BY
+                        CASE
+                            WHEN c.status = 'running' THEN 0
+                            WHEN c.start_date >= CURDATE() THEN 1
+                            ELSE 2
+                        END,
+                        CASE WHEN c.start_date >= CURDATE() THEN c.start_date END ASC,
+                        c.end_date DESC";
+            $competitions = $this->model->query($sql, 'object');
+
             $data = [
                 "competitions" => $competitions,
                 "view_file" => "show_comps"
             ];
-            $this->module('trongate_tokens');
-            $user = $this->trongate_tokens->_get_user_obj();
-
             $this->template('public', $data);
 
         }

@@ -98,21 +98,52 @@
   </div>
 
   <div style="overflow-x:auto">
-    <table class="comps-table" id="comps-table" style="display:none">
+    <table class="comps-table" id="comps-table">
       <thead>
         <tr>
           <th>Status</th>
           <th>Name</th>
+          <th>Date</th>
           <th>Organiser / Country</th>
           <th style="text-align:center">Type</th>
           <th style="text-align:center">Action</th>
         </tr>
       </thead>
-      <tbody id="comps-tbody"></tbody>
+      <tbody id="comps-tbody">
+        <?php foreach ($competitions as $c):
+            $status = strtolower((string) $c->status);
+            $start  = strtotime($c->start_date);
+            $end    = strtotime($c->end_date);
+            // "Jun 21 – 23" same month, "Jun 28 – Jul 02" across months
+            $date_label = date('M d', $start);
+            if ($end && $end !== $start) {
+                $date_label .= ' – ' . (date('M', $start) === date('M', $end) ? date('d', $end) : date('M d', $end));
+            }
+            $is_upcoming = $start >= strtotime('today');
+        ?>
+        <tr>
+          <td><span class="status-pill status-<?= out($status) ?>"><?= out($status) ?></span></td>
+          <td><div class="comp-title"><?= out(strtoupper($c->name)) ?> <?= out($c->year) ?></div></td>
+          <td style="white-space:nowrap;<?= $is_upcoming ? 'color:var(--primary);font-weight:600;' : '' ?>"><?= out($date_label) ?></td>
+          <td><?= out($c->organiser ?? '—') ?></td>
+          <td style="text-align:center"><span class="comp-sub">Competition</span></td>
+          <td style="text-align:center">
+            <?php if ($status === 'running'): ?>
+              <button class="btn-action live" onclick="goLive('<?= (int) $c->id ?>')">Live</button>
+            <?php elseif ($status === 'finished'): ?>
+              <button class="btn-action" onclick="viewResults('<?= (int) $c->id ?>')">Results</button>
+              <button class="btn-action" style="margin-left:4px" onclick="openCompetition('<?= (int) $c->id ?>')">Draw</button>
+            <?php else: ?>
+              <button class="btn-action" mx-get="users/competition/<?= (int) $c->id ?>" mx-build-modal="competitionModal">Action</button>
+            <?php endif; ?>
+          </td>
+        </tr>
+        <?php endforeach; ?>
+      </tbody>
     </table>
   </div>
 
-  <p class="comps-empty" id="comps-empty">No results match your search.</p>
+  <p class="comps-empty" id="comps-empty"<?= empty($competitions) ? ' style="display:block"' : '' ?>><?= empty($competitions) ? 'No events yet — check back soon.' : 'No results match your search.' ?></p>
 </div>
 
 <script>
@@ -140,6 +171,10 @@
     }
   }
 
+  // Default listing (closest events first) is server-rendered; keep a copy so
+  // clearing the search restores it without a round-trip.
+  const __defaultRows = document.getElementById('comps-tbody').innerHTML;
+
   let __t;
   function searchCompetitions() {
     clearTimeout(__t);
@@ -150,9 +185,9 @@
       const empty = document.getElementById('comps-empty');
 
       if (!q || q.length < 2) {
-        table.style.display = 'none';
+        tbody.innerHTML = __defaultRows;
+        table.style.display = '';
         empty.style.display = 'none';
-        tbody.innerHTML = '';
         return;
       }
 
@@ -178,6 +213,7 @@
               <td>
                 <div class="comp-title">${escapeHtml(String((x.title || '')).toUpperCase())} ${escapeHtml(x.year || '')}</div>
               </td>
+              <td>${escapeHtml(x.year || '—')}</td>
               <td>${escapeHtml(x.organiser || x.country || '—')}</td>
               <td style="text-align:center"><span class="comp-sub">${escapeHtml(typeLabel)}</span></td>
               <td style="text-align:center">${buttonsFor(x)}</td>

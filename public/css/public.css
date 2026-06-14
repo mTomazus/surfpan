@@ -383,41 +383,363 @@ main h2 + p, .modal-body h2 + p {
     }
   }
 
-  .results-header {
-    max-width: 800px;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-    font-size-adjust: 0.5;
-    text-align: center;
-    & h1, h2, h3 {
-      color:var(--text);
-      margin: 0;
-    }
+  /* =====================================================================
+     RESULTS — Final standings (premium redesign)
+     View: modules/results/views/show_all.php
+     ===================================================================== */
+  #results-wrapper {
+    --rslt-gold:    hsl(43 92% 58%);
+    --rslt-silver:  hsl(220 16% 80%);
+    --rslt-bronze:  hsl(27 62% 54%);
+    --rslt-ink:     hsl(220 25% 12%);              /* dark text on medals */
+    --rslt-surface: var(--card);                   /* adapts to light/dark */
+    --rslt-elev:    color-mix(in oklab, var(--card), white 6%);
+    --rslt-line:    color-mix(in oklab, var(--text), transparent 86%);
+    --rslt-ease:    cubic-bezier(0.22, 1, 0.36, 1);
+
+    max-width: 1000px;
+    margin-inline: auto;
+    padding: 0 1rem 4rem;
   }
 
-  #results-wrapper {
-    & h1 {
-      font-size: 2rem;
-    }
-    & h2 {
-      font-size: 1.5rem;
-    }
-    & h3 {
-      font-size: 1.2rem;
-    }
+  /* ---- Hero ---- */
+  .rslt-hero {
+    text-align: center;
+    padding: clamp(1rem, 5vw, 3rem) 0 1.5rem;
   }
-  .nav {
-    margin-bottom: 1rem;
+  .rslt-eyebrow {
+    margin: 0 0 .6rem;
+    font-size: .7rem;
+    letter-spacing: .4em;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+  .rslt-title {
+    margin: 0;
+    font-size: clamp(1.9rem, 6vw, 3.2rem);
+    line-height: 1.05;
+    letter-spacing: .5px;
+    color: var(--text-light);
+  }
+  .rslt-title .rslt-year {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--primary);
+  }
+  .rslt-date {
+    margin: .65rem 0 0;
+    color: var(--text-dark);
+    font-size: .95rem;
+    letter-spacing: .04em;
+  }
+  .rslt-meta {
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    justify-content: center;
+  }
+  .rslt-meta li {
+    display: inline-flex;
+    align-items: baseline;
+    gap: .5rem;
+    padding: .4rem .9rem;
+    border-radius: 999px;
+    background: var(--rslt-surface);
+    border: 1px solid var(--rslt-line);
+    font-size: .68rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--text-darkest);
+  }
+  .rslt-meta li strong {
+    color: var(--text-light);
+    font-weight: 700;
+    letter-spacing: normal;
+    text-transform: none;
+    font-size: .9rem;
+  }
+
+  /* ---- Division tabs ---- */
+  .rslt-tabs {
+    display: flex;
+    gap: .35rem;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto 2rem;
+    padding: .35rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-radius: 999px;
+    background: var(--rslt-surface);
+    border: 1px solid var(--rslt-line);
+    box-shadow: var(--shadow-small);
+  }
+  .rslt-tabs::-webkit-scrollbar { display: none; }
+  .rslt-tab {
+    flex: 0 0 auto;
+    appearance: none;
+    border: 0;
+    box-shadow: none;
+    width: auto;           /* override trongate.css button{width:100%} @<=550px */
+    min-width: 0;          /* override global button min-width:120px */
+    max-height: none;      /* override global button max-height:40px */
+    cursor: pointer;
+    margin: 0;
+    padding: .55rem 1.1rem;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-dark);
+    font-family: inherit;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: color .18s var(--rslt-ease), background-color .18s var(--rslt-ease);
+  }
+  .rslt-tab:hover {
+    color: var(--text-light);
+    background: color-mix(in oklab, var(--primary), transparent 88%);
+  }
+  .rslt-tab.is-active {
+    color: var(--bg);
+    background: var(--primary);
+    box-shadow: 0 4px 14px color-mix(in oklab, var(--primary), transparent 55%);
+  }
+  .rslt-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  /* ---- Section head ---- */
+  .rslt-section-head {
     display: flex;
     align-items: center;
+    gap: .9rem;
+    margin: 0 0 1.4rem;
+  }
+  .rslt-section-head h2 {
+    margin: 0;
+    font-size: 1rem;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: var(--text-dark);
+    white-space: nowrap;
+  }
+  .rslt-section-head::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--rslt-line), transparent);
+  }
+  .rslt-div-pill {
+    padding: .3rem .85rem;
+    border-radius: 999px;
+    font-size: .76rem;
+    letter-spacing: .08em;
+    color: var(--primary);
+    border: 1px solid color-mix(in oklab, var(--primary), transparent 60%);
+    background: color-mix(in oklab, var(--primary), transparent 90%);
+    white-space: nowrap;
+  }
+
+  /* ---- Podium (top 3) ---- */
+  .rslt-podium {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: end;
     gap: 1rem;
-    justify-content: space-around;
-    margin-inline: 1rem;
-    & .btn {
-      flex: 1;
-      min-width: max-content;
+    margin-bottom: 2.5rem;
+  }
+  .rslt-podium--2 { grid-template-columns: repeat(2, 1fr); max-width: 640px; margin-inline: auto; }
+  .rslt-podium--1 { grid-template-columns: minmax(0, 360px); justify-content: center; }
+
+  .rslt-pod {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.5rem 1rem 1.3rem;
+    border-radius: 18px;
+    background: var(--rslt-elev);
+    border: 1px solid var(--rslt-line);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    animation: rslt-rise .55s var(--rslt-ease) both;
+    animation-delay: calc(var(--i, 0) * 80ms);
+    transition: transform .25s var(--rslt-ease), box-shadow .25s var(--rslt-ease);
+  }
+  .rslt-pod:hover { transform: translateY(-3px); box-shadow: var(--card-shadow); }
+  .rslt-pod::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: var(--rslt-accent);
+  }
+  .rslt-pod--gold   { --rslt-accent: var(--rslt-gold); }
+  .rslt-pod--silver { --rslt-accent: var(--rslt-silver); }
+  .rslt-pod--bronze { --rslt-accent: var(--rslt-bronze); }
+  .rslt-pod--gold {
+    padding-top: 2.1rem;
+    border-color: color-mix(in oklab, var(--rslt-gold), transparent 55%);
+    box-shadow: 0 12px 44px color-mix(in oklab, var(--rslt-gold), transparent 82%), var(--shadow);
+  }
+  .rslt-pod-medal {
+    width: 56px; height: 56px;
+    display: grid; place-items: center;
+    border-radius: 999px;
+    font-size: 1.4rem; font-weight: 900;
+    color: var(--rslt-ink);
+    background: var(--rslt-accent);
+    border: 3px solid color-mix(in oklab, var(--rslt-accent), white 28%);
+    box-shadow: 0 6px 16px color-mix(in oklab, var(--rslt-accent), transparent 62%);
+  }
+  .rslt-pod--gold .rslt-pod-medal { width: 66px; height: 66px; font-size: 1.7rem; }
+  .rslt-pod-place {
+    margin: .7rem 0 0;
+    font-size: .66rem; letter-spacing: .26em; text-transform: uppercase;
+    color: var(--rslt-accent);
+  }
+  .rslt-pod-name {
+    margin: .35rem 0 0;
+    font-size: clamp(1rem, 2.4vw, 1.35rem);
+    line-height: 1.15;
+    color: var(--text-light);
+  }
+  .rslt-pod-country {
+    margin: .35rem 0 0;
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-size: .76rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--text-dark);
+  }
+  .rslt-flag { font-size: 1.1em; line-height: 1; }
+  .rslt-pod-score { margin-top: 1rem; line-height: 1; }
+  .rslt-pod-total {
+    display: block;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-light);
+  }
+  .rslt-pod--gold .rslt-pod-total { color: var(--rslt-gold); }
+  .rslt-pod-total-label {
+    font-size: .6rem; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--text-darkest);
+  }
+  .rslt-pod-best {
+    margin-top: .9rem; padding-top: .8rem;
+    width: 100%;
+    border-top: 1px solid var(--rslt-line);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: .76rem; letter-spacing: .06em;
+    color: var(--text-dark);
+  }
+  .rslt-pod-best strong { color: var(--text-light); font-variant-numeric: tabular-nums; }
+
+  /* ---- Standings list (4th onward) ---- */
+  .rslt-list { display: flex; flex-direction: column; gap: .5rem; }
+  .rslt-row {
+    display: grid;
+    grid-template-columns: 3rem 1fr auto auto;
+    align-items: center;
+    gap: 1rem;
+    padding: .85rem 1.1rem;
+    border-radius: 14px;
+    background: var(--rslt-surface);
+    border: 1px solid var(--rslt-line);
+    animation: rslt-rise .5s var(--rslt-ease) both;
+    animation-delay: calc(var(--i, 0) * 45ms);
+    transition: transform .2s var(--rslt-ease), border-color .2s var(--rslt-ease), background-color .2s var(--rslt-ease);
+  }
+  .rslt-row:hover {
+    transform: translateX(2px);
+    border-color: color-mix(in oklab, var(--primary), transparent 60%);
+    background: var(--rslt-elev);
+  }
+  .rslt-row--head {
+    background: transparent;
+    border: 0;
+    padding: 0 1.1rem .2rem;
+    animation: none;
+  }
+  .rslt-row--head span {
+    font-size: .64rem; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--text-darkest);
+  }
+  .rslt-c-rank {
+    font-variant-numeric: tabular-nums;
+    font-weight: 900;
+    color: var(--text-dark);
+    text-align: center;
+  }
+  .rslt-row:not(.rslt-row--head) .rslt-c-rank {
+    width: 2.4rem; height: 2.4rem;
+    display: grid; place-items: center;
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--text), transparent 90%);
+  }
+  .rslt-c-name { display: flex; flex-direction: column; gap: .15rem; min-width: 0; }
+  .rslt-name {
+    font-size: 1rem; font-weight: 700; color: var(--text-light);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .rslt-sub {
+    display: inline-flex; align-items: center; gap: .35rem;
+    font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--text-dark);
+  }
+  .rslt-c-best, .rslt-c-total {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+  .rslt-c-best  { color: var(--text-dark); min-width: 3.5rem; }
+  .rslt-c-total { color: var(--text-light); font-size: 1.15rem; min-width: 4rem; }
+  .rslt-c-total .rslt-lbl, .rslt-c-best .rslt-lbl {
+    display: none;
+    font-size: .58rem; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--text-darkest);
+  }
+
+  /* ---- Empty state ---- */
+  .rslt-empty {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    border-radius: 18px;
+    background: var(--rslt-surface);
+    border: 1px dashed var(--rslt-line);
+  }
+  .rslt-empty-icon { font-size: 2.6rem; }
+  .rslt-empty h3 { margin: .8rem 0 .3rem; color: var(--text-light); font-size: 1.3rem; }
+  .rslt-empty p  { margin: 0; color: var(--text-dark); }
+
+  @keyframes rslt-rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 760px) {
+    .rslt-podium, .rslt-podium--1, .rslt-podium--2 {
+      grid-template-columns: 1fr;
+      align-items: stretch;
+      gap: .75rem;
+      max-width: none;
     }
+    .rslt-pod { padding: 1.3rem 1rem 1.2rem; }
+    .rslt-pod--gold { order: -1; padding-top: 1.5rem; }
+
+    .rslt-row { grid-template-columns: 2.4rem 1fr auto; gap: .65rem .8rem; padding: .7rem .85rem; }
+    .rslt-row--head { display: none; }
+    .rslt-c-best { display: none; }
+    .rslt-c-total { font-size: 1.05rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rslt-pod, .rslt-row { animation: none; }
   }
 
   .wrapper {
@@ -522,37 +844,6 @@ main h2 + p, .modal-body h2 + p {
           }
           & div {
             width: 100%;
-          }
-        }
-      }
-    }
-
-    .results-table {
-      & .container {
-        overflow-x: auto;
-        margin-inline: 1rem;
-      }
-      & tbody {
-        display: flex;
-        flex-direction: column;
-        & tr {
-          display: flex;
-          border-bottom: 1px solid var(--primary);
-          margin-bottom: 1rem;
-          justify-content: space-between;
-          align-items: center;
-          & td {
-            padding: 8px 0;
-            margin: 0 1rem;
-          }
-          & td:nth-child(1) {
-            font-weight: 900;
-            background: var(--ring);
-            padding: 8px;
-          }
-          & td:nth-child(2) {
-            flex: 1;
-            text-align: right;
           }
         }
       }

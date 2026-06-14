@@ -302,25 +302,6 @@
     </section>
     <?php endif; ?>
 
-    <!-- ===== Documents ===== -->
-    <section class="card pad span-5" aria-labelledby="docs-title">
-      <div class="section-head">
-        <h2 id="docs-title">Documents</h2>
-        <span class="subtle">Rulebook & heat draw</span>
-      </div>
-      <div class="doc-grid">
-        <article class="doc">
-          <div>
-            <strong>ISA Rulebook (PDF)</strong>
-            <div class="subtle">Updated Apr 2025</div>
-          </div>
-          <div class="controls">
-            <a href="https://isasurf.org/downloads/ISA_RULEBOOK_April-2025.pdf" download="rulebook.pdf" style="text-decoration: none;" class="btn">Download</a>
-          </div>
-        </article>
-      </div>
-    </section>
-
     <!-- ===== Registrations ===== -->
     <section class="card pad span-12" aria-labelledby="regs-title">
       <div class="section-head">

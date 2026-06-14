@@ -67,7 +67,7 @@
     }
     .form-head .sub {
         margin: .6rem auto 0;
-        max-width: 46ch;
+        max-width: 64ch;
         font-size: .8rem;
         letter-spacing: 1px;
         color: var(--text-dark);

@@ -1130,9 +1130,21 @@
         }
 
         function competition() {
+            $comp_id = (int)segment(3);
+
+            // Logged-out visitors: show a clean in-modal login form instead of
+            // letting _make_sure_allowed redirect (which dumps the whole login
+            // page into the modal). Any logged-in level falls through to the
+            // normal participants-area check below.
+            $this->module('trongate_tokens');
+            if ($this->trongate_tokens->_attempt_get_valid_token([3, 4, 5]) === false) {
+                $data['competition'] = $this->model->get_where($comp_id, 'comp_name');
+                $this->view('competition_login_modal', $data);
+                return;
+            }
+
             $this->module('trongate_security');
             $this->trongate_security->_make_sure_allowed('participants area');
-            $comp_id = (int)segment(3);
             $user    = $this->_get_user_info();
             $data['user'] = $user;
 
